@@ -1,17 +1,13 @@
-import { Toaster as Sonner, toast } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { Toaster as Sonner } from "./components/ui/sonner";
+
 import {
   MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { AuthRoutes } from "./routes/auth";
 import { MainRoutes } from "./routes/main";
@@ -20,6 +16,7 @@ import { OpenAPI } from "./api-swagger";
 import { URL_API } from "./utils/constants";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
+import { toast } from "sonner";
 
 OpenAPI.BASE = URL_API;
 
