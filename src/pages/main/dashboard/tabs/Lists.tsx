@@ -31,7 +31,10 @@ import { ListDto } from "@/api-swagger";
 import { CreatableAutoComplete } from "@/components/ui/creatable-autocomplete";
 
 const Lists = () => {
-  const { page = 1, perPage = 10 } = useQueryParams();
+  const queryParams = useQueryParams();
+  const page = Number(queryParams.page || 1);
+  const perPage = Number(queryParams.perPage || 10);
+  
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
@@ -47,7 +50,7 @@ const Lists = () => {
   // Query for fetching all lists
   const { data: listsData, isLoading } = useQuery({
     queryKey: ["lists", page, perPage],
-    queryFn: () => ListService.listControllerFindAll({ page, perPage }),
+    queryFn: () => ListService.listControllerFindAll({ page: page.toString(), perPage: perPage.toString() }),
   });
 
   // Query for fetching a single list
