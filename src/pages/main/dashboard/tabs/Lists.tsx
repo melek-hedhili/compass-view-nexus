@@ -50,7 +50,7 @@ const Lists = () => {
   // Query for fetching all lists
   const { data: listsData, isLoading } = useQuery({
     queryKey: ["lists", page, perPage],
-    queryFn: () => ListService.listControllerFindAll({ page, perPage }),
+    queryFn: () => ListService.listControllerFindAll({ page: page.toString(), perPage: perPage.toString() }),
   });
 
   // Query for fetching a single list
