@@ -31,7 +31,10 @@ import { ListDto } from "@/api-swagger";
 import { CreatableAutoComplete } from "@/components/ui/creatable-autocomplete";
 
 const Lists = () => {
-  const { page = 1, perPage = 10 } = useQueryParams();
+  const queryParams = useQueryParams();
+  const page = Number(queryParams.page || 1);
+  const perPage = Number(queryParams.perPage || 10);
+  
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);

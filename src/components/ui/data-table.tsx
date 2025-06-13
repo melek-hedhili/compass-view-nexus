@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import {
   Table,
@@ -62,13 +63,14 @@ export function DataTable<T extends Record<string, unknown>>({
   showIndex = false,
   renderListEmpty,
 }: DataTableProps<T>) {
-  const {
-    [`page${index || ""}`]: page = 1,
-    [`perPage${index || ""}`]: perPage = 10,
-    [`sortField${index || ""}`]: sortField,
-    [`sortOrder${index || ""}`]: sortOrder = "asc",
-  } = useQueryParams();
+  const queryParams = useQueryParams();
   const updateQuery = useQueryUpdate();
+
+  // Convert query params to numbers where needed
+  const page = Number(queryParams[`page${index || ""}`] || 1);
+  const perPage = Number(queryParams[`perPage${index || ""}`] || 10);
+  const sortField = queryParams[`sortField${index || ""}`];
+  const sortOrder = queryParams[`sortOrder${index || ""}`] || "asc";
 
   // Calculate pagination values
   const totalItems = count ?? data?.length ?? 0;
@@ -77,10 +79,10 @@ export function DataTable<T extends Record<string, unknown>>({
   const endIndex = Math.min(startIndex + perPage, totalItems);
 
   // Handlers
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (newPage: number) => {
     updateQuery({
-      [`page${index || ""}`]: page,
-      [`perPage${index || ""}`]: perPage,
+      [`page${index || ""}`]: newPage.toString(),
+      [`perPage${index || ""}`]: perPage.toString(),
     });
   };
 
@@ -106,7 +108,7 @@ export function DataTable<T extends Record<string, unknown>>({
     const updates = {
       [`sortField${index || ""}`]: (sortKey || property || "").toString(),
       [`sortOrder${index || ""}`]: isAsc ? "desc" : "asc",
-      [`page${index || ""}`]: 1, // Reset to first page when sorting
+      [`page${index || ""}`]: "1", // Reset to first page when sorting
     };
 
     console.log("Updating sort params:", updates);
