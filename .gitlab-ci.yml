@@ -1,0 +1,52 @@
+default:
+  timeout: 1 hour
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE
+
+stages:
+  - build
+  - deploy
+
+.job_docker_template: &template
+  tags:
+    - astro-runner
+  only:
+    - develop
+
+CI_Build:
+  <<: *template
+  stage: build
+  image: docker:28.2.2-cli
+  services:
+    - docker:latest
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo -n $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+  script:
+    - docker build --build-arg VITE_API_BASE_URL=$VITE_API_BASE_URL -f Dockerfile --tag $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA-dev .
+    - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA-dev
+  after_script:
+    - docker images
+  artifacts:
+    name: "xformality"
+    when: on_failure
+    paths:
+      - ./
+    expire_in: 1 week
+    exclude:
+      - .gitlab-ci.yml
+
+CI_Deploy:
+  stage: deploy
+  image: alpine/ansible:2.18.6
+  script:
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - cd $CI_PROJECT_DIR && ansible-playbook -i deployment/inventory_dev.ini deployment/deployment_dev.yml --extra-vars "ansible_ssh_pass=$SERVER_PWD"
+  only:
+    - develop
+  tags:
+    - astro-runner
