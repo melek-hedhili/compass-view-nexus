@@ -12,7 +12,6 @@ import {
   Route,
   Routes,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { AuthRoutes } from "./routes/auth";
