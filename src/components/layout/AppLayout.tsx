@@ -88,7 +88,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     isActive={isActive("/dashboard/mail")}
                     className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard/mail")
-                        ? "bg-formality-primary text-white font-medium hover:bg-gray-100 hover:text-formality-primary"
+                        ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
                         : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
@@ -110,7 +110,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   isActive={isActive("/dashboard/dossiers")}
                   className={`transition-all duration-200 rounded-lg ${
                     isActive("/dashboard/dossiers")
-                      ? "bg-formality-primary text-white font-medium hover:bg-gray-100 hover:text-formality-primary"
+                      ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
                       : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                   }`}
                 >
@@ -132,7 +132,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     isActive={isActive("/dashboard")}
                     className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard")
-                        ? "bg-formality-primary text-white font-medium hover:bg-gray-100 hover:text-formality-primary"
+                        ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
                         : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
