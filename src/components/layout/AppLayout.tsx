@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Mail, Folder, Settings, Menu } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import Logo from "../Logo";
+import AppBreadcrumbs from "../AppBreadcrumbs";
 import {
   SidebarProvider,
   Sidebar,
@@ -57,20 +58,20 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Sidebar 
           variant="sidebar" 
           collapsible={isMobile ? "offcanvas" : "icon"}
-          className="border-r border-gray-200 bg-white"
+          className="border-r border-gray-200 bg-white shadow-sm"
         >
           <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
             <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
-                <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center">
-                  <span className="text-formality-primary font-bold text-lg">X</span>
+                <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
+                  <span className="text-formality-primary font-bold text-lg">F</span>
                 </div>
-                <span className="ml-2 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
+                <span className="ml-3 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
                   Formality
                 </span>
               </Link>
               {user && (
-                <div className="text-sm font-medium text-white/90 group-data-[collapsible=icon]:hidden">
+                <div className="text-xs font-medium text-white/90 bg-white/20 px-2 py-1 rounded-full group-data-[collapsible=icon]:hidden">
                   {user.role}
                 </div>
               )}
@@ -78,14 +79,14 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           </SidebarHeader>
           
           <SidebarContent className="px-3 py-4 bg-white">
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {/* Show Mail feature to Admin and Juriste only */}
               {(user?.role === "ADMIN" || user?.role === "JURIST") && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
                     isActive={isActive("/dashboard/mail")}
-                    className={`transition-all duration-200 rounded-lg border-0 ${
+                    className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard/mail")
                         ? "bg-formality-primary text-white font-medium"
                         : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
@@ -107,7 +108,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive("/dashboard/dossiers")}
-                  className={`transition-all duration-200 rounded-lg border-0 ${
+                  className={`transition-all duration-200 rounded-lg ${
                     isActive("/dashboard/dossiers")
                       ? "bg-formality-primary text-white font-medium"
                       : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
@@ -129,7 +130,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   <SidebarMenuButton
                     asChild
                     isActive={isActive("/dashboard")}
-                    className={`transition-all duration-200 rounded-lg border-0 ${
+                    className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard")
                         ? "bg-formality-primary text-white font-medium"
                         : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
@@ -148,7 +149,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </SidebarMenu>
           </SidebarContent>
           
-          <SidebarFooter className="border-t border-gray-100 bg-gray-50 px-3 py-3">
+          <SidebarFooter className="border-t border-gray-100 bg-gray-50/50 px-3 py-3">
             <Button
               variant="ghost"
               onClick={logout}
@@ -171,13 +172,16 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               <Logo />
             </Link>
             {user && (
-              <div className="ml-auto text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">
+              <div className="ml-auto text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">
                 {user.role}
               </div>
             )}
           </div>
           
-          <div className="p-6 w-full">{children}</div>
+          <div className="p-6 w-full">
+            <AppBreadcrumbs />
+            {children}
+          </div>
         </main>
       </div>
     </SidebarProvider>
