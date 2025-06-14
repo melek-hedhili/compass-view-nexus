@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -67,81 +66,77 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               )}
             </div>
           </SidebarHeader>
-
           <SidebarContent className="px-3 py-2">
-            <SidebarMenu className="space-y-2">
-              {/* Show Mail feature to Admin and Juriste only */}
-              {(user?.role === "ADMIN" || user?.role === "JURIST") && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive("/dashboard/mail")}
-                    tooltip="Boîte mail"
-                    className={`transition-all rounded-[10px] ${
-                      isActive("/dashboard/mail")
-                        ? "bg-blue-100 font-medium"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    <Link
-                      to="/dashboard/mail"
-                      className="flex items-center gap-3 px-3 py-2"
-                    >
-                      <Mail className="h-5 w-5 text-formality-primary" />
-                      <span>Boîte mail</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-
-              {/* Show Dossiers feature to all users */}
+            {/* Show Mail feature to Admin and Juriste only */}
+            {(user?.role === "ADMIN" || user?.role === "JURIST") && (
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive("/dashboard/dossiers")}
-                  tooltip="Dossiers"
+                  isActive={isActive("/dashboard/mail")}
+                  tooltip="Boîte mail"
                   className={`transition-all rounded-[10px] ${
-                    isActive("/dashboard/dossiers")
+                    isActive("/dashboard/mail")
                       ? "bg-blue-100 font-medium"
                       : "hover:bg-gray-100"
                   }`}
                 >
                   <Link
-                    to="/dashboard/dossiers"
+                    to="/dashboard/mail"
                     className="flex items-center gap-3 px-3 py-2"
                   >
-                    <Folder className="h-5 w-5 text-formality-primary" />
-                    <span>Dossiers</span>
+                    <Mail className="h-5 w-5 text-formality-primary" />
+                    <span>Boîte mail</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            )}
 
-              {/* Show Settings feature to Admin and Jurist only */}
-              {(user?.role === "ADMIN" || user?.role === "JURIST") && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive("/dashboard")}
-                    tooltip="Paramètres"
-                    className={`transition-all rounded-[10px] ${
-                      isActive("/dashboard")
-                        ? "bg-blue-100 font-medium"
-                        : "hover:bg-gray-100"
-                    }`}
+            {/* Show Dossiers feature to all users */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive("/dashboard/dossiers")}
+                tooltip="Dossiers"
+                className={`transition-all rounded-[10px] ${
+                  isActive("/dashboard/dossiers")
+                    ? "bg-blue-100 font-medium"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                <Link
+                  to="/dashboard/dossiers"
+                  className="flex items-center gap-3 px-3 py-2"
+                >
+                  <Folder className="h-5 w-5 text-formality-primary" />
+                  <span>Dossiers</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {/* Show Settings feature to Admin and Jurist only */}
+            {(user?.role === "ADMIN" || user?.role === "JURIST") && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/dashboard")}
+                  tooltip="Paramètres"
+                  className={`transition-all rounded-[10px] ${
+                    isActive("/dashboard")
+                      ? "bg-blue-100 font-medium"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  <Link
+                    to="/dashboard"
+                    className="flex items-center gap-3 px-3 py-2"
                   >
-                    <Link
-                      to="/dashboard"
-                      className="flex items-center gap-3 px-3 py-2"
-                    >
-                      <Settings className="h-5 w-5 text-formality-primary" />
-                      <span>Paramètres</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
+                    <Settings className="h-5 w-5 text-formality-primary" />
+                    <span>Paramètres</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarContent>
-
           <SidebarFooter className="px-3 py-3">
             <Button
               variant="ghost"
@@ -156,11 +151,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
         {/* Main content area */}
         <main className="flex-1 overflow-auto">
-          {/* Mobile header with menu toggle */}
+          {/* Always show a header with Menu on mobile */}
           {isMobile && (
-            <div className="sticky top-0 z-40 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm">
-              <SidebarTrigger>
-                <Menu className="h-5 w-5" />
+            <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm">
+              {/* Menu button should always show and be visually clear */}
+              <SidebarTrigger className="rounded-md border border-gray-200 bg-gray-100 p-2 hover:bg-gray-200 focus:outline-none focus-visible:ring focus-visible:ring-blue-500">
+                <Menu className="h-5 w-5 text-gray-700" />
               </SidebarTrigger>
               <Link to="/dashboard" className="flex items-center">
                 <Logo />
@@ -172,7 +168,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               )}
             </div>
           )}
-          
           <div className="p-4 w-full">{children}</div>
         </main>
       </div>
