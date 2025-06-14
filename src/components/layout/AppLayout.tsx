@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -53,122 +54,133 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-gray-50">
         {/* Sidebar */}
-        <Sidebar variant="sidebar" collapsible={isMobile ? "offcanvas" : "icon"}>
-          <SidebarHeader>
-            <div className="flex items-center justify-between px-4 py-3">
+        <Sidebar 
+          variant="sidebar" 
+          collapsible={isMobile ? "offcanvas" : "icon"}
+          className="border-r border-gray-200 bg-white shadow-sm"
+        >
+          <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
+            <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
-                <Logo />
+                <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
+                  <span className="text-formality-primary font-bold text-lg">X</span>
+                </div>
+                <span className="ml-2 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
+                  Formality
+                </span>
               </Link>
               {user && (
-                <div className="text-sm font-medium ml-2 text-gray-600 group-data-[collapsible=icon]:hidden">
+                <div className="text-sm font-medium text-white/90 group-data-[collapsible=icon]:hidden">
                   {user.role}
                 </div>
               )}
             </div>
           </SidebarHeader>
-          <SidebarContent className="px-3 py-2">
-            {/* Show Mail feature to Admin and Juriste only */}
-            {(user?.role === "ADMIN" || user?.role === "JURIST") && (
+          
+          <SidebarContent className="px-3 py-4 bg-white">
+            <SidebarMenu className="space-y-2">
+              {/* Show Mail feature to Admin and Juriste only */}
+              {(user?.role === "ADMIN" || user?.role === "JURIST") && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive("/dashboard/mail")}
+                    tooltip="Boîte mail"
+                    className={`transition-all duration-200 rounded-lg ${
+                      isActive("/dashboard/mail")
+                        ? "bg-formality-primary text-white shadow-md"
+                        : "text-gray-700 hover:bg-formality-primary/10 hover:text-formality-primary"
+                    }`}
+                  >
+                    <Link
+                      to="/dashboard/mail"
+                      className="flex items-center gap-3 px-3 py-2.5"
+                    >
+                      <Mail className="h-5 w-5" />
+                      <span className="font-medium">Boîte mail</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+
+              {/* Show Dossiers feature to all users */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive("/dashboard/mail")}
-                  tooltip="Boîte mail"
-                  className={`transition-all rounded-[10px] ${
-                    isActive("/dashboard/mail")
-                      ? "bg-blue-100 font-medium"
-                      : "hover:bg-gray-100"
+                  isActive={isActive("/dashboard/dossiers")}
+                  tooltip="Dossiers"
+                  className={`transition-all duration-200 rounded-lg ${
+                    isActive("/dashboard/dossiers")
+                      ? "bg-formality-primary text-white shadow-md"
+                      : "text-gray-700 hover:bg-formality-primary/10 hover:text-formality-primary"
                   }`}
                 >
                   <Link
-                    to="/dashboard/mail"
-                    className="flex items-center gap-3 px-3 py-2"
+                    to="/dashboard/dossiers"
+                    className="flex items-center gap-3 px-3 py-2.5"
                   >
-                    <Mail className="h-5 w-5 text-formality-primary" />
-                    <span>Boîte mail</span>
+                    <Folder className="h-5 w-5" />
+                    <span className="font-medium">Dossiers</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            )}
 
-            {/* Show Dossiers feature to all users */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive("/dashboard/dossiers")}
-                tooltip="Dossiers"
-                className={`transition-all rounded-[10px] ${
-                  isActive("/dashboard/dossiers")
-                    ? "bg-blue-100 font-medium"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <Link
-                  to="/dashboard/dossiers"
-                  className="flex items-center gap-3 px-3 py-2"
-                >
-                  <Folder className="h-5 w-5 text-formality-primary" />
-                  <span>Dossiers</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            {/* Show Settings feature to Admin and Jurist only */}
-            {(user?.role === "ADMIN" || user?.role === "JURIST") && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive("/dashboard")}
-                  tooltip="Paramètres"
-                  className={`transition-all rounded-[10px] ${
-                    isActive("/dashboard")
-                      ? "bg-blue-100 font-medium"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  <Link
-                    to="/dashboard"
-                    className="flex items-center gap-3 px-3 py-2"
+              {/* Show Settings feature to Admin and Jurist only */}
+              {(user?.role === "ADMIN" || user?.role === "JURIST") && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive("/dashboard")}
+                    tooltip="Paramètres"
+                    className={`transition-all duration-200 rounded-lg ${
+                      isActive("/dashboard")
+                        ? "bg-formality-primary text-white shadow-md"
+                        : "text-gray-700 hover:bg-formality-primary/10 hover:text-formality-primary"
+                    }`}
                   >
-                    <Settings className="h-5 w-5 text-formality-primary" />
-                    <span>Paramètres</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center gap-3 px-3 py-2.5"
+                    >
+                      <Settings className="h-5 w-5" />
+                      <span className="font-medium">Paramètres</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="px-3 py-3">
+          
+          <SidebarFooter className="border-t border-gray-100 bg-gray-50 px-3 py-3">
             <Button
               variant="ghost"
               onClick={logout}
-              className="flex w-full items-center justify-start gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 rounded-[10px] hover:bg-gray-200 group-data-[collapsible=icon]:justify-center"
+              className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-data-[collapsible=icon]:justify-center"
             >
               <LogOut size={18} />
-              <span className="group-data-[collapsible=icon]:hidden">Déconnexion</span>
+              <span className="group-data-[collapsible=icon]:hidden font-medium">Déconnexion</span>
             </Button>
           </SidebarFooter>
         </Sidebar>
 
         {/* Main content area */}
-        <main className="flex-1 overflow-auto">
-          {/* Always show a header with Menu on mobile */}
-          {isMobile && (
-            <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm">
-              {/* Menu button should always show and be visually clear */}
-              <SidebarTrigger className="rounded-md border border-gray-200 bg-gray-100 p-2 hover:bg-gray-200 focus:outline-none focus-visible:ring focus-visible:ring-blue-500">
-                <Menu className="h-5 w-5 text-gray-700" />
-              </SidebarTrigger>
-              <Link to="/dashboard" className="flex items-center">
-                <Logo />
-              </Link>
-              {user && (
-                <div className="ml-auto text-sm font-medium text-gray-600">
-                  {user.role}
-                </div>
-              )}
-            </div>
-          )}
-          <div className="p-4 w-full">{children}</div>
+        <main className="flex-1 overflow-auto bg-gray-50">
+          {/* Mobile header */}
+          <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm md:hidden">
+            <SidebarTrigger className="rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
+              <Menu className="h-5 w-5 text-gray-700" />
+            </SidebarTrigger>
+            <Link to="/dashboard" className="flex items-center">
+              <Logo />
+            </Link>
+            {user && (
+              <div className="ml-auto text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                {user.role}
+              </div>
+            )}
+          </div>
+          
+          <div className="p-6 w-full">{children}</div>
         </main>
       </div>
     </SidebarProvider>
