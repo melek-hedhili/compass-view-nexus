@@ -57,12 +57,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Sidebar 
           variant="sidebar" 
           collapsible={isMobile ? "offcanvas" : "icon"}
-          className="border-r border-gray-200 bg-white shadow-sm"
+          className="border-r border-gray-200 bg-white"
         >
           <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
             <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
-                <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
+                <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center">
                   <span className="text-formality-primary font-bold text-lg">X</span>
                 </div>
                 <span className="ml-2 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
@@ -78,26 +78,25 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           </SidebarHeader>
           
           <SidebarContent className="px-3 py-4 bg-white">
-            <SidebarMenu className="space-y-2">
+            <SidebarMenu className="space-y-1">
               {/* Show Mail feature to Admin and Juriste only */}
               {(user?.role === "ADMIN" || user?.role === "JURIST") && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
                     isActive={isActive("/dashboard/mail")}
-                    tooltip="Boîte mail"
-                    className={`transition-all duration-200 rounded-lg ${
+                    className={`transition-all duration-200 rounded-lg border-0 ${
                       isActive("/dashboard/mail")
-                        ? "bg-formality-primary text-white shadow-md"
-                        : "text-gray-700 hover:bg-formality-primary/10 hover:text-formality-primary"
+                        ? "bg-formality-primary text-white font-medium"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
                     <Link
                       to="/dashboard/mail"
-                      className="flex items-center gap-3 px-3 py-2.5"
+                      className="flex items-center gap-3 px-3 py-2.5 w-full"
                     >
-                      <Mail className="h-5 w-5" />
-                      <span className="font-medium">Boîte mail</span>
+                      <Mail className="h-5 w-5 flex-shrink-0" />
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">Boîte mail</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -108,19 +107,18 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive("/dashboard/dossiers")}
-                  tooltip="Dossiers"
-                  className={`transition-all duration-200 rounded-lg ${
+                  className={`transition-all duration-200 rounded-lg border-0 ${
                     isActive("/dashboard/dossiers")
-                      ? "bg-formality-primary text-white shadow-md"
-                      : "text-gray-700 hover:bg-formality-primary/10 hover:text-formality-primary"
+                      ? "bg-formality-primary text-white font-medium"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                   }`}
                 >
                   <Link
                     to="/dashboard/dossiers"
-                    className="flex items-center gap-3 px-3 py-2.5"
+                    className="flex items-center gap-3 px-3 py-2.5 w-full"
                   >
-                    <Folder className="h-5 w-5" />
-                    <span className="font-medium">Dossiers</span>
+                    <Folder className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium group-data-[collapsible=icon]:hidden">Dossiers</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -131,19 +129,18 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   <SidebarMenuButton
                     asChild
                     isActive={isActive("/dashboard")}
-                    tooltip="Paramètres"
-                    className={`transition-all duration-200 rounded-lg ${
+                    className={`transition-all duration-200 rounded-lg border-0 ${
                       isActive("/dashboard")
-                        ? "bg-formality-primary text-white shadow-md"
-                        : "text-gray-700 hover:bg-formality-primary/10 hover:text-formality-primary"
+                        ? "bg-formality-primary text-white font-medium"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
                     <Link
                       to="/dashboard"
-                      className="flex items-center gap-3 px-3 py-2.5"
+                      className="flex items-center gap-3 px-3 py-2.5 w-full"
                     >
-                      <Settings className="h-5 w-5" />
-                      <span className="font-medium">Paramètres</span>
+                      <Settings className="h-5 w-5 flex-shrink-0" />
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">Paramètres</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -157,7 +154,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               onClick={logout}
               className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-data-[collapsible=icon]:justify-center"
             >
-              <LogOut size={18} />
+              <LogOut size={18} className="flex-shrink-0" />
               <span className="group-data-[collapsible=icon]:hidden font-medium">Déconnexion</span>
             </Button>
           </SidebarFooter>
@@ -165,7 +162,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
         {/* Main content area */}
         <main className="flex-1 overflow-auto bg-gray-50">
-          {/* Mobile header */}
+          {/* Mobile header - always visible on mobile */}
           <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm md:hidden">
             <SidebarTrigger className="rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
               <Menu className="h-5 w-5 text-gray-700" />
