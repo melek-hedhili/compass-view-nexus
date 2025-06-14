@@ -1,3 +1,4 @@
+
 import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster as Sonner } from "./components/ui/sonner";
 
@@ -7,7 +8,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { AuthRoutes } from "./routes/auth";
 import { MainRoutes } from "./routes/main";
@@ -59,6 +60,7 @@ const renderReactQueryDevtools = () =>
 // Root route component that handles redirection
 const RootRoute = () => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -68,13 +70,12 @@ const RootRoute = () => {
     );
   }
 
-  // Only redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Otherwise, stay on current path
-  return null;
+  // If authenticated and on root, redirect to dashboard
+  return <Navigate to="/dashboard" replace />;
 };
 
 const App = () => (
