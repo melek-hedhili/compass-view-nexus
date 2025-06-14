@@ -58,7 +58,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Sidebar 
           variant="sidebar" 
           collapsible={isMobile ? "offcanvas" : "icon"}
-          className="border-r border-gray-200 bg-white shadow-sm"
+          className="border-r border-gray-200 bg-white"
         >
           <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
             <div className="flex items-center justify-between px-4 py-4">
@@ -88,7 +88,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     isActive={isActive("/dashboard/mail")}
                     className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard/mail")
-                        ? "bg-formality-primary text-white font-medium"
+                        ? "bg-formality-primary text-white font-medium hover:bg-gray-100 hover:text-formality-primary"
                         : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
@@ -110,7 +110,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                   isActive={isActive("/dashboard/dossiers")}
                   className={`transition-all duration-200 rounded-lg ${
                     isActive("/dashboard/dossiers")
-                      ? "bg-formality-primary text-white font-medium"
+                      ? "bg-formality-primary text-white font-medium hover:bg-gray-100 hover:text-formality-primary"
                       : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                   }`}
                 >
@@ -132,7 +132,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     isActive={isActive("/dashboard")}
                     className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard")
-                        ? "bg-formality-primary text-white font-medium"
+                        ? "bg-formality-primary text-white font-medium hover:bg-gray-100 hover:text-formality-primary"
                         : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
