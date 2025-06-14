@@ -1,5 +1,4 @@
-
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dossiers from "@/pages/main/dossier/Dossiers";
 import Mail from "@/pages/main/mail/Mail";
@@ -14,7 +13,6 @@ import Quotes from "@/pages/main/dashboard/tabs/Quotes";
 
 export const MainRoutes = () => (
   <Routes>
-    {/* Default dashboard route */}
     <Route
       path="/dashboard"
       element={
@@ -23,8 +21,6 @@ export const MainRoutes = () => (
         </ProtectedRoute>
       }
     />
-    
-    {/* Dashboard sub-routes */}
     <Route
       path="/dashboard/quotes"
       element={
@@ -73,8 +69,6 @@ export const MainRoutes = () => (
         </ProtectedRoute>
       }
     />
-    
-    {/* Main feature routes */}
     <Route
       path="/dashboard/dossiers"
       element={
@@ -91,9 +85,6 @@ export const MainRoutes = () => (
         </ProtectedRoute>
       }
     />
-    
-    {/* Catch-all route - redirect to dashboard */}
-    <Route path="/" element={<Navigate to="/dashboard" replace />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

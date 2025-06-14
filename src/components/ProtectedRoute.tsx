@@ -1,23 +1,13 @@
-
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
-import { useEffect } from "react";
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading, canAccessSection, user } = useAuth();
+  const { isAuthenticated, loading, canAccessSection } = useAuth();
   const location = useLocation();
 
   // Extract the section from the pathname
-  const pathSegments = location.pathname.split("/").filter(Boolean);
-  const section = pathSegments[pathSegments.length - 1] || "dashboard";
-
-  useEffect(() => {
-    // Clear any existing error toasts when route changes
-    if (isAuthenticated && !loading) {
-      // This helps prevent toast spam during navigation
-    }
-  }, [location.pathname, isAuthenticated, loading]);
+  const section = location.pathname.split("/").pop() || "dashboard";
 
   if (loading) {
     return (
@@ -34,9 +24,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Check if user has access to this section
   if (!canAccessSection(section)) {
     toast.error("Vous n'avez pas accès à cette section");
-    // Redirect based on user role
-    const redirectPath = user?.role === "USER" ? "/dashboard/dossiers" : "/dashboard";
-    return <Navigate to={redirectPath} replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
