@@ -1,7 +1,8 @@
+
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Mail, Folder, Settings } from "lucide-react";
+import { LogOut, Mail, Folder, Settings, Menu } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import Logo from "../Logo";
 import {
@@ -13,15 +14,18 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { logout, user, canAccessSection } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   const isActive = (path: string) => {
     if (path === "/dashboard" && location.pathname === "/dashboard") {
@@ -47,17 +51,17 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-gray-50">
-        {/* Fixed sidebar that always remains visible */}
-        <Sidebar variant="sidebar" collapsible="icon">
+        {/* Sidebar */}
+        <Sidebar variant="sidebar" collapsible={isMobile ? "offcanvas" : "icon"}>
           <SidebarHeader>
             <div className="flex items-center justify-between px-4 py-3">
               <Link to="/dashboard" className="flex items-center">
                 <Logo />
               </Link>
               {user && (
-                <div className="text-sm font-medium ml-2 text-gray-600">
+                <div className="text-sm font-medium ml-2 text-gray-600 group-data-[collapsible=icon]:hidden">
                   {user.role}
                 </div>
               )}
@@ -90,8 +94,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </SidebarMenuItem>
               )}
 
-              {/* Show Dossiers feature to Admin and Juriste only */}
-
+              {/* Show Dossiers feature to all users */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -113,7 +116,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {/* Show Settings feature to all users */}
+              {/* Show Settings feature to Admin and Jurist only */}
               {(user?.role === "ADMIN" || user?.role === "JURIST") && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -143,15 +146,33 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <Button
               variant="ghost"
               onClick={logout}
-              className="flex w-full items-center justify-start gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 rounded-[10px] hover:bg-gray-200"
+              className="flex w-full items-center justify-start gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 rounded-[10px] hover:bg-gray-200 group-data-[collapsible=icon]:justify-center"
             >
               <LogOut size={18} />
-              <span>Déconnexion</span>
+              <span className="group-data-[collapsible=icon]:hidden">Déconnexion</span>
             </Button>
           </SidebarFooter>
         </Sidebar>
 
+        {/* Main content area */}
         <main className="flex-1 overflow-auto">
+          {/* Mobile header with menu toggle */}
+          {isMobile && (
+            <div className="sticky top-0 z-40 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm">
+              <SidebarTrigger>
+                <Menu className="h-5 w-5" />
+              </SidebarTrigger>
+              <Link to="/dashboard" className="flex items-center">
+                <Logo />
+              </Link>
+              {user && (
+                <div className="ml-auto text-sm font-medium text-gray-600">
+                  {user.role}
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="p-4 w-full">{children}</div>
         </main>
       </div>
