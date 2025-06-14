@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from "react";
 import AppLayout from "../../../components/layout/AppLayout";
@@ -6,13 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Search, Plus, MailIcon, Paperclip } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { EmailService } from "@/api-swagger/services/EmailService";
@@ -46,41 +40,31 @@ const Mail = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch emails using TanStack Query
-
   const emailQueries = useQueries({
     queries: [
       {
-        queryKey: ["emails", "inbox", currentPage, itemsPerPage, searchTerm],
+        queryKey: ["emails", "inbox", searchTerm],
         queryFn: () =>
           EmailService.emailControllerFindAll({
-            page: currentPage.toString(),
-            perPage: itemsPerPage.toString(),
             value: searchTerm,
             searchFields: ["client.clientName", "from", "subject"],
           }),
       },
       {
-        queryKey: ["emails", "archived", currentPage, itemsPerPage, searchTerm],
+        queryKey: ["emails", "archived", searchTerm],
         queryFn: () =>
           EmailService.emailControllerFindAllArchived({
-            page: currentPage.toString(),
-            perPage: itemsPerPage.toString(),
             value: searchTerm,
             searchFields: ["client.clientName", "from", "subject"],
           }),
       },
       {
-        queryKey: ["emails", "sent", currentPage, itemsPerPage, searchTerm],
+        queryKey: ["emails", "sent", searchTerm],
         queryFn: () =>
           EmailService.emailControllerFindAllSent({
-            page: currentPage.toString(),
-            perPage: itemsPerPage.toString(),
             value: searchTerm,
             searchFields: ["client.clientName", "to", "subject"],
           }),
@@ -221,7 +205,9 @@ const Mail = () => {
     },
     {
       key: "from",
-      header: "Expéditeur",
+      header: activeTab === "envoye" ? "Destinataire" : "Expéditeur",
+      render: (_: unknown, row: Record<string, unknown>) =>
+        (activeTab === "envoye" ? (row.to as string) : (row.from as string)) as ReactNode,
       className: "text-left font-medium",
     },
     {
@@ -240,7 +226,7 @@ const Mail = () => {
             })}
           </div>
         ) as ReactNode,
-      className: "text-left font-medium w-24",
+      className: "text-left font-medium w-32",
     },
     {
       key: "attachments",
@@ -328,211 +314,156 @@ const Mail = () => {
           </div>
         </div>
 
-        <Card className="w-full overflow-hidden relative">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 h-full relative">
-            <div className="lg:col-span-12 h-full">
-              <Tabs
-                defaultValue="boite-mail"
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full h-full"
-              >
-                <div className="bg-gray-50 border-b border-gray-200">
-                  <TabsList className="bg-transparent p-0 h-auto w-full rounded-none">
-                    <TabsTrigger
-                      value="boite-mail"
-                      className="py-3 px-5 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-none flex items-center gap-1.5"
-                    >
-                      Boîte de réception
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-formality-primary/10 px-1.5 text-xs font-medium text-formality-primary">
-                        2
-                      </span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="envoye"
-                      className="py-3 px-5 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-none flex items-center gap-1.5"
-                    >
-                      Envoyés
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500/10 px-1.5 text-xs font-medium text-green-500">
-                        {sentData?.data.length}
-                      </span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="archives"
-                      className="py-3 px-5 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-none"
-                    >
-                      Archives
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-
-                {/* Inbox Tab Content */}
-                <TabsContent
+        <Card className="w-full overflow-hidden border-0 shadow-lg">
+          <Tabs
+            defaultValue="boite-mail"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+              <TabsList className="bg-transparent p-0 h-auto w-full rounded-none">
+                <TabsTrigger
                   value="boite-mail"
-                  className="mt-0 h-[calc(100%-49px)]"
+                  className="py-4 px-6 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-sm flex items-center gap-2 transition-all"
                 >
-                  <div className="flex flex-col h-full">
-                    <div className="flex-1 overflow-auto">
-                      <DataTable
-                        data={inboxData?.data || []}
-                        columns={columns}
-                        loading={isLoading}
-                        onRowClick={(row) =>
-                          handleSelectMail(row._id as string)
-                        }
-                        renderListEmpty={() => (
-                          <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                            Aucun mail trouvé
-                          </div>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                {/* Archives Tab Content */}
-                <TabsContent
-                  value="archives"
-                  className="mt-0 h-[calc(100%-49px)]"
-                >
-                  <div className="flex flex-col h-full">
-                    {/* Pagination Controls Top for Archives */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <Select
-                          value={itemsPerPage.toString()}
-                          onValueChange={(value) =>
-                            setItemsPerPage(Number(value))
-                          }
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="5">5 par page</SelectItem>
-                            <SelectItem value="10">10 par page</SelectItem>
-                            <SelectItem value="25">25 par page</SelectItem>
-                            <SelectItem value="50">50 par page</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-auto">
-                      <DataTable
-                        data={archivedData?.data || []}
-                        columns={columns}
-                        loading={isLoading}
-                        onRowClick={(row) =>
-                          handleSelectMail(row._id as string)
-                        }
-                        renderListEmpty={() => (
-                          <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                            Aucun mail trouvé
-                          </div>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                {/* Sent Tab Content */}
-                <TabsContent
+                  <MailIcon className="h-4 w-4" />
+                  Boîte de réception
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-formality-primary text-xs font-medium text-white px-1.5">
+                    {inboxData?.data?.length || 0}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger
                   value="envoye"
-                  className="mt-0 h-[calc(100%-49px)]"
+                  className="py-4 px-6 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-sm flex items-center gap-2 transition-all"
                 >
-                  <div className="flex flex-col h-full">
-                    {/* Pagination Controls Top for Sent */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-600">
-                          Affichage 1-{sentData?.data.length || 0} sur{" "}
-                          {sentData?.data.length || 0} emails envoyés
-                        </span>
-                        <Select
-                          value={itemsPerPage.toString()}
-                          onValueChange={(value) =>
-                            setItemsPerPage(Number(value))
-                          }
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="5">5 par page</SelectItem>
-                            <SelectItem value="10">10 par page</SelectItem>
-                            <SelectItem value="25">25 par page</SelectItem>
-                            <SelectItem value="50">50 par page</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-auto">
-                      <DataTable
-                        data={sentData?.data || []}
-                        columns={columns}
-                        loading={isLoading}
-                        onRowClick={(row) =>
-                          handleSelectMail(row._id as string)
-                        }
-                        renderListEmpty={() => (
-                          <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                            Aucun mail trouvé
-                          </div>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                  <Search className="h-4 w-4" />
+                  Envoyés
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500 text-xs font-medium text-white px-1.5">
+                    {sentData?.data?.length || 0}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="archives"
+                  className="py-4 px-6 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-sm flex items-center gap-2 transition-all"
+                >
+                  <Paperclip className="h-4 w-4" />
+                  Archives
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-500 text-xs font-medium text-white px-1.5">
+                    {archivedData?.data?.length || 0}
+                  </span>
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            {/* Mail Detail Drawer */}
-            <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-              <SheetContent
-                side="right"
-                className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
-              >
-                <div className="py-4">
-                  <MailDetail
-                    mail={selectedMailData}
-                    onClose={handleCloseDrawer}
-                    onReply={handleReply}
-                    onArchive={handleArchive}
-                    onUnarchive={handleUnarchive}
-                    isArchiving={archiveMutation.isPending}
-                    activeTab={activeTab}
+            {/* Inbox Tab Content */}
+            <TabsContent value="boite-mail" className="mt-0 p-6">
+              <DataTable
+                data={inboxData?.data || []}
+                count={inboxData?.count}
+                columns={columns}
+                loading={isInboxLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                className="bg-white rounded-lg border"
+                renderListEmpty={() => (
+                  <div className="h-32 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <MailIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <p className="font-medium">Aucun mail trouvé</p>
+                      <p className="text-sm text-gray-400">La boîte de réception est vide</p>
+                    </div>
+                  </div>
+                )}
+              />
+            </TabsContent>
+
+            {/* Sent Tab Content */}
+            <TabsContent value="envoye" className="mt-0 p-6">
+              <DataTable
+                data={sentData?.data || []}
+                count={sentData?.count}
+                columns={columns}
+                loading={isSentLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                className="bg-white rounded-lg border"
+                renderListEmpty={() => (
+                  <div className="h-32 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Search className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <p className="font-medium">Aucun mail envoyé</p>
+                      <p className="text-sm text-gray-400">Vous n'avez envoyé aucun email</p>
+                    </div>
+                  </div>
+                )}
+              />
+            </TabsContent>
+
+            {/* Archives Tab Content */}
+            <TabsContent value="archives" className="mt-0 p-6">
+              <DataTable
+                data={archivedData?.data || []}
+                count={archivedData?.count}
+                columns={columns}
+                loading={isArchivedLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                className="bg-white rounded-lg border"
+                renderListEmpty={() => (
+                  <div className="h-32 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Paperclip className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <p className="font-medium">Aucun mail archivé</p>
+                      <p className="text-sm text-gray-400">Les archives sont vides</p>
+                    </div>
+                  </div>
+                )}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* Mail Detail Drawer */}
+          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+            >
+              <div className="py-4">
+                <MailDetail
+                  mail={selectedMailData}
+                  onClose={handleCloseDrawer}
+                  onReply={handleReply}
+                  onArchive={handleArchive}
+                  onUnarchive={handleUnarchive}
+                  isArchiving={archiveMutation.isPending}
+                  activeTab={activeTab}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Reply Drawer */}
+          <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+            >
+              <div className="py-4">
+                {replyToEmail && (
+                  <ReplyModal
+                    onClose={() => {
+                      setIsReplyOpen(false);
+                      setReplyToEmail(null);
+                    }}
+                    originalEmail={replyToEmail}
                   />
-                </div>
-              </SheetContent>
-            </Sheet>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
 
-            {/* Reply Drawer */}
-            <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
-              <SheetContent
-                side="right"
-                className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
-              >
-                <div className="py-4">
-                  {replyToEmail && (
-                    <ReplyModal
-                      onClose={() => {
-                        setIsReplyOpen(false);
-                        setReplyToEmail(null);
-                      }}
-                      originalEmail={replyToEmail}
-                    />
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            {/* New Message Modal */}
-            {isNewMessageOpen && (
-              <NewMessageModal onClose={handleCloseNewMessageModal} />
-            )}
-          </div>
+          {/* New Message Modal */}
+          {isNewMessageOpen && (
+            <NewMessageModal onClose={handleCloseNewMessageModal} />
+          )}
         </Card>
       </div>
     </AppLayout>
