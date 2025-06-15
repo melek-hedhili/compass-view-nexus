@@ -24,12 +24,12 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { logout, user } = useAuth();
+  const { logout, user, isAuthenticated } = useAuth(); // add isAuthenticated!
   const location = useLocation();
   const isMobile = useIsMobile();
 
-  // Only set up email notifications when user is present
-  useEmailNotifications();
+  // Only set up email notifications when authenticated
+  useEmailNotifications({ isAuthenticated });
 
   const isActive = (path: string) => {
     if (path === "/dashboard" && location.pathname === "/dashboard") {

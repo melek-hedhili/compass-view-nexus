@@ -6,14 +6,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-export const useEmailNotifications = () => {
-  const socket = useSocket();
+interface UseEmailNotificationsOptions {
+  isAuthenticated: boolean;
+}
+
+export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotificationsOptions) => {
+  // Only initialize the socket when authenticated
+  const socket = useSocket(isAuthenticated ? {} : undefined);
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Handle socket events (connect, disconnect, newEmail)
   useEffect(() => {
-    if (!socket) return;
+    if (!isAuthenticated || !socket) return;
 
     const handleConnect = () => {
       console.log("connected to socket");
@@ -25,19 +31,15 @@ export const useEmailNotifications = () => {
 
     const handleNewEmail = (emailData: any) => {
       console.log("New email received:", emailData);
-      
-      // Invalidate all email queries
       queryClient.invalidateQueries({ queryKey: ["emails"] });
 
       const isOnMailRoute = location.pathname.includes("/dashboard/mail");
 
       if (isOnMailRoute) {
-        // User is already on mail route - simple notification
         toast.success("Nouveau email reçu", {
           description: "La boîte mail a été mise à jour",
         });
       } else {
-        // User is not on mail route - notification with link
         toast.success("Nouveau email reçu", {
           description: "Un nouveau message est arrivé dans votre boîte mail",
           action: (
@@ -50,12 +52,12 @@ export const useEmailNotifications = () => {
               Voir
             </Button>
           ),
-          duration: 5000, // Keep it longer so user can click
+          duration: 5000,
         });
       }
     };
 
-    // Listen for socket events
+    // Attach listeners once
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("newEmail", handleNewEmail);
@@ -66,7 +68,8 @@ export const useEmailNotifications = () => {
       socket.off("disconnect", handleDisconnect);
       socket.off("newEmail", handleNewEmail);
     };
-  }, [socket, location.pathname, navigate, queryClient]);
+    // Only re-run this effect if isAuthenticated or socket ref changes
+  }, [isAuthenticated, socket, location.pathname, navigate, queryClient]);
 
   return socket;
 };
