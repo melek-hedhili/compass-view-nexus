@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useSocketContext } from "@/context/SocketContext";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -10,7 +9,9 @@ interface UseEmailNotificationsOptions {
   isAuthenticated: boolean;
 }
 
-export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotificationsOptions) => {
+export const useEmailNotifications = ({
+  isAuthenticated,
+}: UseEmailNotificationsOptions) => {
   const socket = useSocketContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -18,14 +19,6 @@ export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotifications
 
   useEffect(() => {
     if (!isAuthenticated || !socket) return;
-
-    const handleConnect = () => {
-      console.log("connected to socket");
-    };
-
-    const handleDisconnect = () => {
-      console.log("disconnected from socket");
-    };
 
     const handleNewEmail = (emailData: any) => {
       console.log("New email received:", emailData);
@@ -38,13 +31,17 @@ export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotifications
           description: "La boîte mail a été mise à jour",
         });
       } else {
-        toast.success("Nouveau email reçu", {
+        // Get toast ID so we can dismiss it later
+        const toastId = toast.success("Nouveau email reçu", {
           description: "Un nouveau message est arrivé dans votre boîte mail",
           action: (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => navigate("/dashboard/mail")}
+              onClick={() => {
+                navigate("/dashboard/mail");
+                toast.dismiss(toastId);
+              }}
               className="ml-2"
             >
               Voir
@@ -55,15 +52,9 @@ export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotifications
       }
     };
 
-    // Attach listeners once
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
     socket.on("newEmail", handleNewEmail);
 
-    // Cleanup
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
       socket.off("newEmail", handleNewEmail);
     };
   }, [isAuthenticated, socket, location.pathname, navigate, queryClient]);
