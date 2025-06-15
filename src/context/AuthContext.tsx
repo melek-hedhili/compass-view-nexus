@@ -12,6 +12,7 @@ import { AuthContextType } from "./authTypes";
 import { AuthService } from "@/api-swagger/services/AuthService";
 import { LoginRequestDto } from "@/api-swagger/models/LoginRequestDto";
 import { OpenAPI, UserDto, UserService } from "@/api-swagger";
+import { useEmailNotifications } from "@/hooks/use-email-notifications";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -29,6 +30,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+
+  // Initialize email notifications when user is authenticated
+  useEmailNotifications();
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
