@@ -1,8 +1,8 @@
 
 import { Paperclip } from "lucide-react";
-import { ReactNode } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ReactNode } from "react";
 
 /**
  * ExtendedEmailDto matches how emails are passed around in views.
@@ -28,62 +28,63 @@ export function getTableColumns(activeTab: string) {
     {
       key: "status",
       header: "Statut",
-      render: (_: unknown, row: Record<string, unknown>) =>
-        (
-          <div className="flex justify-center">
-            <div
-              className={`w-3 h-3 rounded-full mx-auto ${
-                row.status === "non-lu" ? "bg-formality-primary" : "bg-gray-300"
-              }`}
-            ></div>
-          </div>
-        ) as ReactNode,
+      render: (_: unknown, row: Record<string, unknown>) => (
+        <div className="flex justify-center">
+          <div
+            className={`w-3 h-3 rounded-full mx-auto ${
+              row.status === "non-lu" ? "bg-formality-primary" : "bg-gray-300"
+            }`}
+          ></div>
+        </div>
+      ),
       className: "w-16 text-center font-medium",
     },
     {
       key: "clientName",
       header: "Nom du Client",
-      render: (_: unknown, row: Record<string, unknown>) =>
-        ((row.client as { clientName: string })?.clientName || "N/A") as ReactNode,
+      render: (_: unknown, row: Record<string, unknown>) => (
+        row.client && typeof row.client === "object"
+          ? (row.client as { clientName?: string }).clientName ?? "N/A"
+          : "N/A"
+      ),
       className: "text-left font-medium",
     },
     {
       key: "from",
       header: activeTab === "envoye" ? "Destinataire" : "Expéditeur",
-      render: (_: unknown, row: Record<string, unknown>) =>
-        (activeTab === "envoye"
-          ? (row.to as string)
-          : (row.from as string)) as ReactNode,
+      render: (_: unknown, row: Record<string, unknown>) => (
+        activeTab === "envoye"
+          ? (row.to as string) ?? ""
+          : (row.from as string) ?? ""
+      ),
       className: "text-left font-medium",
     },
     {
       key: "subject",
       header: "Sujet",
+      // Uses default cell display (no render function)
       className: "text-left font-medium",
     },
     {
       key: "date",
       header: "Date/H",
-      render: (_: unknown, row: Record<string, unknown>) =>
-        (
-          <div className="text-sm text-gray-500">
-            {row.date
-              ? format(new Date(row.date as string), "dd/MM/yyyy HH:mm", {
-                  locale: fr,
-                })
-              : "-"}
-          </div>
-        ) as ReactNode,
+      render: (_: unknown, row: Record<string, unknown>) => (
+        <div className="text-sm text-gray-500">
+          {row.date
+            ? format(new Date(row.date as string), "dd/MM/yyyy HH:mm", { locale: fr })
+            : "-"}
+        </div>
+      ),
       className: "text-left font-medium w-32",
     },
     {
       key: "attachments",
       header: "PJ",
-      render: (_: unknown, row) =>
-        row.attachments && (row.attachments as number) > 0 ? (
+      render: (_: unknown, row: Record<string, unknown>) =>
+        row.attachments && typeof row.attachments === "number" && row.attachments > 0 ? (
           <div className="flex items-center justify-center gap-1 text-xs font-medium bg-gray-100 rounded-md px-1.5 py-0.5">
             <Paperclip className="h-3 w-3" />
-            {row.attachments as number}
+            {row.attachments}
           </div>
         ) : null,
       className: "w-16 text-center font-medium",
@@ -110,3 +111,4 @@ export function sortData(
     return paginationParams.sortOrder === "asc" ? comparison : -comparison;
   });
 }
+
