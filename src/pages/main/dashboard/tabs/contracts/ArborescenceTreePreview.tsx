@@ -49,7 +49,8 @@ function SortableFamille({
   onEditSousFamille,
   onSaveSousFamille,
   onDeleteSousFamille,
-  dragState
+  dragState,
+  renderSousFamilleList,
 }: {
   famille: Famille;
   famIdx: number;
@@ -66,6 +67,7 @@ function SortableFamille({
     dropPosition?: 'above' | 'below';
     dragType?: 'famille' | 'sousFamille';
   };
+  renderSousFamilleList?: () => JSX.Element[];
 }) {
   const {
     attributes,
@@ -80,6 +82,7 @@ function SortableFamille({
     transform: CSS.Transform.toString(transform),
     transition: isDragging ? 'none' : transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: isDragging ? 1000 : 'auto',
+    opacity: isDragging ? 0 : 1,
   };
 
   const { isActive, isOver, dropPosition, dragType } = dragState;
@@ -176,24 +179,26 @@ function SortableFamille({
                 items={famille.sousFamilles.map(sf => sf.id)} 
                 strategy={verticalListSortingStrategy}
               >
-                {famille.sousFamilles.map((sf, sfIdx) => (
-                  <SortableSousFamille
-                    key={sf.id}
-                    sousFamille={sf}
-                    famIdx={famIdx}
-                    sfIdx={sfIdx}
-                    onEdit={onEditSousFamille}
-                    onSave={onSaveSousFamille}
-                    onDelete={onDeleteSousFamille}
-                    dragState={{
-                      isActive,
-                      isDragging: false,
-                      isOver: isOver && dragType === 'sousFamille',
-                      dropPosition,
-                      dragType
-                    }}
-                  />
-                ))}
+                {renderSousFamilleList
+                  ? renderSousFamilleList()
+                  : famille.sousFamilles.map((sf, sfIdx) => (
+                    <SortableSousFamille
+                      key={sf.id}
+                      sousFamille={sf}
+                      famIdx={famIdx}
+                      sfIdx={sfIdx}
+                      onEdit={onEditSousFamille}
+                      onSave={onSaveSousFamille}
+                      onDelete={onDeleteSousFamille}
+                      dragState={{
+                        isActive,
+                        isDragging: false,
+                        isOver: isOver && dragType === 'sousFamille',
+                        dropPosition,
+                        dragType
+                      }}
+                    />
+                  ))}
               </SortableContext>
               
               {/* Add Sous Famille Button */}
@@ -227,7 +232,8 @@ function SortableSousFamille({
   onEdit,
   onSave,
   onDelete,
-  dragState
+  dragState,
+  placeholder,
 }: {
   sousFamille: SousFamille;
   famIdx: number;
@@ -242,7 +248,23 @@ function SortableSousFamille({
     dropPosition?: 'above' | 'below';
     dragType?: 'famille' | 'sousFamille';
   };
+  placeholder?: boolean;
 }) {
+  // Don't use useSortable if this is a placeholder
+  if (placeholder) {
+    return (
+      <div
+        className="relative my-2 rounded-lg"
+        style={{
+          height: 52,
+          background: 'rgba(34,197,94,0.08)',
+          border: '2px dashed #34d399',
+          boxShadow: '0 4px 12px 0 rgba(16,185,129,0.08)',
+        }}
+      />
+    );
+  }
+
   const {
     attributes,
     listeners,
@@ -256,6 +278,7 @@ function SortableSousFamille({
     transform: CSS.Transform.toString(transform),
     transition: isDragging ? 'none' : transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: isDragging ? 1000 : 'auto',
+    opacity: isDragging ? 0 : 1,
   };
 
   const { isActive, isOver, dropPosition, dragType } = dragState;
@@ -265,7 +288,7 @@ function SortableSousFamille({
     <div className="relative">
       {/* Drop indicator above */}
       {showDropIndicator && dropPosition === 'above' && (
-        <div className="h-2 flex items-center justify-center mb-1 animate-in fade-in duration-150">
+        <div className="h-2 flex items-center justify-center mb-1 animate-fade-in">
           <div className="h-0.5 bg-green-500 rounded-full flex-1 shadow-md animate-pulse" />
         </div>
       )}
@@ -275,7 +298,7 @@ function SortableSousFamille({
         style={style}
         className={cn(
           "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200 ease-out",
-          isDragging ? "opacity-50 scale-[0.98] z-50" : "hover:bg-gray-50",
+          isDragging ? "opacity-0" : "hover:bg-gray-50",
           isActive && isOver && dragType === 'sousFamille' && "bg-green-50 scale-[1.02] shadow-md ring-1 ring-green-300/60"
         )}
       >
@@ -338,7 +361,7 @@ function SortableSousFamille({
 
       {/* Drop indicator below */}
       {showDropIndicator && dropPosition === 'below' && (
-        <div className="h-2 flex items-center justify-center mt-1 animate-in fade-in duration-150">
+        <div className="h-2 flex items-center justify-center mt-1 animate-fade-in">
           <div className="h-0.5 bg-green-500 rounded-full flex-1 shadow-md animate-pulse" />
         </div>
       )}
@@ -474,9 +497,23 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Enhanced drag handlers with better position detection
+  // Enhanced: Track which sous famille is being dragged (by id and famille index)
+  const [draggedSousFamille, setDraggedSousFamille] = useState<{
+    famIdx: number; sfIdx: number; id: string
+  }|null>(null);
+
+  // Drag handlers
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
+
+    // Track sous famille
+    for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
+      const sfIdx = tree.familles[famIdx].sousFamilles.findIndex(sf => sf.id === event.active.id);
+      if (sfIdx !== -1) {
+        setDraggedSousFamille({ famIdx, sfIdx, id: event.active.id as string });
+        break;
+      }
+    }
   }
 
   function handleDragOver(event: DragOverEvent) {
@@ -487,6 +524,7 @@ export const ArborescenceTreePreview: React.FC = () => {
     const { active, over } = event;
     setActiveId(null);
     setOverId(null);
+    setDraggedSousFamille(null);
 
     if (!over || active.id === over.id) return;
 
@@ -643,6 +681,7 @@ export const ArborescenceTreePreview: React.FC = () => {
                     onSaveSousFamille={handleSaveSousFamille}
                     onDeleteSousFamille={handleDeleteSousFamille}
                     dragState={getDragState(famille.id)}
+                    renderSousFamilleList={() => renderSousFamillesWithPlaceholder(famille, famIdx)}
                   />
                 ))}
               </SortableContext>
@@ -715,3 +754,55 @@ export const ArborescenceTreePreview: React.FC = () => {
 };
 
 export default ArborescenceTreePreview;
+
+function renderSousFamillesWithPlaceholder(famille: Famille, famIdx: number) {
+  // Only add placeholder if we're dragging a sous famille from this famille
+  if (!draggedSousFamille || famIdx !== draggedSousFamille.famIdx) {
+    return famille.sousFamilles.map((sf, sfIdx) => (
+      <SortableSousFamille
+        sousFamille={sf}
+        famIdx={famIdx}
+        sfIdx={sfIdx}
+        onEdit={handleEditSousFamille}
+        onSave={handleSaveSousFamille}
+        onDelete={handleDeleteSousFamille}
+        dragState={getDragState(sf.id)}
+      />
+    ));
+  }
+
+  // Insert placeholder at the correct spot
+  const items: JSX.Element[] = [];
+  famille.sousFamilles.forEach((sf, sfIdx) => {
+    if (draggedSousFamille && sfIdx === draggedSousFamille.sfIdx) {
+      // Render nothing for source; handled by overlay + placeholder.
+      items.push(
+        <SortableSousFamille
+          sousFamille={sf}
+          famIdx={famIdx}
+          sfIdx={sfIdx}
+          onEdit={handleEditSousFamille}
+          onSave={handleSaveSousFamille}
+          onDelete={handleDeleteSousFamille}
+          dragState={getDragState(sf.id)}
+          placeholder={true}
+          key={'placeholder'}
+        />
+      );
+    } else {
+      items.push(
+        <SortableSousFamille
+          sousFamille={sf}
+          famIdx={famIdx}
+          sfIdx={sfIdx}
+          onEdit={handleEditSousFamille}
+          onSave={handleSaveSousFamille}
+          onDelete={handleDeleteSousFamille}
+          dragState={getDragState(sf.id)}
+          key={sf.id}
+        />
+      );
+    }
+  });
+  return items;
+}
