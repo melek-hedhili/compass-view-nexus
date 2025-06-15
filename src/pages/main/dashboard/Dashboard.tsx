@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import AppLayout from "../../../components/layout/AppLayout";
 import NavTabs from "../../../components/dashboard/NavTabs";
 import { ClientForm } from "../../../components/dashboard/ClientForm";
@@ -15,12 +16,10 @@ import {
   UpdateClientDto,
 } from "@/api-swagger";
 import { DataTable } from "@/components/ui/data-table";
-import { useSocket } from "@/hooks/use-socket";
 
 const Dashboard = () => {
   const [selectedClient, setSelectedClient] = useState<ClientDto | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const socket = useSocket();
   const queryClient = useQueryClient();
 
   // Consolidated pagination state
@@ -31,21 +30,6 @@ const Dashboard = () => {
     sortField: "",
     sortOrder: "asc" as "asc" | "desc",
   });
-
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("connect", () => {
-      console.log("connected to socket");
-    });
-    socket.on("disconnect", () => {
-      console.log("disconnected from socket");
-    });
-    socket.on("newEmail", (event: string) => {
-      console.log("newEmail event ----- ", event);
-      toast.success("Nouveau mail reçu");
-      queryClient.invalidateQueries({ queryKey: ["emails"] });
-    });
-  }, [socket, queryClient]);
 
   const { data: clients, isLoading } = useQuery({
     queryKey: [
