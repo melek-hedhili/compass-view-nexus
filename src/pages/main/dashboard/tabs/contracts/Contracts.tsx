@@ -1,5 +1,6 @@
-import AppLayout from "../../../../components/layout/AppLayout";
-import { NavTabs } from "../../../../components/dashboard/NavTabs";
+
+import AppLayout from "../../../../../components/layout/AppLayout";
+import { NavTabs } from "../../../../../components/dashboard/NavTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Folder, Plus, Search } from "lucide-react";
