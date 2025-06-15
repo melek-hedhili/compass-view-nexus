@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEmailNotifications } from "@/hooks/use-email-notifications";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -27,6 +27,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const { logout, user } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
+
+  // Only set up email notifications when user is present
+  useEmailNotifications();
 
   const isActive = (path: string) => {
     if (path === "/dashboard" && location.pathname === "/dashboard") {
