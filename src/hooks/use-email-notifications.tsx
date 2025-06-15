@@ -15,6 +15,14 @@ export const useEmailNotifications = () => {
   useEffect(() => {
     if (!socket) return;
 
+    const handleConnect = () => {
+      console.log("connected to socket");
+    };
+
+    const handleDisconnect = () => {
+      console.log("disconnected from socket");
+    };
+
     const handleNewEmail = (emailData: any) => {
       console.log("New email received:", emailData);
       
@@ -47,11 +55,15 @@ export const useEmailNotifications = () => {
       }
     };
 
-    // Listen for new email events
+    // Listen for socket events
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
     socket.on("newEmail", handleNewEmail);
 
     // Cleanup
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.off("newEmail", handleNewEmail);
     };
   }, [socket, location.pathname, navigate, queryClient]);
