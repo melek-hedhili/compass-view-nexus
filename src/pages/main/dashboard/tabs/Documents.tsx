@@ -18,7 +18,6 @@ import {
   DocumentService,
   UpdateDocumentDto,
 } from "@/api-swagger";
-import { useQueryParams } from "@/hooks/use-query-params";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -44,20 +43,39 @@ const initialForm: CreateDocumentDto = {
 type DocumentForm = CreateDocumentDto;
 
 const Documents = () => {
-  const { page = "1", perPage = "10" } = useQueryParams();
   const queryClient = useQueryClient();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<DocumentForm>(initialForm);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // Consolidated pagination state
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
+    searchTerm: "",
+    sortField: "",
+    sortOrder: "asc" as "asc" | "desc",
+  });
 
   // Fetch all documents
   const { data: documentsData, isLoading } = useQuery({
-    queryKey: ["documents", page, perPage],
+    queryKey: [
+      "documents",
+      paginationParams.page,
+      paginationParams.perPage,
+      paginationParams.sortField,
+      paginationParams.sortOrder,
+    ],
     queryFn: () =>
       DocumentService.documentControllerFindAll({
-        page,
-        perPage,
+        page: paginationParams.page.toString(),
+        perPage: paginationParams.perPage.toString(),
+        ...(paginationParams.sortField && {
+          sortField: paginationParams.sortField,
+        }),
+        ...(paginationParams.sortOrder && {
+          sortOrder: paginationParams.sortOrder,
+        }),
       }),
   });
 
@@ -120,6 +138,7 @@ const Documents = () => {
       console.error("Update error:", error);
     },
   });
+
   const deleteDocumentMutation = useMutation({
     mutationFn: (docId: string) =>
       DocumentService.documentControllerRemove({ id: docId }),
@@ -132,9 +151,43 @@ const Documents = () => {
       console.error("Delete error:", error);
     },
   });
+
   const handleDeleteDocument = (docId: string) => {
     deleteDocumentMutation.mutateAsync(docId);
   };
+
+  // Pagination handlers
+  const handlePageChange = (newPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      perPage: newPerPage,
+      page: 1, // Reset to first page when changing items per page
+    }));
+  };
+
+  const handleSort = (field: string, order: "asc" | "desc") => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      sortField: field,
+      sortOrder: order,
+    }));
+  };
+
+  const handleSearch = (value: string) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      searchTerm: value,
+      page: 1, // Reset to first page when searching
+    }));
+  };
+
   // Handlers
   const handleOpenDrawer = (docId?: string) => {
     if (docId) {
@@ -163,6 +216,19 @@ const Documents = () => {
     }
   };
 
+  // Filter documents based on search term
+  const filteredDocuments = documentsData?.data?.filter((doc) => {
+    if (!paginationParams.searchTerm) return true;
+    const term = paginationParams.searchTerm.toLowerCase();
+    return (
+      doc.documentName?.toLowerCase().includes(term) ||
+      doc.shortName?.toLowerCase().includes(term) ||
+      doc.legalForm?.toLowerCase().includes(term) ||
+      doc.benefit?.toLowerCase().includes(term) ||
+      doc.type?.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <AppLayout>
       <NavTabs />
@@ -174,8 +240,8 @@ const Documents = () => {
             <Input
               placeholder="Rechercher..."
               className="pl-10 border-gray-700"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={paginationParams.searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -193,8 +259,8 @@ const Documents = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           <div className="col-span-full text-center py-8">Chargement...</div>
-        ) : documentsData?.data?.length > 0 ? (
-          documentsData?.data?.map((doc) => (
+        ) : filteredDocuments?.length > 0 ? (
+          filteredDocuments.map((doc) => (
             <DocumentCard
               key={doc._id}
               doc={doc}
@@ -340,12 +406,14 @@ const Documents = () => {
     </AppLayout>
   );
 };
+
 type DocumentCardProps = {
   doc: DocumentDto;
   handleOpenDrawer: (id: string) => void;
   handleDeleteDocument: (id: string) => void;
   deleteLoading: boolean;
 };
+
 const DocumentCard: React.FC<DocumentCardProps> = ({
   doc,
   handleOpenDrawer,
@@ -406,4 +474,5 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
     </Card>
   );
 };
+
 export default Documents;

@@ -24,19 +24,13 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useQueryParams } from "@/hooks/use-query-params";
 import { ListService } from "@/api-swagger/services/ListService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ListDto } from "@/api-swagger";
 import { CreatableAutoComplete } from "@/components/ui/creatable-autocomplete";
 
 const Lists = () => {
-  const queryParams = useQueryParams();
-  const page = Number(queryParams.page || 1);
-  const perPage = Number(queryParams.perPage || 10);
-  
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
@@ -47,10 +41,35 @@ const Lists = () => {
     values: [],
   });
 
+  // Consolidated pagination state
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
+    searchTerm: "",
+    sortField: "",
+    sortOrder: "asc" as "asc" | "desc",
+  });
+
   // Query for fetching all lists
   const { data: listsData, isLoading } = useQuery({
-    queryKey: ["lists", page, perPage],
-    queryFn: () => ListService.listControllerFindAll({ page: page.toString(), perPage: perPage.toString() }),
+    queryKey: [
+      "lists",
+      paginationParams.page,
+      paginationParams.perPage,
+      paginationParams.sortField,
+      paginationParams.sortOrder,
+    ],
+    queryFn: () =>
+      ListService.listControllerFindAll({
+        page: paginationParams.page.toString(),
+        perPage: paginationParams.perPage.toString(),
+        ...(paginationParams.sortField && {
+          sortField: paginationParams.sortField,
+        }),
+        ...(paginationParams.sortOrder && {
+          sortOrder: paginationParams.sortOrder,
+        }),
+      }),
   });
 
   // Query for fetching a single list
@@ -149,12 +168,49 @@ const Lists = () => {
     deleteListMutation.mutateAsync(id);
   };
 
+  // Pagination handlers
+  const handlePageChange = (newPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      perPage: newPerPage,
+      page: 1, // Reset to first page when changing items per page
+    }));
+  };
+
+  const handleSort = (field: string, order: "asc" | "desc") => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      sortField: field,
+      sortOrder: order,
+    }));
+  };
+
+  const handleSearch = (value: string) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      searchTerm: value,
+      page: 1, // Reset to first page when searching
+    }));
+  };
+
   const filteredLists =
     listsData?.data?.filter((list) => {
-      if (!searchTerm) return true;
+      if (!paginationParams.searchTerm) return true;
       return (
-        list.fieldName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        list.values?.join(", ").toLowerCase().includes(searchTerm.toLowerCase())
+        list.fieldName
+          .toLowerCase()
+          .includes(paginationParams.searchTerm.toLowerCase()) ||
+        list.values
+          ?.join(", ")
+          .toLowerCase()
+          .includes(paginationParams.searchTerm.toLowerCase())
       );
     }) || [];
 
@@ -169,8 +225,8 @@ const Lists = () => {
             <Input
               placeholder="Rechercher..."
               className="pl-10 border border-gray-200"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={paginationParams.searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-3">

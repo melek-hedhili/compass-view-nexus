@@ -46,42 +46,63 @@ const Mail = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
+  // Consolidated pagination state
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
+    searchTerm: "",
+    sortField: "",
+    sortOrder: "asc" as "asc" | "desc",
+  });
 
   // Fetch emails using TanStack Query
-
   const emailQueries = useQueries({
     queries: [
       {
-        queryKey: ["emails", "inbox", currentPage, itemsPerPage, searchTerm],
+        queryKey: [
+          "emails",
+          "inbox",
+          paginationParams.page,
+          paginationParams.perPage,
+          paginationParams.searchTerm,
+        ],
         queryFn: () =>
           EmailService.emailControllerFindAll({
-            page: currentPage.toString(),
-            perPage: itemsPerPage.toString(),
-            value: searchTerm,
+            page: paginationParams.page.toString(),
+            perPage: paginationParams.perPage.toString(),
+            value: paginationParams.searchTerm,
             searchFields: ["client.clientName", "from", "subject"],
           }),
       },
       {
-        queryKey: ["emails", "archived", currentPage, itemsPerPage, searchTerm],
+        queryKey: [
+          "emails",
+          "archived",
+          paginationParams.page,
+          paginationParams.perPage,
+          paginationParams.searchTerm,
+        ],
         queryFn: () =>
           EmailService.emailControllerFindAllArchived({
-            page: currentPage.toString(),
-            perPage: itemsPerPage.toString(),
-            value: searchTerm,
+            page: paginationParams.page.toString(),
+            perPage: paginationParams.perPage.toString(),
+            value: paginationParams.searchTerm,
             searchFields: ["client.clientName", "from", "subject"],
           }),
       },
       {
-        queryKey: ["emails", "sent", currentPage, itemsPerPage, searchTerm],
+        queryKey: [
+          "emails",
+          "sent",
+          paginationParams.page,
+          paginationParams.perPage,
+          paginationParams.searchTerm,
+        ],
         queryFn: () =>
           EmailService.emailControllerFindAllSent({
-            page: currentPage.toString(),
-            perPage: itemsPerPage.toString(),
-            value: searchTerm,
+            page: paginationParams.page.toString(),
+            perPage: paginationParams.perPage.toString(),
+            value: paginationParams.searchTerm,
             searchFields: ["client.clientName", "to", "subject"],
           }),
       },
@@ -181,7 +202,11 @@ const Mail = () => {
 
   // Handle search
   const handleSearch = (value: string) => {
-    setSearchTerm(value);
+    setPaginationParams((prev) => ({
+      ...prev,
+      searchTerm: value,
+      page: 1, // Reset to first page when searching
+    }));
   };
 
   const handleSelectMail = (mailId: string) => {
@@ -193,6 +218,49 @@ const Mail = () => {
     setIsDrawerOpen(false);
     setSelectedMail(null);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      perPage: newPerPage,
+      page: 1, // Reset to first page when changing items per page
+    }));
+  };
+
+  const handleSort = (field: string, order: "asc" | "desc") => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      sortField: field,
+      sortOrder: order,
+    }));
+  };
+
+  // Sort data based on current sort field and order
+  const sortData = (data: EmailDto[] | undefined) => {
+    if (!data || !paginationParams.sortField) return data;
+
+    return [...data].sort((a, b) => {
+      const aValue = a[paginationParams.sortField as keyof EmailDto];
+      const bValue = b[paginationParams.sortField as keyof EmailDto];
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      const comparison = String(aValue).localeCompare(String(bValue));
+      return paginationParams.sortOrder === "asc" ? comparison : -comparison;
+    });
+  };
+
+  // Get sorted data for each tab
+  const sortedInboxData = sortData(inboxData?.data);
+  const sortedArchivedData = sortData(archivedData?.data);
+  const sortedSentData = sortData(sentData?.data);
 
   // Define columns variable with the correct type
   const columns: Column<Record<string, unknown>>[] = [
@@ -314,7 +382,7 @@ const Mail = () => {
               <Input
                 placeholder="Recherche..."
                 className="pl-10 border-gray-200"
-                value={searchTerm}
+                value={paginationParams.searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
@@ -374,12 +442,20 @@ const Mail = () => {
                   <div className="flex flex-col h-full">
                     <div className="flex-1 overflow-auto">
                       <DataTable
-                        data={inboxData?.data || []}
+                        data={sortedInboxData || []}
+                        count={inboxData?.count}
                         columns={columns}
                         loading={isLoading}
                         onRowClick={(row) =>
                           handleSelectMail(row._id as string)
                         }
+                        page={paginationParams.page}
+                        perPage={paginationParams.perPage}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        sortField={paginationParams.sortField}
+                        sortOrder={paginationParams.sortOrder}
+                        onSort={handleSort}
                         renderListEmpty={() => (
                           <div className="h-24 text-center text-gray-500 flex items-center justify-center">
                             Aucun mail trouvé
@@ -396,36 +472,22 @@ const Mail = () => {
                   className="mt-0 h-[calc(100%-49px)]"
                 >
                   <div className="flex flex-col h-full">
-                    {/* Pagination Controls Top for Archives */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <Select
-                          value={itemsPerPage.toString()}
-                          onValueChange={(value) =>
-                            setItemsPerPage(Number(value))
-                          }
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="5">5 par page</SelectItem>
-                            <SelectItem value="10">10 par page</SelectItem>
-                            <SelectItem value="25">25 par page</SelectItem>
-                            <SelectItem value="50">50 par page</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
                     <div className="flex-1 overflow-auto">
                       <DataTable
-                        data={archivedData?.data || []}
+                        data={sortedArchivedData || []}
+                        count={archivedData?.count}
                         columns={columns}
                         loading={isLoading}
                         onRowClick={(row) =>
                           handleSelectMail(row._id as string)
                         }
+                        page={paginationParams.page}
+                        perPage={paginationParams.perPage}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        sortField={paginationParams.sortField}
+                        sortOrder={paginationParams.sortOrder}
+                        onSort={handleSort}
                         renderListEmpty={() => (
                           <div className="h-24 text-center text-gray-500 flex items-center justify-center">
                             Aucun mail trouvé
@@ -442,40 +504,22 @@ const Mail = () => {
                   className="mt-0 h-[calc(100%-49px)]"
                 >
                   <div className="flex flex-col h-full">
-                    {/* Pagination Controls Top for Sent */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-600">
-                          Affichage 1-{sentData?.data.length || 0} sur{" "}
-                          {sentData?.data.length || 0} emails envoyés
-                        </span>
-                        <Select
-                          value={itemsPerPage.toString()}
-                          onValueChange={(value) =>
-                            setItemsPerPage(Number(value))
-                          }
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="5">5 par page</SelectItem>
-                            <SelectItem value="10">10 par page</SelectItem>
-                            <SelectItem value="25">25 par page</SelectItem>
-                            <SelectItem value="50">50 par page</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
                     <div className="flex-1 overflow-auto">
                       <DataTable
-                        data={sentData?.data || []}
+                        data={sortedSentData || []}
+                        count={sentData?.count}
                         columns={columns}
                         loading={isLoading}
                         onRowClick={(row) =>
                           handleSelectMail(row._id as string)
                         }
+                        page={paginationParams.page}
+                        perPage={paginationParams.perPage}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        sortField={paginationParams.sortField}
+                        sortOrder={paginationParams.sortOrder}
+                        onSort={handleSort}
                         renderListEmpty={() => (
                           <div className="h-24 text-center text-gray-500 flex items-center justify-center">
                             Aucun mail trouvé

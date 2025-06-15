@@ -75,7 +75,24 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       console.error("Error updating client:", error);
     },
   });
-
+  //Archive client mutation
+  const archiveClientMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateClientDto }) =>
+      ClientService.clientControllerUpdate({
+        id,
+        requestBody: { ...data, isArchived: true },
+      }),
+    onSuccess: () => {
+      toast.success("Client archivé avec succès");
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      navigate("/dashboard");
+    },
+    onError: (error) => {
+      toast.error("Erreur lors de l'archivage du client");
+      console.error("Error archiving client:", error);
+    },
+  });
   // Delete client mutation
   const deleteClientMutation = useMutation({
     mutationFn: (id: string) => ClientService.clientControllerRemove({ id }),
@@ -153,6 +170,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         console.error("Error archiving client:", error);
       }
     }
+  };
+  const handleArchive = async () => {
+    if (!client?._id) return;
+    await archiveClientMutation.mutateAsync({
+      id: client._id,
+      data: formData,
+    });
   };
 
   return (
@@ -313,6 +337,16 @@ export const ClientForm: React.FC<ClientFormProps> = ({
             loading={deleteClientMutation.isPending}
           >
             {deleteClientMutation.isPending ? "Archivage..." : "Archiver"}
+          </Button>
+        )}
+        {client?._id && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleArchive}
+            loading={archiveClientMutation.isPending}
+          >
+            Archiver
           </Button>
         )}
         <Button
