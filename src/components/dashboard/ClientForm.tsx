@@ -80,7 +80,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     mutationFn: ({ id, data }: { id: string; data: UpdateClientDto }) =>
       ClientService.clientControllerUpdate({
         id,
-        requestBody: { ...data, isArchived: true },
+        requestBody: data,
       }),
     onSuccess: () => {
       toast.success("Client archivé avec succès");
@@ -173,9 +173,24 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   };
   const handleArchive = async () => {
     if (!client?._id) return;
+    
+    // Create payload without isArchived since it's not in UpdateClientDto
+    const updatePayload: UpdateClientDto = {
+      clientName: formData.clientName,
+      email: formData.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      phone: formData.phone,
+      jounals: formData.jounals,
+      creationPrice: formData.creationPrice,
+      modificationPrice: formData.modificationPrice,
+      submissionPrice: formData.submissionPrice,
+      delegatePayment: formData.delegatePayment,
+    };
+    
     await archiveClientMutation.mutateAsync({
       id: client._id,
-      data: formData,
+      data: updatePayload,
     });
   };
 
