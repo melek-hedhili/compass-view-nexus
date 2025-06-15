@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tree, Edit3, Folder, Users } from "lucide-react";
+import { Trees, Edit3, Folder, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ArborescenceData {
@@ -32,7 +32,7 @@ export const ArborescenceCard: React.FC<ArborescenceCardProps> = ({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-formality-primary/10 rounded-lg flex items-center justify-center">
-              <Tree className="h-5 w-5 text-formality-primary" />
+              <Trees className="h-5 w-5 text-formality-primary" />
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 group-hover:text-formality-primary transition-colors">
