@@ -617,6 +617,60 @@ export const ArborescenceTreePreview: React.FC = () => {
 
   const draggedItem = getDraggedItem();
 
+  // Inline helper so it gets access to state/handlers
+  function renderSousFamillesWithPlaceholder(famille: Famille, famIdx: number) {
+    // Only add placeholder if we're dragging a sous famille from this famille
+    if (!draggedSousFamille || famIdx !== draggedSousFamille.famIdx) {
+      return famille.sousFamilles.map((sf, sfIdx) => (
+        <SortableSousFamille
+          key={sf.id}
+          sousFamille={sf}
+          famIdx={famIdx}
+          sfIdx={sfIdx}
+          onEdit={handleEditSousFamille}
+          onSave={handleSaveSousFamille}
+          onDelete={handleDeleteSousFamille}
+          dragState={getDragState(sf.id)}
+        />
+      ));
+    }
+
+    // Insert placeholder at the correct spot
+    const items: JSX.Element[] = [];
+    famille.sousFamilles.forEach((sf, sfIdx) => {
+      if (draggedSousFamille && sfIdx === draggedSousFamille.sfIdx) {
+        // Render nothing for source; handled by overlay + placeholder.
+        items.push(
+          <SortableSousFamille
+            sousFamille={sf}
+            famIdx={famIdx}
+            sfIdx={sfIdx}
+            onEdit={handleEditSousFamille}
+            onSave={handleSaveSousFamille}
+            onDelete={handleDeleteSousFamille}
+            dragState={getDragState(sf.id)}
+            placeholder={true}
+            key={'placeholder'}
+          />
+        );
+      } else {
+        items.push(
+          <SortableSousFamille
+            sousFamille={sf}
+            famIdx={famIdx}
+            sfIdx={sfIdx}
+            onEdit={handleEditSousFamille}
+            onSave={handleSaveSousFamille}
+            onDelete={handleDeleteSousFamille}
+            dragState={getDragState(sf.id)}
+            key={sf.id}
+          />
+        );
+      }
+    });
+    return items;
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -754,55 +808,3 @@ export const ArborescenceTreePreview: React.FC = () => {
 };
 
 export default ArborescenceTreePreview;
-
-function renderSousFamillesWithPlaceholder(famille: Famille, famIdx: number) {
-  // Only add placeholder if we're dragging a sous famille from this famille
-  if (!draggedSousFamille || famIdx !== draggedSousFamille.famIdx) {
-    return famille.sousFamilles.map((sf, sfIdx) => (
-      <SortableSousFamille
-        sousFamille={sf}
-        famIdx={famIdx}
-        sfIdx={sfIdx}
-        onEdit={handleEditSousFamille}
-        onSave={handleSaveSousFamille}
-        onDelete={handleDeleteSousFamille}
-        dragState={getDragState(sf.id)}
-      />
-    ));
-  }
-
-  // Insert placeholder at the correct spot
-  const items: JSX.Element[] = [];
-  famille.sousFamilles.forEach((sf, sfIdx) => {
-    if (draggedSousFamille && sfIdx === draggedSousFamille.sfIdx) {
-      // Render nothing for source; handled by overlay + placeholder.
-      items.push(
-        <SortableSousFamille
-          sousFamille={sf}
-          famIdx={famIdx}
-          sfIdx={sfIdx}
-          onEdit={handleEditSousFamille}
-          onSave={handleSaveSousFamille}
-          onDelete={handleDeleteSousFamille}
-          dragState={getDragState(sf.id)}
-          placeholder={true}
-          key={'placeholder'}
-        />
-      );
-    } else {
-      items.push(
-        <SortableSousFamille
-          sousFamille={sf}
-          famIdx={famIdx}
-          sfIdx={sfIdx}
-          onEdit={handleEditSousFamille}
-          onSave={handleSaveSousFamille}
-          onDelete={handleDeleteSousFamille}
-          dragState={getDragState(sf.id)}
-          key={sf.id}
-        />
-      );
-    }
-  });
-  return items;
-}
