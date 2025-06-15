@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useSocket } from "./use-socket";
+import { useSocketContext } from "@/context/SocketContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,8 +11,7 @@ interface UseEmailNotificationsOptions {
 }
 
 export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotificationsOptions) => {
-  // Fix: Pass only a primitive so options ref does NOT change on each render!
-  const socket = useSocket(isAuthenticated ? undefined : undefined);
+  const socket = useSocketContext();
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -67,7 +66,6 @@ export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotifications
       socket.off("disconnect", handleDisconnect);
       socket.off("newEmail", handleNewEmail);
     };
-    // Only re-run this effect if isAuthenticated or socket ref changes
   }, [isAuthenticated, socket, location.pathname, navigate, queryClient]);
 
   return socket;

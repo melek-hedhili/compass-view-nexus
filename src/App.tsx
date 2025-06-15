@@ -17,6 +17,7 @@ import { URL_API } from "./utils/constants";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 import { toast } from "sonner";
+import { SocketProvider } from "./context/SocketContext";
 
 OpenAPI.BASE = URL_API;
 
@@ -82,20 +83,22 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<RootRoute />} />
-            <Route path="/auth/*" element={<AuthRoutes />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <MainRoutes />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-          {renderReactQueryDevtools()}
+          <SocketProvider>
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<RootRoute />} />
+              <Route path="/auth/*" element={<AuthRoutes />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <MainRoutes />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+            {renderReactQueryDevtools()}
+          </SocketProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
