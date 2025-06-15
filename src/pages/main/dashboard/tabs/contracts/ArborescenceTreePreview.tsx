@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { GripVertical, Plus, X, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragMoveEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -50,7 +50,9 @@ function SortableFamille({
   onSaveSousFamille,
   onDeleteSousFamille,
   isDraggedOver,
-  draggedOverPosition
+  draggedOverPosition,
+  isBeingDragged,
+  activeDragType
 }: {
   famille: Famille;
   famIdx: number;
@@ -62,6 +64,8 @@ function SortableFamille({
   onDeleteSousFamille: (famIdx: number, sfIdx: number) => void;
   isDraggedOver?: boolean;
   draggedOverPosition?: 'above' | 'below';
+  isBeingDragged?: boolean;
+  activeDragType?: 'famille' | 'sousFamille' | null;
 }) {
   const {
     attributes,
@@ -74,36 +78,55 @@ function SortableFamille({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 200ms ease',
+    transition: transition || 'transform 150ms cubic-bezier(0.25, 1, 0.5, 1)',
+    zIndex: isDragging ? 1000 : 'auto',
   };
 
   return (
-    <>
+    <div className="relative">
       {/* Drop indicator above */}
-      {isDraggedOver && draggedOverPosition === 'above' && (
-        <div className="h-1 bg-blue-500 rounded-full mx-4 animate-pulse" />
+      {isDraggedOver && draggedOverPosition === 'above' && activeDragType === 'famille' && (
+        <div className="h-2 flex items-center justify-center mb-1">
+          <div className="h-0.5 bg-blue-500 rounded-full flex-1 animate-pulse shadow-lg" />
+        </div>
       )}
       
       <div 
         ref={setNodeRef} 
         style={style} 
         className={cn(
-          "group relative transition-all duration-200",
-          isDragging && "opacity-50 scale-95 z-50",
-          isDraggedOver && "scale-105"
+          "group relative transition-all duration-150 ease-out",
+          isDragging && "opacity-30 scale-[0.98] rotate-1",
+          isBeingDragged && "z-50",
+          isDraggedOver && activeDragType === 'famille' && "scale-[1.02] shadow-lg ring-2 ring-blue-300/50",
+          "hover:shadow-sm"
         )}
       >
         <Card className={cn(
-          "transition-all duration-200 hover:shadow-md border-2",
-          isDraggedOver ? "border-blue-300 shadow-lg" : "border-transparent"
+          "transition-all duration-150 ease-out border-2",
+          isDraggedOver && activeDragType === 'famille' 
+            ? "border-blue-400 bg-blue-50/50 shadow-md" 
+            : "border-transparent hover:border-gray-200",
+          isBeingDragged && "shadow-xl"
         )}>
           <CardContent className="p-3 sm:p-4">
             {/* Famille Header */}
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-                <GripVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-formality-primary transition-colors flex-shrink-0" />
+              <div 
+                {...attributes} 
+                {...listeners} 
+                className={cn(
+                  "cursor-grab active:cursor-grabbing transition-all duration-150",
+                  isDragging && "cursor-grabbing",
+                  "hover:scale-110"
+                )}
+              >
+                <GripVertical className={cn(
+                  "h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 transition-all duration-150 flex-shrink-0",
+                  isDraggedOver && "text-blue-500"
+                )} />
               </div>
-              <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0"></div>
+              <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 {famille.isEditing ? (
                   <Input 
@@ -115,11 +138,11 @@ function SortableFamille({
                         onSave(famIdx, e.currentTarget.value);
                       }
                     }}
-                    className="font-medium text-sm sm:text-base" 
+                    className="font-medium text-sm sm:text-base transition-all duration-150" 
                   />
                 ) : (
                   <div 
-                    className="font-medium cursor-pointer hover:bg-gray-50 p-2 rounded text-sm sm:text-base truncate flex-1"
+                    className="font-medium cursor-pointer hover:bg-gray-50 p-2 rounded text-sm sm:text-base truncate flex-1 transition-all duration-150"
                     onClick={() => onEdit(famIdx)}
                   >
                     {famille.name}
@@ -129,7 +152,7 @@ function SortableFamille({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="bg-blue-50 text-blue-600 border-blue-200 h-7 px-2 text-xs"
+                    className="bg-blue-50 text-blue-600 border-blue-200 h-7 px-2 text-xs transition-all duration-150 hover:bg-blue-100"
                     onClick={() => onEdit(famIdx)}
                   >
                     <Edit3 className="h-3 w-3 sm:mr-1" />
@@ -138,7 +161,7 @@ function SortableFamille({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2"
+                    className="opacity-0 group-hover:opacity-100 transition-all duration-150 h-7 px-2 hover:bg-gray-100"
                     onClick={() => onAddSousFamille(famIdx)}
                   >
                     <Plus className="h-3 w-3" />
@@ -162,6 +185,9 @@ function SortableFamille({
                     onEdit={onEditSousFamille}
                     onSave={onSaveSousFamille}
                     onDelete={onDeleteSousFamille}
+                    isDraggedOver={isDraggedOver && activeDragType === 'sousFamille'}
+                    draggedOverPosition={draggedOverPosition}
+                    activeDragType={activeDragType}
                   />
                 ))}
               </SortableContext>
@@ -180,10 +206,12 @@ function SortableFamille({
       </div>
 
       {/* Drop indicator below */}
-      {isDraggedOver && draggedOverPosition === 'below' && (
-        <div className="h-1 bg-blue-500 rounded-full mx-4 animate-pulse" />
+      {isDraggedOver && draggedOverPosition === 'below' && activeDragType === 'famille' && (
+        <div className="h-2 flex items-center justify-center mt-1">
+          <div className="h-0.5 bg-blue-500 rounded-full flex-1 animate-pulse shadow-lg" />
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -196,7 +224,8 @@ function SortableSousFamille({
   onSave,
   onDelete,
   isDraggedOver,
-  draggedOverPosition
+  draggedOverPosition,
+  activeDragType
 }: {
   sousFamille: SousFamille;
   famIdx: number;
@@ -206,6 +235,7 @@ function SortableSousFamille({
   onDelete: (famIdx: number, sfIdx: number) => void;
   isDraggedOver?: boolean;
   draggedOverPosition?: 'above' | 'below';
+  activeDragType?: 'famille' | 'sousFamille' | null;
 }) {
   const {
     attributes,
@@ -218,29 +248,43 @@ function SortableSousFamille({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 200ms ease',
+    transition: transition || 'transform 150ms cubic-bezier(0.25, 1, 0.5, 1)',
+    zIndex: isDragging ? 1000 : 'auto',
   };
 
   return (
-    <>
+    <div className="relative">
       {/* Drop indicator above */}
-      {isDraggedOver && draggedOverPosition === 'above' && (
-        <div className="h-0.5 bg-green-500 rounded-full mx-2 animate-pulse" />
+      {isDraggedOver && draggedOverPosition === 'above' && activeDragType === 'sousFamille' && (
+        <div className="h-1 flex items-center justify-center mb-1">
+          <div className="h-0.5 bg-green-500 rounded-full flex-1 animate-pulse shadow-md" />
+        </div>
       )}
       
       <div
         ref={setNodeRef}
         style={style}
         className={cn(
-          "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200",
-          isDragging ? "opacity-50 scale-95 z-50" : "hover:bg-gray-50",
-          isDraggedOver && "bg-green-50 scale-105 shadow-md"
+          "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-150 ease-out",
+          isDragging ? "opacity-30 scale-[0.98] z-50" : "hover:bg-gray-50",
+          isDraggedOver && activeDragType === 'sousFamille' && "bg-green-50 scale-[1.02] shadow-md ring-1 ring-green-300/50"
         )}
       >
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-          <GripVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-colors flex-shrink-0" />
+        <div 
+          {...attributes} 
+          {...listeners} 
+          className={cn(
+            "cursor-grab active:cursor-grabbing transition-all duration-150",
+            isDragging && "cursor-grabbing",
+            "hover:scale-110"
+          )}
+        >
+          <GripVertical className={cn(
+            "h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-all duration-150 flex-shrink-0",
+            isDraggedOver && "text-green-500"
+          )} />
         </div>
-        <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0"></div>
+        <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
         <div className="flex-1 min-w-0 flex items-center gap-2">
           {sousFamille.isEditing ? (
             <Input 
@@ -252,11 +296,11 @@ function SortableSousFamille({
                   onSave(famIdx, sfIdx, e.currentTarget.value);
                 }
               }}
-              className="text-xs sm:text-sm" 
+              className="text-xs sm:text-sm transition-all duration-150" 
             />
           ) : (
             <div 
-              className="text-xs sm:text-sm cursor-pointer hover:bg-gray-50 p-2 rounded truncate flex-1"
+              className="text-xs sm:text-sm cursor-pointer hover:bg-gray-50 p-2 rounded truncate flex-1 transition-all duration-150"
               onClick={() => onEdit(famIdx, sfIdx)}
             >
               {sousFamille.name}
@@ -266,7 +310,7 @@ function SortableSousFamille({
             <Button 
               variant="outline" 
               size="sm" 
-              className="bg-green-50 text-green-600 border-green-200 opacity-0 group-hover/sf:opacity-100 transition-opacity h-6 px-1 text-xs"
+              className="bg-green-50 text-green-600 border-green-200 opacity-0 group-hover/sf:opacity-100 transition-all duration-150 h-6 px-1 text-xs hover:bg-green-100"
               onClick={() => onEdit(famIdx, sfIdx)}
             >
               <Edit3 className="h-2 w-2 sm:h-3 sm:w-3 sm:mr-1" />
@@ -275,7 +319,7 @@ function SortableSousFamille({
             <Button 
               variant="outline" 
               size="sm" 
-              className="opacity-0 group-hover/sf:opacity-100 transition-opacity text-red-500 hover:text-red-700 h-6 px-1"
+              className="opacity-0 group-hover/sf:opacity-100 transition-all duration-150 text-red-500 hover:text-red-700 hover:bg-red-50 h-6 px-1"
               onClick={() => onDelete(famIdx, sfIdx)}
             >
               <X className="h-2 w-2 sm:h-3 sm:w-3" />
@@ -285,10 +329,12 @@ function SortableSousFamille({
       </div>
 
       {/* Drop indicator below */}
-      {isDraggedOver && draggedOverPosition === 'below' && (
-        <div className="h-0.5 bg-green-500 rounded-full mx-2 animate-pulse" />
+      {isDraggedOver && draggedOverPosition === 'below' && activeDragType === 'sousFamille' && (
+        <div className="h-1 flex items-center justify-center mt-1">
+          <div className="h-0.5 bg-green-500 rounded-full flex-1 animate-pulse shadow-md" />
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -469,15 +515,34 @@ export const ArborescenceTreePreview: React.FC = () => {
     }
   }
 
-  // Helper function to determine if an item is being dragged over
+  // Helper functions for drag state management
   const getItemDragState = (itemId: string) => {
     if (!activeId || !overId || activeId === itemId) return {};
     
     const isDraggedOver = overId === itemId;
     return {
       isDraggedOver,
-      draggedOverPosition: 'below' as const // You could make this more sophisticated
+      draggedOverPosition: 'below' as const,
+      isBeingDragged: activeId === itemId
     };
+  };
+
+  const getActiveDragType = (): 'famille' | 'sousFamille' | null => {
+    if (!activeId) return null;
+    
+    // Check if it's a famille
+    if (tree.familles.find(f => f.id === activeId)) {
+      return 'famille';
+    }
+    
+    // Check if it's a sous-famille
+    for (const fam of tree.familles) {
+      if (fam.sousFamilles.find(sf => sf.id === activeId)) {
+        return 'sousFamille';
+      }
+    }
+    
+    return null;
   };
 
   // Get the dragged item for overlay
@@ -502,6 +567,7 @@ export const ArborescenceTreePreview: React.FC = () => {
   };
 
   const draggedItem = getDraggedItem();
+  const activeDragType = getActiveDragType();
 
   return (
     <DndContext
@@ -566,6 +632,7 @@ export const ArborescenceTreePreview: React.FC = () => {
                     onEditSousFamille={handleEditSousFamille}
                     onSaveSousFamille={handleSaveSousFamille}
                     onDeleteSousFamille={handleDeleteSousFamille}
+                    activeDragType={activeDragType}
                     {...getItemDragState(famille.id)}
                   />
                 ))}
@@ -606,13 +673,18 @@ export const ArborescenceTreePreview: React.FC = () => {
         </div>
       </div>
 
-      <DragOverlay dropAnimation={{
-        duration: 200,
-        easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-      }}>
+      <DragOverlay 
+        dropAnimation={{
+          duration: 200,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+        }}
+        style={{ 
+          transformOrigin: '50% 50%'
+        }}
+      >
         {draggedItem ? (
-          <div className="opacity-90 rotate-3 scale-105">
-            <Card className="shadow-2xl border-2 border-blue-400">
+          <div className="opacity-95 rotate-2 scale-105 transform-gpu">
+            <Card className="shadow-2xl border-2 border-blue-400 bg-white">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <GripVertical className="h-4 w-4 text-blue-500" />
