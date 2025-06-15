@@ -61,32 +61,32 @@ export const ArborescenceList: React.FC<ArborescenceListProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Arborescences</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Arborescences</h2>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Gérez vos arborescences de rubriques, familles et sous-familles
           </p>
         </div>
         <Button
           onClick={onCreateNew}
-          className="bg-formality-primary hover:bg-formality-primary/90"
+          className="bg-formality-primary hover:bg-formality-primary/90 w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Nouvelle arborescence
+          <span className="sm:inline">Nouvelle arborescence</span>
         </Button>
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
+      <div className="relative w-full sm:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Rechercher une arborescence..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 w-full"
         />
       </div>
 
@@ -96,7 +96,7 @@ export const ArborescenceList: React.FC<ArborescenceListProps> = ({
           <p className="text-gray-500">Aucune arborescence trouvée pour votre recherche.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredArborescences.map((arborescence) => (
             <ArborescenceCard
               key={arborescence.id}
