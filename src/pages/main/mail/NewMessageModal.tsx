@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,20 +55,16 @@ function NewMessageModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="relative p-6 pb-0 border-b border-gray-100 flex items-center">
-        <h2 className="text-xl font-bold text-formality-accent pr-8">Nouveau message</h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-3 right-4 p-1 h-8 w-8 rounded-full hover:bg-gray-100"
-          onClick={onClose}
-        >
-          <X className="h-5 w-5 text-gray-500" />
-        </Button>
+        <h2 className="text-xl font-bold text-formality-accent pr-8">
+          Nouveau message
+        </h2>
       </div>
       <div className="flex flex-col gap-6 px-6 py-6">
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">À</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              À
+            </label>
             <Input
               placeholder="Adresse email du destinataire"
               className="border-gray-200"
@@ -80,7 +75,9 @@ function NewMessageModal({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Objet</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Objet
+            </label>
             <Input
               placeholder="Objet du message"
               className="border-gray-200"
@@ -95,7 +92,9 @@ function NewMessageModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Message
+          </label>
           <textarea
             className="w-full min-h-[180px] border border-gray-200 rounded-md p-3 resize-none"
             placeholder="Rédigez votre message ici..."
@@ -106,7 +105,9 @@ function NewMessageModal({ onClose }: { onClose: () => void }) {
           />
         </div>
         <div>
-          <h3 className="text-sm font-medium mb-2 text-gray-700">Pièces jointes</h3>
+          <h3 className="text-sm font-medium mb-2 text-gray-700">
+            Pièces jointes
+          </h3>
           <Button
             variant="outline"
             size="sm"
@@ -116,7 +117,9 @@ function NewMessageModal({ onClose }: { onClose: () => void }) {
             <Paperclip className="h-4 w-4" />
             Ajouter une pièce jointe
           </Button>
-          <span className="text-xs text-gray-400 ml-2">(Bientôt disponible)</span>
+          <span className="text-xs text-gray-400 ml-2">
+            (Bientôt disponible)
+          </span>
         </div>
       </div>
       <div className="flex justify-end p-6 border-t border-gray-100 mt-auto">
