@@ -402,27 +402,29 @@ const Mail = () => {
               >
                 <div className="flex flex-col h-full w-full">
                   <div className="flex-1 overflow-auto w-full">
-                    <DataTable
-                      data={sortedInboxData || []}
-                      count={inboxData?.count}
-                      columns={columns}
-                      loading={isLoading}
-                      onRowClick={(row) =>
-                        handleSelectMail(row._id as string)
-                      }
-                      page={paginationParams.page}
-                      perPage={paginationParams.perPage}
-                      onPageChange={handlePageChange}
-                      onPerPageChange={handlePerPageChange}
-                      sortField={paginationParams.sortField}
-                      sortOrder={paginationParams.sortOrder}
-                      onSort={handleSort}
-                      renderListEmpty={() => (
-                        <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                          Aucun mail trouvé
-                        </div>
-                      )}
-                    />
+                    <div className="bg-white rounded-lg shadow-elegant p-4">
+                      <DataTable
+                        data={sortedInboxData || []}
+                        count={inboxData?.count}
+                        columns={columns}
+                        loading={isLoading}
+                        onRowClick={(row) =>
+                          handleSelectMail(row._id as string)
+                        }
+                        page={paginationParams.page}
+                        perPage={paginationParams.perPage}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        sortField={paginationParams.sortField}
+                        sortOrder={paginationParams.sortOrder}
+                        onSort={handleSort}
+                        renderListEmpty={() => (
+                          <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                            Aucun mail trouvé
+                          </div>
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -433,27 +435,29 @@ const Mail = () => {
               >
                 <div className="flex flex-col h-full w-full">
                   <div className="flex-1 overflow-auto w-full">
-                    <DataTable
-                      data={sortedArchivedData || []}
-                      count={archivedData?.count}
-                      columns={columns}
-                      loading={isLoading}
-                      onRowClick={(row) =>
-                        handleSelectMail(row._id as string)
-                      }
-                      page={paginationParams.page}
-                      perPage={paginationParams.perPage}
-                      onPageChange={handlePageChange}
-                      onPerPageChange={handlePerPageChange}
-                      sortField={paginationParams.sortField}
-                      sortOrder={paginationParams.sortOrder}
-                      onSort={handleSort}
-                      renderListEmpty={() => (
-                        <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                          Aucun mail trouvé
-                        </div>
-                      )}
-                    />
+                    <div className="bg-white rounded-lg shadow-elegant p-4">
+                      <DataTable
+                        data={sortedArchivedData || []}
+                        count={archivedData?.count}
+                        columns={columns}
+                        loading={isLoading}
+                        onRowClick={(row) =>
+                          handleSelectMail(row._id as string)
+                        }
+                        page={paginationParams.page}
+                        perPage={paginationParams.perPage}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        sortField={paginationParams.sortField}
+                        sortOrder={paginationParams.sortOrder}
+                        onSort={handleSort}
+                        renderListEmpty={() => (
+                          <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                            Aucun mail trouvé
+                          </div>
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -463,27 +467,29 @@ const Mail = () => {
               >
                 <div className="flex flex-col h-full w-full">
                   <div className="flex-1 overflow-auto w-full">
-                    <DataTable
-                      data={sortedSentData || []}
-                      count={sentData?.count}
-                      columns={columns}
-                      loading={isLoading}
-                      onRowClick={(row) =>
-                        handleSelectMail(row._id as string)
-                      }
-                      page={paginationParams.page}
-                      perPage={paginationParams.perPage}
-                      onPageChange={handlePageChange}
-                      onPerPageChange={handlePerPageChange}
-                      sortField={paginationParams.sortField}
-                      sortOrder={paginationParams.sortOrder}
-                      onSort={handleSort}
-                      renderListEmpty={() => (
-                        <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                          Aucun mail trouvé
-                        </div>
-                      )}
-                    />
+                    <div className="bg-white rounded-lg shadow-elegant p-4">
+                      <DataTable
+                        data={sortedSentData || []}
+                        count={sentData?.count}
+                        columns={columns}
+                        loading={isLoading}
+                        onRowClick={(row) =>
+                          handleSelectMail(row._id as string)
+                        }
+                        page={paginationParams.page}
+                        perPage={paginationParams.perPage}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        sortField={paginationParams.sortField}
+                        sortOrder={paginationParams.sortOrder}
+                        onSort={handleSort}
+                        renderListEmpty={() => (
+                          <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                            Aucun mail trouvé
+                          </div>
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
               </TabsContent>
