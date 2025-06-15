@@ -49,10 +49,7 @@ function SortableFamille({
   onEditSousFamille,
   onSaveSousFamille,
   onDeleteSousFamille,
-  isDraggedOver,
-  draggedOverPosition,
-  isBeingDragged,
-  activeDragType
+  dragState
 }: {
   famille: Famille;
   famIdx: number;
@@ -62,10 +59,13 @@ function SortableFamille({
   onEditSousFamille: (famIdx: number, sfIdx: number) => void;
   onSaveSousFamille: (famIdx: number, sfIdx: number, newName: string) => void;
   onDeleteSousFamille: (famIdx: number, sfIdx: number) => void;
-  isDraggedOver?: boolean;
-  draggedOverPosition?: 'above' | 'below';
-  isBeingDragged?: boolean;
-  activeDragType?: 'famille' | 'sousFamille' | null;
+  dragState: {
+    isActive: boolean;
+    isDragging: boolean;
+    isOver: boolean;
+    dropPosition?: 'above' | 'below';
+    dragType?: 'famille' | 'sousFamille';
+  };
 }) {
   const {
     attributes,
@@ -78,16 +78,19 @@ function SortableFamille({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 150ms cubic-bezier(0.25, 1, 0.5, 1)',
+    transition: isDragging ? 'none' : transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: isDragging ? 1000 : 'auto',
   };
+
+  const { isActive, isOver, dropPosition, dragType } = dragState;
+  const showDropIndicator = isActive && isOver && dragType === 'famille';
 
   return (
     <div className="relative">
       {/* Drop indicator above */}
-      {isDraggedOver && draggedOverPosition === 'above' && activeDragType === 'famille' && (
-        <div className="h-2 flex items-center justify-center mb-1">
-          <div className="h-0.5 bg-blue-500 rounded-full flex-1 animate-pulse shadow-lg" />
+      {showDropIndicator && dropPosition === 'above' && (
+        <div className="h-3 flex items-center justify-center mb-1 animate-in fade-in duration-150">
+          <div className="h-1 bg-blue-500 rounded-full flex-1 shadow-lg animate-pulse" />
         </div>
       )}
       
@@ -95,19 +98,17 @@ function SortableFamille({
         ref={setNodeRef} 
         style={style} 
         className={cn(
-          "group relative transition-all duration-150 ease-out",
-          isDragging && "opacity-30 scale-[0.98] rotate-1",
-          isBeingDragged && "z-50",
-          isDraggedOver && activeDragType === 'famille' && "scale-[1.02] shadow-lg ring-2 ring-blue-300/50",
+          "group relative transition-all duration-200 ease-out",
+          isDragging && "opacity-50 scale-[0.98] rotate-1 z-50",
+          isActive && isOver && dragType === 'famille' && "scale-[1.02] shadow-lg ring-2 ring-blue-300/60 bg-blue-50/30",
           "hover:shadow-sm"
         )}
       >
         <Card className={cn(
-          "transition-all duration-150 ease-out border-2",
-          isDraggedOver && activeDragType === 'famille' 
-            ? "border-blue-400 bg-blue-50/50 shadow-md" 
-            : "border-transparent hover:border-gray-200",
-          isBeingDragged && "shadow-xl"
+          "transition-all duration-200 ease-out border-2",
+          isActive && isOver && dragType === 'famille' 
+            ? "border-blue-400 shadow-md" 
+            : "border-transparent hover:border-gray-200"
         )}>
           <CardContent className="p-3 sm:p-4">
             {/* Famille Header */}
@@ -116,14 +117,13 @@ function SortableFamille({
                 {...attributes} 
                 {...listeners} 
                 className={cn(
-                  "cursor-grab active:cursor-grabbing transition-all duration-150",
-                  isDragging && "cursor-grabbing",
-                  "hover:scale-110"
+                  "cursor-grab active:cursor-grabbing transition-all duration-150 hover:scale-110",
+                  isDragging && "cursor-grabbing"
                 )}
               >
                 <GripVertical className={cn(
                   "h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 transition-all duration-150 flex-shrink-0",
-                  isDraggedOver && "text-blue-500"
+                  isActive && isOver && "text-blue-500"
                 )} />
               </div>
               <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
@@ -185,9 +185,13 @@ function SortableFamille({
                     onEdit={onEditSousFamille}
                     onSave={onSaveSousFamille}
                     onDelete={onDeleteSousFamille}
-                    isDraggedOver={isDraggedOver && activeDragType === 'sousFamille'}
-                    draggedOverPosition={draggedOverPosition}
-                    activeDragType={activeDragType}
+                    dragState={{
+                      isActive,
+                      isDragging: false,
+                      isOver: isOver && dragType === 'sousFamille',
+                      dropPosition,
+                      dragType
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -206,9 +210,9 @@ function SortableFamille({
       </div>
 
       {/* Drop indicator below */}
-      {isDraggedOver && draggedOverPosition === 'below' && activeDragType === 'famille' && (
-        <div className="h-2 flex items-center justify-center mt-1">
-          <div className="h-0.5 bg-blue-500 rounded-full flex-1 animate-pulse shadow-lg" />
+      {showDropIndicator && dropPosition === 'below' && (
+        <div className="h-3 flex items-center justify-center mt-1 animate-in fade-in duration-150">
+          <div className="h-1 bg-blue-500 rounded-full flex-1 shadow-lg animate-pulse" />
         </div>
       )}
     </div>
@@ -223,9 +227,7 @@ function SortableSousFamille({
   onEdit,
   onSave,
   onDelete,
-  isDraggedOver,
-  draggedOverPosition,
-  activeDragType
+  dragState
 }: {
   sousFamille: SousFamille;
   famIdx: number;
@@ -233,9 +235,13 @@ function SortableSousFamille({
   onEdit: (famIdx: number, sfIdx: number) => void;
   onSave: (famIdx: number, sfIdx: number, newName: string) => void;
   onDelete: (famIdx: number, sfIdx: number) => void;
-  isDraggedOver?: boolean;
-  draggedOverPosition?: 'above' | 'below';
-  activeDragType?: 'famille' | 'sousFamille' | null;
+  dragState: {
+    isActive: boolean;
+    isDragging: boolean;
+    isOver: boolean;
+    dropPosition?: 'above' | 'below';
+    dragType?: 'famille' | 'sousFamille';
+  };
 }) {
   const {
     attributes,
@@ -248,16 +254,19 @@ function SortableSousFamille({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 150ms cubic-bezier(0.25, 1, 0.5, 1)',
+    transition: isDragging ? 'none' : transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: isDragging ? 1000 : 'auto',
   };
+
+  const { isActive, isOver, dropPosition, dragType } = dragState;
+  const showDropIndicator = isActive && isOver && dragType === 'sousFamille';
 
   return (
     <div className="relative">
       {/* Drop indicator above */}
-      {isDraggedOver && draggedOverPosition === 'above' && activeDragType === 'sousFamille' && (
-        <div className="h-1 flex items-center justify-center mb-1">
-          <div className="h-0.5 bg-green-500 rounded-full flex-1 animate-pulse shadow-md" />
+      {showDropIndicator && dropPosition === 'above' && (
+        <div className="h-2 flex items-center justify-center mb-1 animate-in fade-in duration-150">
+          <div className="h-0.5 bg-green-500 rounded-full flex-1 shadow-md animate-pulse" />
         </div>
       )}
       
@@ -265,23 +274,22 @@ function SortableSousFamille({
         ref={setNodeRef}
         style={style}
         className={cn(
-          "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-150 ease-out",
-          isDragging ? "opacity-30 scale-[0.98] z-50" : "hover:bg-gray-50",
-          isDraggedOver && activeDragType === 'sousFamille' && "bg-green-50 scale-[1.02] shadow-md ring-1 ring-green-300/50"
+          "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200 ease-out",
+          isDragging ? "opacity-50 scale-[0.98] z-50" : "hover:bg-gray-50",
+          isActive && isOver && dragType === 'sousFamille' && "bg-green-50 scale-[1.02] shadow-md ring-1 ring-green-300/60"
         )}
       >
         <div 
           {...attributes} 
           {...listeners} 
           className={cn(
-            "cursor-grab active:cursor-grabbing transition-all duration-150",
-            isDragging && "cursor-grabbing",
-            "hover:scale-110"
+            "cursor-grab active:cursor-grabbing transition-all duration-150 hover:scale-110",
+            isDragging && "cursor-grabbing"
           )}
         >
           <GripVertical className={cn(
             "h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-all duration-150 flex-shrink-0",
-            isDraggedOver && "text-green-500"
+            isActive && isOver && "text-green-500"
           )} />
         </div>
         <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
@@ -329,9 +337,9 @@ function SortableSousFamille({
       </div>
 
       {/* Drop indicator below */}
-      {isDraggedOver && draggedOverPosition === 'below' && activeDragType === 'sousFamille' && (
-        <div className="h-1 flex items-center justify-center mt-1">
-          <div className="h-0.5 bg-green-500 rounded-full flex-1 animate-pulse shadow-md" />
+      {showDropIndicator && dropPosition === 'below' && (
+        <div className="h-2 flex items-center justify-center mt-1 animate-in fade-in duration-150">
+          <div className="h-0.5 bg-green-500 rounded-full flex-1 shadow-md animate-pulse" />
         </div>
       )}
     </div>
@@ -364,7 +372,7 @@ export const ArborescenceTreePreview: React.FC = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3,
       },
     })
   );
@@ -466,7 +474,7 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Enhanced drag handlers
+  // Enhanced drag handlers with better position detection
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
   }
@@ -516,19 +524,22 @@ export const ArborescenceTreePreview: React.FC = () => {
   }
 
   // Helper functions for drag state management
-  const getItemDragState = (itemId: string) => {
-    if (!activeId || !overId || activeId === itemId) return {};
+  const getDragState = (itemId: string) => {
+    const isActive = !!activeId;
+    const isDragging = activeId === itemId;
+    const isOver = overId === itemId;
     
-    const isDraggedOver = overId === itemId;
     return {
-      isDraggedOver,
-      draggedOverPosition: 'below' as const,
-      isBeingDragged: activeId === itemId
+      isActive,
+      isDragging,
+      isOver,
+      dropPosition: 'below' as const,
+      dragType: getActiveDragType()
     };
   };
 
-  const getActiveDragType = (): 'famille' | 'sousFamille' | null => {
-    if (!activeId) return null;
+  const getActiveDragType = (): 'famille' | 'sousFamille' | undefined => {
+    if (!activeId) return undefined;
     
     // Check if it's a famille
     if (tree.familles.find(f => f.id === activeId)) {
@@ -542,7 +553,7 @@ export const ArborescenceTreePreview: React.FC = () => {
       }
     }
     
-    return null;
+    return undefined;
   };
 
   // Get the dragged item for overlay
@@ -567,7 +578,6 @@ export const ArborescenceTreePreview: React.FC = () => {
   };
 
   const draggedItem = getDraggedItem();
-  const activeDragType = getActiveDragType();
 
   return (
     <DndContext
@@ -632,8 +642,7 @@ export const ArborescenceTreePreview: React.FC = () => {
                     onEditSousFamille={handleEditSousFamille}
                     onSaveSousFamille={handleSaveSousFamille}
                     onDeleteSousFamille={handleDeleteSousFamille}
-                    activeDragType={activeDragType}
-                    {...getItemDragState(famille.id)}
+                    dragState={getDragState(famille.id)}
                   />
                 ))}
               </SortableContext>
@@ -675,7 +684,7 @@ export const ArborescenceTreePreview: React.FC = () => {
 
       <DragOverlay 
         dropAnimation={{
-          duration: 200,
+          duration: 250,
           easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
         }}
         style={{ 
@@ -683,8 +692,8 @@ export const ArborescenceTreePreview: React.FC = () => {
         }}
       >
         {draggedItem ? (
-          <div className="opacity-95 rotate-2 scale-105 transform-gpu">
-            <Card className="shadow-2xl border-2 border-blue-400 bg-white">
+          <div className="opacity-95 rotate-2 scale-105 transform-gpu shadow-2xl">
+            <Card className="border-2 border-blue-400 bg-white shadow-2xl">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   <GripVertical className="h-4 w-4 text-blue-500" />
