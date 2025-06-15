@@ -6,13 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Search, Plus, MailIcon, Paperclip } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { EmailService } from "@/api-swagger/services/EmailService";
@@ -289,7 +282,11 @@ const Mail = () => {
     },
     {
       key: "from",
-      header: "Expéditeur",
+      header: activeTab === "envoye" ? "Destinataire" : "Expéditeur",
+      render: (_: unknown, row: Record<string, unknown>) =>
+        (activeTab === "envoye"
+          ? (row.to as string)
+          : (row.from as string)) as ReactNode,
       className: "text-left font-medium",
     },
     {
@@ -308,7 +305,7 @@ const Mail = () => {
             })}
           </div>
         ) as ReactNode,
-      className: "text-left font-medium w-24",
+      className: "text-left font-medium w-32",
     },
     {
       key: "attachments",
@@ -396,48 +393,18 @@ const Mail = () => {
           </div>
         </div>
 
-        <Card className="w-full overflow-hidden relative">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 h-full relative">
-            <div className="lg:col-span-12 h-full">
-              <Tabs
-                defaultValue="boite-mail"
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full h-full"
-              >
-                <div className="bg-gray-50 border-b border-gray-200">
-                  <TabsList className="bg-transparent p-0 h-auto w-full rounded-none">
-                    <TabsTrigger
-                      value="boite-mail"
-                      className="py-3 px-5 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-none flex items-center gap-1.5"
-                    >
-                      Boîte de réception
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-formality-primary/10 px-1.5 text-xs font-medium text-formality-primary">
-                        2
-                      </span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="envoye"
-                      className="py-3 px-5 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-none flex items-center gap-1.5"
-                    >
-                      Envoyés
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-500/10 px-1.5 text-xs font-medium text-green-500">
-                        {sentData?.data.length}
-                      </span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="archives"
-                      className="py-3 px-5 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-none"
-                    >
-                      Archives
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-
-                {/* Inbox Tab Content */}
+        <Card className="w-full overflow-hidden border-0 shadow-lg">
+          <Tabs
+            defaultValue="boite-mail"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+              <TabsList className="bg-transparent p-0 h-auto w-full rounded-none">
                 <TabsContent
                   value="boite-mail"
-                  className="mt-0 h-[calc(100%-49px)]"
+                  className="py-4 px-6 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-sm flex items-center gap-2 transition-all"
                 >
                   <div className="flex flex-col h-full">
                     <div className="flex-1 overflow-auto">
@@ -469,7 +436,7 @@ const Mail = () => {
                 {/* Archives Tab Content */}
                 <TabsContent
                   value="archives"
-                  className="mt-0 h-[calc(100%-49px)]"
+                  className="py-4 px-6 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-sm flex items-center gap-2 transition-all"
                 >
                   <div className="flex flex-col h-full">
                     <div className="flex-1 overflow-auto">
@@ -529,54 +496,54 @@ const Mail = () => {
                     </div>
                   </div>
                 </TabsContent>
-              </Tabs>
+              </TabsList>
             </div>
+          </Tabs>
 
-            {/* Mail Detail Drawer */}
-            <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-              <SheetContent
-                side="right"
-                className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
-              >
-                <div className="py-4">
-                  <MailDetail
-                    mail={selectedMailData}
-                    onClose={handleCloseDrawer}
-                    onReply={handleReply}
-                    onArchive={handleArchive}
-                    onUnarchive={handleUnarchive}
-                    isArchiving={archiveMutation.isPending}
-                    activeTab={activeTab}
+          {/* Mail Detail Drawer */}
+          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+            >
+              <div className="py-4">
+                <MailDetail
+                  mail={selectedMailData}
+                  onClose={handleCloseDrawer}
+                  onReply={handleReply}
+                  onArchive={handleArchive}
+                  onUnarchive={handleUnarchive}
+                  isArchiving={archiveMutation.isPending}
+                  activeTab={activeTab}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Reply Drawer */}
+          <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+            >
+              <div className="py-4">
+                {replyToEmail && (
+                  <ReplyModal
+                    onClose={() => {
+                      setIsReplyOpen(false);
+                      setReplyToEmail(null);
+                    }}
+                    originalEmail={replyToEmail}
                   />
-                </div>
-              </SheetContent>
-            </Sheet>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
 
-            {/* Reply Drawer */}
-            <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
-              <SheetContent
-                side="right"
-                className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
-              >
-                <div className="py-4">
-                  {replyToEmail && (
-                    <ReplyModal
-                      onClose={() => {
-                        setIsReplyOpen(false);
-                        setReplyToEmail(null);
-                      }}
-                      originalEmail={replyToEmail}
-                    />
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            {/* New Message Modal */}
-            {isNewMessageOpen && (
-              <NewMessageModal onClose={handleCloseNewMessageModal} />
-            )}
-          </div>
+          {/* New Message Modal */}
+          {isNewMessageOpen && (
+            <NewMessageModal onClose={handleCloseNewMessageModal} />
+          )}
         </Card>
       </div>
     </AppLayout>
