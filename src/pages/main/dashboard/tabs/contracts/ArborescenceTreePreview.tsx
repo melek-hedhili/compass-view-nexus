@@ -497,20 +497,18 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Enhanced: Track which sous famille is being dragged (by id and famille index)
-  const [draggedSousFamille, setDraggedSousFamille] = useState<{
-    famIdx: number; sfIdx: number; id: string
-  }|null>(null);
+  // Enhanced: Track which sous famille is being dragged and where to show a placeholder
+  const [draggedSousFamille, setDraggedSousFamille] = useState<{ famIdx: number; sfIdx: number; id: string } | null>(null);
+  const [sousFamilleDrop, setSousFamilleDrop] = useState<{ famIdx: number; atIndex: number } | null>(null);
 
-  // Drag handlers
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
-
     // Track sous famille
     for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
       const sfIdx = tree.familles[famIdx].sousFamilles.findIndex(sf => sf.id === event.active.id);
       if (sfIdx !== -1) {
         setDraggedSousFamille({ famIdx, sfIdx, id: event.active.id as string });
+        setSousFamilleDrop({ famIdx, atIndex: sfIdx });
         break;
       }
     }
@@ -518,17 +516,32 @@ export const ArborescenceTreePreview: React.FC = () => {
 
   function handleDragOver(event: DragOverEvent) {
     setOverId(event.over?.id as string || null);
+
+    // If dragging sous-famille, compute dynamic drop index
+    if (draggedSousFamille) {
+      for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
+        const famille = tree.familles[famIdx];
+        const overSfIndex = famille.sousFamilles.findIndex(sf => sf.id === event.over?.id);
+        if (overSfIndex !== -1) {
+          setSousFamilleDrop({ famIdx, atIndex: overSfIndex });
+          return;
+        }
+      }
+      // If not over any sous-famille, keep old value
+    }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
     setOverId(null);
+
+    // Reset after drop
     setDraggedSousFamille(null);
+    setSousFamilleDrop(null);
 
     if (!over || active.id === over.id) return;
 
-    // Handle famille reordering
     const activeFamilleIndex = tree.familles.findIndex(f => f.id === active.id);
     const overFamilleIndex = tree.familles.findIndex(f => f.id === over.id);
 
@@ -540,28 +553,34 @@ export const ArborescenceTreePreview: React.FC = () => {
       return;
     }
 
-    // Handle sous-famille reordering within the same famille
-    for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
-      const famille = tree.familles[famIdx];
-      const activeSfIndex = famille.sousFamilles.findIndex(sf => sf.id === active.id);
-      const overSfIndex = famille.sousFamilles.findIndex(sf => sf.id === over.id);
+    // Handle sous-famille reordering across families
+    if (draggedSousFamille && sousFamilleDrop) {
+      const srcFamIdx = draggedSousFamille.famIdx;
+      const srcSfIdx = draggedSousFamille.sfIdx;
+      const destFamIdx = sousFamilleDrop.famIdx;
+      let destSfIdx = sousFamilleDrop.atIndex;
 
-      if (activeSfIndex !== -1 && overSfIndex !== -1) {
-        setTree(prev => ({
-          ...prev,
-          familles: prev.familles.map((f, idx) => 
-            idx === famIdx ? {
-              ...f,
-              sousFamilles: arrayMove(f.sousFamilles, activeSfIndex, overSfIndex)
-            } : f
-          )
-        }));
-        return;
-      }
+      setTree(prev => {
+        const fams = [...prev.familles];
+        const srcFam = { ...fams[srcFamIdx], sousFamilles: [...fams[srcFamIdx].sousFamilles] };
+        const [movedItem] = srcFam.sousFamilles.splice(srcSfIdx, 1);
+
+        if (srcFamIdx === destFamIdx && srcSfIdx < destSfIdx) {
+          // Account for removal shift
+          destSfIdx -= 1;
+        }
+
+        fams[srcFamIdx] = srcFam;
+        const destFam = { ...fams[destFamIdx], sousFamilles: [...fams[destFamIdx].sousFamilles] };
+        destFam.sousFamilles.splice(destSfIdx, 0, movedItem);
+        fams[destFamIdx] = destFam;
+        return { ...prev, familles: fams };
+      });
+      return;
     }
   }
 
-  // Helper functions for drag state management
+  // Helper functions for drag state management (unchanged)
   const getDragState = (itemId: string) => {
     const isActive = !!activeId;
     const isDragging = activeId === itemId;
@@ -619,8 +638,8 @@ export const ArborescenceTreePreview: React.FC = () => {
 
   // Inline helper so it gets access to state/handlers
   function renderSousFamillesWithPlaceholder(famille: Famille, famIdx: number) {
-    // Only add placeholder if we're dragging a sous famille from this famille
-    if (!draggedSousFamille || famIdx !== draggedSousFamille.famIdx) {
+    // If not dragging, just render all as usual
+    if (!draggedSousFamille || sousFamilleDrop?.famIdx !== famIdx) {
       return famille.sousFamilles.map((sf, sfIdx) => (
         <SortableSousFamille
           key={sf.id}
@@ -635,39 +654,66 @@ export const ArborescenceTreePreview: React.FC = () => {
       ));
     }
 
-    // Insert placeholder at the correct spot
+    // Build list with placeholder at intended drop position
     const items: JSX.Element[] = [];
     famille.sousFamilles.forEach((sf, sfIdx) => {
-      if (draggedSousFamille && sfIdx === draggedSousFamille.sfIdx) {
-        // Render nothing for source; handled by overlay + placeholder.
+      // Insert the placeholder at the hover index BEFORE the normal card
+      if (sfIdx === sousFamilleDrop.atIndex) {
         items.push(
-          <SortableSousFamille
-            sousFamille={sf}
-            famIdx={famIdx}
-            sfIdx={sfIdx}
-            onEdit={handleEditSousFamille}
-            onSave={handleSaveSousFamille}
-            onDelete={handleDeleteSousFamille}
-            dragState={getDragState(sf.id)}
-            placeholder={true}
-            key={'placeholder'}
-          />
-        );
-      } else {
-        items.push(
-          <SortableSousFamille
-            sousFamille={sf}
-            famIdx={famIdx}
-            sfIdx={sfIdx}
-            onEdit={handleEditSousFamille}
-            onSave={handleSaveSousFamille}
-            onDelete={handleDeleteSousFamille}
-            dragState={getDragState(sf.id)}
-            key={sf.id}
+          <div
+            key="sousfamille-drop-placeholder"
+            className="relative my-2 rounded-lg"
+            style={{
+              height: 48,
+              border: '2px dashed #34d399',
+              background: 'rgba(34,197,94,0.09)',
+              position: 'relative',
+              transition: 'all 0.2s',
+              outline: '2px solid #22c55e40',
+              zIndex: 10,
+            }}
           />
         );
       }
+
+      // Hide the card being dragged from the list!
+      if (sf.id === draggedSousFamille.id && famIdx === draggedSousFamille.famIdx) {
+        // do not render the original item here (overlay will handle)
+        return;
+      }
+      items.push(
+        <SortableSousFamille
+          sousFamille={sf}
+          famIdx={famIdx}
+          sfIdx={sfIdx}
+          onEdit={handleEditSousFamille}
+          onSave={handleSaveSousFamille}
+          onDelete={handleDeleteSousFamille}
+          dragState={getDragState(sf.id)}
+          key={sf.id}
+        />
+      );
     });
+
+    // If dropping at end of list, show placeholder last
+    if (sousFamilleDrop.atIndex === famille.sousFamilles.length) {
+      items.push(
+        <div
+          key="sousfamille-drop-placeholder-end"
+          className="relative my-2 rounded-lg"
+          style={{
+            height: 48,
+            border: '2px dashed #34d399',
+            background: 'rgba(34,197,94,0.09)',
+            position: 'relative',
+            transition: 'all 0.2s',
+            outline: '2px solid #22c55e40',
+            zIndex: 10,
+          }}
+        />
+      );
+    }
+
     return items;
   }
 
