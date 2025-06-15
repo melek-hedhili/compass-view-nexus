@@ -15,14 +15,22 @@ import {
   UpdateClientDto,
 } from "@/api-swagger";
 import { DataTable } from "@/components/ui/data-table";
-import { useQueryParams } from "@/hooks/use-query-params";
 import { useSocket } from "@/hooks/use-socket";
 
 const Dashboard = () => {
   const [selectedClient, setSelectedClient] = useState<ClientDto | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const socket = useSocket();
   const queryClient = useQueryClient();
+
+  // Consolidated pagination state
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
+    searchTerm: "",
+    sortField: "",
+    sortOrder: "asc" as "asc" | "desc",
+  });
 
   useEffect(() => {
     if (!socket) return;
@@ -38,25 +46,28 @@ const Dashboard = () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
     });
   }, [socket, queryClient]);
-  console.log("socket ----- ", socket);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const { page = "1", perPage = "10", sortField, sortOrder } = useQueryParams();
 
   const { data: clients, isLoading } = useQuery({
-    queryKey: ["clients", page, perPage, sortField, sortOrder],
+    queryKey: [
+      "clients",
+      paginationParams.page,
+      paginationParams.perPage,
+      paginationParams.sortField,
+      paginationParams.sortOrder,
+    ],
     queryFn: () =>
       ClientService.clientControllerFindAll({
-        page,
-        perPage,
-        ...(sortField && { sortField }),
-        ...(sortOrder && { sortOrder }),
+        page: paginationParams.page.toString(),
+        perPage: paginationParams.perPage.toString(),
+        ...(paginationParams.sortField && {
+          sortField: paginationParams.sortField,
+        }),
+        ...(paginationParams.sortOrder && {
+          sortOrder: paginationParams.sortOrder,
+        }),
       }),
   });
 
-  console.log("Query params:", { page, perPage, sortField, sortOrder });
-  console.log("API response:", clients);
-  console.log("selected client ----- ", selectedClient);
   const createClientMutation = useMutation({
     mutationFn: (createClientDto: CreateClientDto) =>
       ClientService.clientControllerCreate({
@@ -67,6 +78,7 @@ const Dashboard = () => {
       await queryClient.invalidateQueries({ queryKey: ["clients"] });
     },
   });
+
   const updateClientMutation = useMutation({
     mutationFn: ({
       id,
@@ -80,15 +92,13 @@ const Dashboard = () => {
         requestBody: updateClientDto,
       }),
   });
+
   const handleSelectClient = (client: ClientDto) => {
     setSelectedClient(client);
     setIsDrawerOpen(true);
   };
 
   const handleSaveClient = async (clientData: ClientDto) => {
-    // Here you would typically make an API call to save the client
-    // For now, we'll just update the local state
-
     if (selectedClient) {
       // Update existing client
       updateClientMutation.mutateAsync({
@@ -105,9 +115,40 @@ const Dashboard = () => {
     setIsDrawerOpen(false);
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      perPage: newPerPage,
+      page: 1, // Reset to first page when changing items per page
+    }));
+  };
+
+  const handleSort = (field: string, order: "asc" | "desc") => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      sortField: field,
+      sortOrder: order,
+    }));
+  };
+
+  const handleSearch = (value: string) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      searchTerm: value,
+      page: 1, // Reset to first page when searching
+    }));
+  };
+
   const filteredClients = clients?.data?.filter((client) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
+    if (!paginationParams.searchTerm) return true;
+    const term = paginationParams.searchTerm.toLowerCase();
     return (
       client.lastName?.toLowerCase().includes(term) ||
       client.firstName?.toLowerCase().includes(term) ||
@@ -137,8 +178,8 @@ const Dashboard = () => {
             <Input
               placeholder="Recherche..."
               className="pl-10 input-elegant"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={paginationParams.searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
           <Button
@@ -189,6 +230,13 @@ const Dashboard = () => {
           ]}
           loading={isLoading}
           onRowClick={handleSelectClient}
+          page={paginationParams.page}
+          perPage={paginationParams.perPage}
+          onPageChange={handlePageChange}
+          onPerPageChange={handlePerPageChange}
+          sortField={paginationParams.sortField}
+          sortOrder={paginationParams.sortOrder}
+          onSort={handleSort}
         />
       </div>
 

@@ -4,7 +4,14 @@ import type { ReactElement } from "react";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ChevronLeft, ChevronRight, Mail, FolderOpen, Archive } from "lucide-react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  FolderOpen,
+  Archive,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -229,6 +236,10 @@ const Dossiers = (): ReactElement => {
   const [fileName, setFileName] = useState("");
   const [isUrgent, setIsUrgent] = useState(false);
   const [selectedProvision, setSelectedProvision] = useState("");
+  const [selectedLegalForm, setSelectedLegalForm] = useState("");
+  const [selectedEmail, setSelectedEmail] = useState<ExtendedEmailDto | null>(
+    null
+  );
 
   // Pagination states
   const [currentEmailPage, setCurrentEmailPage] = useState(1);
@@ -700,11 +711,12 @@ const Dossiers = (): ReactElement => {
 
   // Fonction pour gérer le clic sur un email
   const handleEmailClick = (emailId: string, e: React.MouseEvent) => {
-    e.preventDefault();
     e.stopPropagation();
-    const selectedEmail = emailsData?.find((email) => email._id === emailId);
-    if (selectedEmail) {
-      setSelectedEmailId(emailId);
+    setSelectedEmailId(emailId);
+    // Find and set the selected email
+    const email = emailsData?.find((email) => email._id === emailId);
+    if (email) {
+      setSelectedEmail(email);
     }
   };
 
@@ -715,14 +727,13 @@ const Dossiers = (): ReactElement => {
 
   // Render mail content area
   const renderMailContent = () => {
-    if (activeTab !== "mail") return null;
+    if (!selectedEmailId) return null;
 
-    // Trouver l'email sélectionné
-    const selectedEmail = emailsData?.find(
-      (email) => email._id === selectedEmailId
-    );
-    console.log(" ------ selectedEmail -------", selectedEmail?._id);
-    console.log(" ------ selectedClientid -------", selectedEmail?.client._id);
+    // Find the selected email
+    const email = emailsData?.find((email) => email._id === selectedEmailId);
+    if (email) {
+      setSelectedEmail(email);
+    }
 
     return (
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -750,12 +761,12 @@ const Dossiers = (): ReactElement => {
           <div className="divide-y max-h-96 overflow-y-auto">
             {isEmailsLoading ? (
               <div className="p-3 text-center text-gray-500">Chargement...</div>
-            ) : paginatedEmails.length === 0 ? (
+            ) : filteredEmails.length === 0 ? (
               <div className="p-3 text-center text-gray-500">
                 Aucun email trouvé
               </div>
             ) : (
-              paginatedEmails.map((email) => (
+              filteredEmails.map((email) => (
                 <div
                   key={email._id}
                   className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -781,7 +792,7 @@ const Dossiers = (): ReactElement => {
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
                       Non traité
                     </span>
-                    {selectedEmailId === email.id && (
+                    {selectedEmailId === email._id && (
                       <span className="text-xs text-blue-600 font-medium">
                         Sélectionné
                       </span>
@@ -791,7 +802,7 @@ const Dossiers = (): ReactElement => {
               ))
             )}
           </div>
-          {/* Email pagination */}
+          {/* Email Pagination */}
           <PaginationControls
             currentPage={currentEmailPage}
             totalPages={totalEmailPages}
@@ -1202,7 +1213,7 @@ const Dossiers = (): ReactElement => {
                 <FolderOpen className="h-6 w-6 text-formality-primary" />
                 Dossiers
               </h1>
-              
+
               {/* Search Bar */}
               <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -1218,7 +1229,11 @@ const Dossiers = (): ReactElement => {
 
             {/* Main Card */}
             <Card className="overflow-hidden border-0 shadow-lg">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
                 {/* Enhanced Tab Navigation */}
                 <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                   <div className="overflow-x-auto">
@@ -1232,14 +1247,23 @@ const Dossiers = (): ReactElement => {
                             className="py-4 px-4 sm:px-6 rounded-none data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:shadow-sm flex items-center gap-2 transition-all whitespace-nowrap flex-shrink-0"
                           >
                             <IconComponent className="h-4 w-4" />
-                            <span className="hidden sm:inline">{tab.label}</span>
-                            <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
-                            <span className={`flex h-5 min-w-5 items-center justify-center rounded-full text-xs font-medium text-white px-1.5 ${
-                              tab.id === 'mail' ? 'bg-formality-primary' :
-                              tab.id === 'urgent' ? 'bg-red-500' :
-                              tab.id === 'bloque' ? 'bg-orange-500' :
-                              'bg-gray-500'
-                            }`}>
+                            <span className="hidden sm:inline">
+                              {tab.label}
+                            </span>
+                            <span className="sm:hidden">
+                              {tab.label.split(" ")[0]}
+                            </span>
+                            <span
+                              className={`flex h-5 min-w-5 items-center justify-center rounded-full text-xs font-medium text-white px-1.5 ${
+                                tab.id === "mail"
+                                  ? "bg-formality-primary"
+                                  : tab.id === "urgent"
+                                  ? "bg-red-500"
+                                  : tab.id === "bloque"
+                                  ? "bg-orange-500"
+                                  : "bg-gray-500"
+                              }`}
+                            >
                               {tab.count}
                             </span>
                           </TabsTrigger>
@@ -1301,7 +1325,9 @@ const Dossiers = (): ReactElement => {
                                       ? "bg-blue-50 border-l-4 border-blue-500"
                                       : ""
                                   }`}
-                                  onClick={(e) => handleEmailClick(email._id, e)}
+                                  onClick={(e) =>
+                                    handleEmailClick(email._id, e)
+                                  }
                                 >
                                   <div className="space-y-2">
                                     <div className="flex justify-between items-start">
@@ -1353,18 +1379,25 @@ const Dossiers = (): ReactElement => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                                   <div className="space-y-2">
                                     <div className="text-gray-600">
-                                      <span className="font-medium">De:</span> {selectedEmail.from}
+                                      <span className="font-medium">De:</span>{" "}
+                                      {selectedEmail.from}
                                     </div>
                                     <div className="text-gray-600">
-                                      <span className="font-medium">Client:</span> {selectedEmail.clientName}
+                                      <span className="font-medium">
+                                        Client:
+                                      </span>{" "}
+                                      {selectedEmail.clientName}
                                     </div>
                                   </div>
                                   <div className="space-y-2">
                                     <div className="text-gray-600">
-                                      <span className="font-medium">Date:</span> {selectedEmail.date}
+                                      <span className="font-medium">Date:</span>{" "}
+                                      {selectedEmail.date}
                                     </div>
                                     <div className="text-gray-600">
-                                      <span className="font-medium">Statut:</span>{" "}
+                                      <span className="font-medium">
+                                        Statut:
+                                      </span>{" "}
                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
                                         Non traité
                                       </span>
@@ -1384,9 +1417,12 @@ const Dossiers = (): ReactElement => {
                             <div className="h-full flex items-center justify-center text-gray-500">
                               <div className="text-center">
                                 <Mail className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                                <div className="text-lg mb-2">Sélectionnez un email</div>
+                                <div className="text-lg mb-2">
+                                  Sélectionnez un email
+                                </div>
                                 <div className="text-sm">
-                                  Choisissez un email dans la liste pour voir son contenu
+                                  Choisissez un email dans la liste pour voir
+                                  son contenu
                                 </div>
                               </div>
                             </div>
@@ -1398,7 +1434,9 @@ const Dossiers = (): ReactElement => {
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Nouveau Dossier Form */}
                         <Card className="p-6">
-                          <h3 className="text-lg font-medium mb-4">Nouveau dossier</h3>
+                          <h3 className="text-lg font-medium mb-4">
+                            Nouveau dossier
+                          </h3>
                           <div className="space-y-4">
                             <Select
                               value={selectedClientName}
@@ -1407,7 +1445,9 @@ const Dossiers = (): ReactElement => {
                                   (client) => client.clientName === value
                                 );
                                 if (selectedClient) {
-                                  setSelectedClientName(selectedClient.clientName);
+                                  setSelectedClientName(
+                                    selectedClient.clientName
+                                  );
                                   setSelectedclientId(selectedClient._id);
                                 }
                               }}
@@ -1417,13 +1457,16 @@ const Dossiers = (): ReactElement => {
                               </SelectTrigger>
                               <SelectContent>
                                 {clientsData?.map((client) => (
-                                  <SelectItem key={client._id} value={client.clientName}>
+                                  <SelectItem
+                                    key={client._id}
+                                    value={client.clientName}
+                                  >
                                     {client.clientName}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            
+
                             <Select
                               value={selectedProvision}
                               onValueChange={setSelectedProvision}
@@ -1473,7 +1516,9 @@ const Dossiers = (): ReactElement => {
                                 onChange={(e) => setIsUrgent(e.target.checked)}
                                 disabled={createFileMutation.isPending}
                               />
-                              <label htmlFor="urgent-check" className="text-sm">Urgent</label>
+                              <label htmlFor="urgent-check" className="text-sm">
+                                Urgent
+                              </label>
                             </div>
 
                             <Button
@@ -1495,7 +1540,9 @@ const Dossiers = (): ReactElement => {
 
                         {/* Associer à un Dossier Form */}
                         <Card className="p-6">
-                          <h3 className="text-lg font-medium mb-4">Associer à un dossier</h3>
+                          <h3 className="text-lg font-medium mb-4">
+                            Associer à un dossier
+                          </h3>
                           <div className="space-y-4">
                             <Select
                               value={selectedClientName}
@@ -1504,7 +1551,9 @@ const Dossiers = (): ReactElement => {
                                   (client) => client.clientName === value
                                 );
                                 if (selectedClient) {
-                                  setSelectedClientName(selectedClient.clientName);
+                                  setSelectedClientName(
+                                    selectedClient.clientName
+                                  );
                                   setSelectedclientId(selectedClient._id);
                                 }
                               }}
@@ -1515,7 +1564,10 @@ const Dossiers = (): ReactElement => {
                               </SelectTrigger>
                               <SelectContent>
                                 {clientsData?.map((client) => (
-                                  <SelectItem key={client._id} value={client.clientName}>
+                                  <SelectItem
+                                    key={client._id}
+                                    value={client.clientName}
+                                  >
                                     {client.clientName}
                                   </SelectItem>
                                 ))}
@@ -1533,7 +1585,9 @@ const Dossiers = (): ReactElement => {
                               <SelectContent>
                                 {filesData?.map((file) => (
                                   <SelectItem key={file._id} value={file._id}>
-                                    {file.name || file.fileName || `Dossier ${file._id}`}
+                                    {file.name ||
+                                      file.fileName ||
+                                      `Dossier ${file._id}`}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1546,7 +1600,12 @@ const Dossiers = (): ReactElement => {
                                 defaultChecked
                                 disabled={linkToFileMutation.isPending}
                               />
-                              <label htmlFor="acceder-check" className="text-sm">Accéder</label>
+                              <label
+                                htmlFor="acceder-check"
+                                className="text-sm"
+                              >
+                                Accéder
+                              </label>
                             </div>
 
                             <Button
@@ -1578,7 +1637,10 @@ const Dossiers = (): ReactElement => {
                             <TableBody>
                               {paginatedDossiers.length === 0 ? (
                                 <TableRow>
-                                  <TableCell colSpan={10} className="text-center py-8">
+                                  <TableCell
+                                    colSpan={10}
+                                    className="text-center py-8"
+                                  >
                                     <div className="flex flex-col items-center gap-2 text-gray-500">
                                       <FolderOpen className="h-8 w-8 text-gray-300" />
                                       <p>Aucun dossier trouvé</p>
@@ -1590,14 +1652,17 @@ const Dossiers = (): ReactElement => {
                                   <TableRow
                                     key={dossier.id}
                                     className="hover:bg-gray-50 cursor-pointer"
-                                    onClick={() => setSelectedDossierId(dossier.id)}
+                                    onClick={() =>
+                                      setSelectedDossierId(dossier.id)
+                                    }
                                   >
                                     <TableCell className="p-0 w-1">
                                       <div
                                         className={`w-1 h-full ${
                                           dossier.statutCreation === "Urgent"
                                             ? "bg-red-500"
-                                            : dossier.statutCreation === "Bloqué"
+                                            : dossier.statutCreation ===
+                                              "Bloqué"
                                             ? "bg-orange-500"
                                             : "bg-blue-500"
                                         }`}
@@ -1610,7 +1675,7 @@ const Dossiers = (): ReactElement => {
                             </TableBody>
                           </Table>
                         </div>
-                        
+
                         {/* Dossier Pagination */}
                         <PaginationControls
                           currentPage={currentDossierPage}

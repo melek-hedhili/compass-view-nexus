@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import {
   Table,
@@ -25,8 +24,6 @@ import {
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useQueryParams } from "@/hooks/use-query-params";
-import { useQueryUpdate } from "@/hooks/use-query-update";
 
 type ColumnKey<T> = keyof T;
 
@@ -50,6 +47,13 @@ interface DataTableProps<T extends Record<string, unknown>> {
   index?: string; // For prefixing query parameters
   showIndex?: boolean; // For showing row numbers
   renderListEmpty?: () => React.ReactNode;
+  page?: number;
+  perPage?: number;
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  onSort?: (field: string, order: "asc" | "desc") => void;
 }
 
 export function DataTable<T extends Record<string, unknown>>({
@@ -62,16 +66,14 @@ export function DataTable<T extends Record<string, unknown>>({
   index,
   showIndex = false,
   renderListEmpty,
+  page = 1,
+  perPage = 10,
+  onPageChange,
+  onPerPageChange,
+  sortField,
+  sortOrder,
+  onSort,
 }: DataTableProps<T>) {
-  const queryParams = useQueryParams();
-  const updateQuery = useQueryUpdate();
-
-  // Convert query params to numbers where needed
-  const page = Number(queryParams[`page${index || ""}`] || 1);
-  const perPage = Number(queryParams[`perPage${index || ""}`] || 10);
-  const sortField = queryParams[`sortField${index || ""}`];
-  const sortOrder = queryParams[`sortOrder${index || ""}`] || "asc";
-
   // Calculate pagination values
   const totalItems = count ?? data?.length ?? 0;
   const totalPages = Math.ceil(totalItems / perPage);
@@ -80,39 +82,27 @@ export function DataTable<T extends Record<string, unknown>>({
 
   // Handlers
   const handlePageChange = (newPage: number) => {
-    updateQuery({
-      [`page${index || ""}`]: newPage.toString(),
-      [`perPage${index || ""}`]: perPage.toString(),
-    });
+    if (onPageChange) {
+      onPageChange(newPage);
+    }
   };
 
   const handleItemsPerPageChange = (value: string) => {
-    const newItemsPerPage = parseInt(value);
-    console.log("Changing items per page to:", newItemsPerPage);
-
-    // Update both page and perPage parameters
-    const updates = {
-      [`page${index || ""}`]: "1", // Reset to first page
-      [`perPage${index || ""}`]: newItemsPerPage.toString(),
-    };
-
-    console.log("Updating query params:", updates);
-    updateQuery(updates);
+    if (onPerPageChange) {
+      onPerPageChange(Number(value));
+    }
   };
 
   const handleRequestSort = (
     property: keyof T | undefined,
     sortKey?: string
   ) => {
-    const isAsc = sortField === (sortKey || property) && sortOrder === "asc";
-    const updates = {
-      [`sortField${index || ""}`]: (sortKey || property || "").toString(),
-      [`sortOrder${index || ""}`]: isAsc ? "desc" : "asc",
-      [`page${index || ""}`]: "1", // Reset to first page when sorting
-    };
+    if (!onSort || !property) return;
 
-    console.log("Updating sort params:", updates);
-    updateQuery(updates);
+    const field = sortKey || String(property);
+    const newOrder =
+      sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    onSort(field, newOrder);
   };
 
   const renderCellValue = (column: Column<T>, row: T): React.ReactNode => {
