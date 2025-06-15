@@ -11,13 +11,12 @@ interface UseEmailNotificationsOptions {
 }
 
 export const useEmailNotifications = ({ isAuthenticated }: UseEmailNotificationsOptions) => {
-  // Only initialize the socket when authenticated
-  const socket = useSocket(isAuthenticated ? {} : undefined);
+  // Fix: Pass only a primitive so options ref does NOT change on each render!
+  const socket = useSocket(isAuthenticated ? undefined : undefined);
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Handle socket events (connect, disconnect, newEmail)
   useEffect(() => {
     if (!isAuthenticated || !socket) return;
 
