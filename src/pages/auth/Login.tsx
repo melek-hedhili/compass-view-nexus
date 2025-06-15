@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-formality-secondary animate-enter">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 animate-enter">
       <div className="w-full max-w-md p-8 space-y-8">
         <div className="text-center mb-10">
           <Logo className="mx-auto mb-6" />
