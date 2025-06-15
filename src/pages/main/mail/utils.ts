@@ -4,6 +4,9 @@ import { ReactNode } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
+/**
+ * ExtendedEmailDto matches how emails are passed around in views.
+ */
 export interface ExtendedEmailDto {
   _id: string;
   client?: { clientName: string };
@@ -16,6 +19,10 @@ export interface ExtendedEmailDto {
   [key: string]: unknown;
 }
 
+/**
+ * Returns the table column definitions, with renderers.
+ * @param activeTab string: "boite-mail", "archives", or "envoye"
+ */
 export function getTableColumns(activeTab: string) {
   return [
     {
@@ -60,9 +67,11 @@ export function getTableColumns(activeTab: string) {
       render: (_: unknown, row: Record<string, unknown>) =>
         (
           <div className="text-sm text-gray-500">
-            {row.date ? format(new Date(row.date as string), "dd/MM/yyyy HH:mm", {
-              locale: fr,
-            }) : "-"}
+            {row.date
+              ? format(new Date(row.date as string), "dd/MM/yyyy HH:mm", {
+                  locale: fr,
+                })
+              : "-"}
           </div>
         ) as ReactNode,
       className: "text-left font-medium w-32",
@@ -71,17 +80,20 @@ export function getTableColumns(activeTab: string) {
       key: "attachments",
       header: "PJ",
       render: (_: unknown, row) =>
-        (row.attachments && (row.attachments as number) > 0 ? (
+        row.attachments && (row.attachments as number) > 0 ? (
           <div className="flex items-center justify-center gap-1 text-xs font-medium bg-gray-100 rounded-md px-1.5 py-0.5">
             <Paperclip className="h-3 w-3" />
             {row.attachments as number}
           </div>
-        ) : null) as ReactNode,
+        ) : null,
       className: "w-16 text-center font-medium",
     },
   ];
 }
 
+/**
+ * Generic sort utility for the emails data in tables.
+ */
 export function sortData(
   data: ExtendedEmailDto[] | undefined,
   paginationParams: { sortField: string; sortOrder: "asc" | "desc" }
