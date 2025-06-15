@@ -17,6 +17,7 @@ import type { UserDto } from "@/api-swagger/models/UserDto";
 import type { CreateUserDto } from "@/api-swagger/models/CreateUserDto";
 import AppLayout from "@/components/layout/AppLayout";
 import NavTabs from "@/components/dashboard/NavTabs";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 // Update User interface to match UserDto
 interface User extends UserDto {
@@ -105,6 +106,9 @@ const Users = () => {
     },
   });
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+
   const handleCreateUser = async () => {
     if (!newUser.firstName || !newUser.login || !newUser.password) {
       toast.error("Veuillez remplir tous les champs obligatoires");
@@ -124,15 +128,25 @@ const Users = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (
-      window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")
-    ) {
+    setUserToDelete(userId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (userToDelete) {
       try {
-        await deleteUserMutation.mutateAsync(userId);
+        await deleteUserMutation.mutateAsync(userToDelete);
       } catch (error) {
         console.error("Error deleting user:", error);
       }
     }
+    setIsConfirmModalOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setUserToDelete(null);
   };
 
   const handleStartEdit = (user: UserDto) => {
@@ -620,6 +634,14 @@ const Users = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCancelDelete}
+        onPressConfirm={handleConfirmDelete}
+        title="Supprimer l'utilisateur"
+        description="Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
+      />
     </AppLayout>
   );
 };

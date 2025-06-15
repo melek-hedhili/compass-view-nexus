@@ -28,6 +28,7 @@ import { ListService } from "@/api-swagger/services/ListService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ListDto } from "@/api-swagger";
 import { CreatableAutoComplete } from "@/components/ui/creatable-autocomplete";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 const Lists = () => {
   const queryClient = useQueryClient();
@@ -35,6 +36,8 @@ const Lists = () => {
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [listToDelete, setListToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<Partial<ListDto>>({
     fieldName: "",
@@ -165,7 +168,21 @@ const Lists = () => {
   };
 
   const handleDeleteList = (id: string) => {
-    deleteListMutation.mutateAsync(id);
+    setListToDelete(id);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (listToDelete) {
+      deleteListMutation.mutateAsync(listToDelete);
+    }
+    setIsConfirmModalOpen(false);
+    setListToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setListToDelete(null);
   };
 
   // Pagination handlers
@@ -351,6 +368,15 @@ const Lists = () => {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCancelDelete}
+        onPressConfirm={handleConfirmDelete}
+        title="Supprimer la liste"
+        description="Êtes-vous sûr de vouloir supprimer cette liste ?"
+      />
     </AppLayout>
   );
 };

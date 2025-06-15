@@ -27,6 +27,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 const legalFormOptions = Object.values(CreateDocumentDto.legalForm);
 const benefitOptions = Object.values(CreateDocumentDto.benefit);
@@ -47,6 +48,8 @@ const Documents = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<DocumentForm>(initialForm);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
   // Consolidated pagination state
   const [paginationParams, setPaginationParams] = useState({
@@ -153,7 +156,21 @@ const Documents = () => {
   });
 
   const handleDeleteDocument = (docId: string) => {
-    deleteDocumentMutation.mutateAsync(docId);
+    setDocumentToDelete(docId);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (documentToDelete) {
+      deleteDocumentMutation.mutateAsync(documentToDelete);
+    }
+    setIsConfirmModalOpen(false);
+    setDocumentToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmModalOpen(false);
+    setDocumentToDelete(null);
   };
 
   // Pagination handlers
@@ -403,6 +420,14 @@ const Documents = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCancelDelete}
+        onPressConfirm={handleConfirmDelete}
+        title="Supprimer le document"
+        description="Êtes-vous sûr de vouloir supprimer ce document ?"
+      />
     </AppLayout>
   );
 };
