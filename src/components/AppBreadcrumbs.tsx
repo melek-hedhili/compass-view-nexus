@@ -36,13 +36,13 @@ const AppBreadcrumbs = () => {
   }
 
   return (
-    <div className="mb-0">
+    <div className="mb-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/dashboard" className="flex items-center text-white">
-                <Home className="h-4 w-4" color="white" />
+              <Link to="/dashboard" className="flex items-center">
+                <Home className="h-4 w-4" />
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
@@ -54,19 +54,13 @@ const AppBreadcrumbs = () => {
 
             return (
               <React.Fragment key={name}>
-                <BreadcrumbSeparator>
-                  <span className="text-white/80">/</span>
-                </BreadcrumbSeparator>
+                <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   {isLast ? (
-                    <BreadcrumbPage className="text-white font-semibold">
-                      {displayName}
-                    </BreadcrumbPage>
+                    <BreadcrumbPage>{displayName}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
-                      <Link className="text-white/90 hover:underline" to={routeTo}>
-                        {displayName}
-                      </Link>
+                      <Link to={routeTo}>{displayName}</Link>
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>

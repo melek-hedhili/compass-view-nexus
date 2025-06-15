@@ -386,122 +386,112 @@ const Mail = () => {
             </Button>
           </div>
         </div>
-        {/* Card/Box style container for DataTable, same as /dashboard */}
-        <div className="card-elegant w-full">
-          <Tabs
-            defaultValue="boite-mail"
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <div className="bg-transparent border-b-0">
-              <TabsList className="bg-transparent p-0 h-auto w-full rounded-none">
-                <TabsTrigger value="boite-mail" className="px-4 py-2 font-medium text-gray-700 rounded-none border-b-2 border-transparent data-[state=active]:text-formality-primary data-[state=active]:border-formality-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
-                  Boîte mail
-                </TabsTrigger>
-                <TabsTrigger value="archives" className="px-4 py-2 font-medium text-gray-700 rounded-none border-b-2 border-transparent data-[state=active]:text-formality-primary data-[state=active]:border-formality-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
-                  Archives
-                </TabsTrigger>
-                <TabsTrigger value="envoye" className="px-4 py-2 font-medium text-gray-700 rounded-none border-b-2 border-transparent data-[state=active]:text-formality-primary data-[state=active]:border-formality-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
-                  Envoyé
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            {/* DataTable listings for each tab */}
-            <TabsContent
-              value="boite-mail"
-              className="py-4 px-0 rounded-none flex items-center gap-2 transition-all"
-            >
-              <div className="flex flex-col h-full w-full">
-                <div className="flex-1 overflow-auto w-full">
-                  <DataTable
-                    data={sortedInboxData || []}
-                    count={inboxData?.count}
-                    columns={columns}
-                    loading={isLoading}
-                    onRowClick={(row) =>
-                      handleSelectMail(row._id as string)
-                    }
-                    page={paginationParams.page}
-                    perPage={paginationParams.perPage}
-                    onPageChange={handlePageChange}
-                    onPerPageChange={handlePerPageChange}
-                    sortField={paginationParams.sortField}
-                    sortOrder={paginationParams.sortOrder}
-                    onSort={handleSort}
-                    renderListEmpty={() => (
-                      <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                        Aucun mail trouvé
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent
-              value="archives"
-              className="py-4 px-0 rounded-none flex items-center gap-2 transition-all"
-            >
-              <div className="flex flex-col h-full w-full">
-                <div className="flex-1 overflow-auto w-full">
-                  <DataTable
-                    data={sortedArchivedData || []}
-                    count={archivedData?.count}
-                    columns={columns}
-                    loading={isLoading}
-                    onRowClick={(row) =>
-                      handleSelectMail(row._id as string)
-                    }
-                    page={paginationParams.page}
-                    perPage={paginationParams.perPage}
-                    onPageChange={handlePageChange}
-                    onPerPageChange={handlePerPageChange}
-                    sortField={paginationParams.sortField}
-                    sortOrder={paginationParams.sortOrder}
-                    onSort={handleSort}
-                    renderListEmpty={() => (
-                      <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                        Aucun mail trouvé
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent
-              value="envoye"
-              className="mt-0 h-[calc(100%-49px)] px-0"
-            >
-              <div className="flex flex-col h-full w-full">
-                <div className="flex-1 overflow-auto w-full">
-                  <DataTable
-                    data={sortedSentData || []}
-                    count={sentData?.count}
-                    columns={columns}
-                    loading={isLoading}
-                    onRowClick={(row) =>
-                      handleSelectMail(row._id as string)
-                    }
-                    page={paginationParams.page}
-                    perPage={paginationParams.perPage}
-                    onPageChange={handlePageChange}
-                    onPerPageChange={handlePerPageChange}
-                    sortField={paginationParams.sortField}
-                    sortOrder={paginationParams.sortOrder}
-                    onSort={handleSort}
-                    renderListEmpty={() => (
-                      <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                        Aucun mail trouvé
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
 
-        {/* ... keep existing code (Mail detail, reply, and new message drawers) the same ... */}
+        {/* No Card/Box, just the Tabs and DataTable */}
+        <Tabs
+          defaultValue="boite-mail"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+            <TabsList className="bg-transparent p-0 h-auto w-full rounded-none">
+              <TabsContent
+                value="boite-mail"
+                className="py-4 px-0 rounded-none flex items-center gap-2 transition-all"
+              >
+                <div className="flex flex-col h-full w-full">
+                  <div className="flex-1 overflow-auto w-full">
+                    <DataTable
+                      data={sortedInboxData || []}
+                      count={inboxData?.count}
+                      columns={columns}
+                      loading={isLoading}
+                      onRowClick={(row) =>
+                        handleSelectMail(row._id as string)
+                      }
+                      page={paginationParams.page}
+                      perPage={paginationParams.perPage}
+                      onPageChange={handlePageChange}
+                      onPerPageChange={handlePerPageChange}
+                      sortField={paginationParams.sortField}
+                      sortOrder={paginationParams.sortOrder}
+                      onSort={handleSort}
+                      renderListEmpty={() => (
+                        <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                          Aucun mail trouvé
+                        </div>
+                      )}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+              {/* ... keep existing code (archives and sent tabs, with px-0) ... */}
+              <TabsContent
+                value="archives"
+                className="py-4 px-0 rounded-none flex items-center gap-2 transition-all"
+              >
+                <div className="flex flex-col h-full w-full">
+                  <div className="flex-1 overflow-auto w-full">
+                    <DataTable
+                      data={sortedArchivedData || []}
+                      count={archivedData?.count}
+                      columns={columns}
+                      loading={isLoading}
+                      onRowClick={(row) =>
+                        handleSelectMail(row._id as string)
+                      }
+                      page={paginationParams.page}
+                      perPage={paginationParams.perPage}
+                      onPageChange={handlePageChange}
+                      onPerPageChange={handlePerPageChange}
+                      sortField={paginationParams.sortField}
+                      sortOrder={paginationParams.sortOrder}
+                      onSort={handleSort}
+                      renderListEmpty={() => (
+                        <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                          Aucun mail trouvé
+                        </div>
+                      )}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent
+                value="envoye"
+                className="mt-0 h-[calc(100%-49px)] px-0"
+              >
+                <div className="flex flex-col h-full w-full">
+                  <div className="flex-1 overflow-auto w-full">
+                    <DataTable
+                      data={sortedSentData || []}
+                      count={sentData?.count}
+                      columns={columns}
+                      loading={isLoading}
+                      onRowClick={(row) =>
+                        handleSelectMail(row._id as string)
+                      }
+                      page={paginationParams.page}
+                      perPage={paginationParams.perPage}
+                      onPageChange={handlePageChange}
+                      onPerPageChange={handlePerPageChange}
+                      sortField={paginationParams.sortField}
+                      sortOrder={paginationParams.sortOrder}
+                      onSort={handleSort}
+                      renderListEmpty={() => (
+                        <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                          Aucun mail trouvé
+                        </div>
+                      )}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </TabsList>
+          </div>
+        </Tabs>
+
+        {/* Mail Detail Drawer */}
         <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <SheetContent
             side="right"
@@ -521,6 +511,7 @@ const Mail = () => {
           </SheetContent>
         </Sheet>
 
+        {/* Reply Drawer */}
         <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
           <SheetContent
             side="right"
@@ -540,6 +531,7 @@ const Mail = () => {
           </SheetContent>
         </Sheet>
 
+        {/* New Message Sheet Drawer */}
         <Sheet open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
           <SheetContent
             side="right"

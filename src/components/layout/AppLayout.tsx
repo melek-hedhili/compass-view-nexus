@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -25,15 +24,18 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { logout, user, isAuthenticated } = useAuth();
+  const { logout, user, isAuthenticated } = useAuth(); // add isAuthenticated!
   const location = useLocation();
   const isMobile = useIsMobile();
+
+  // Only set up email notifications when authenticated
   useEmailNotifications({ isAuthenticated });
 
   const isActive = (path: string) => {
     if (path === "/dashboard" && location.pathname === "/dashboard") {
       return true;
     }
+
     if (
       path === "/dashboard" &&
       (location.pathname.includes("/dashboard/quotes") ||
@@ -45,6 +47,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     ) {
       return true;
     }
+
     return (
       location.pathname === path ||
       (location.pathname.startsWith(path) && path !== "/dashboard")
@@ -58,10 +61,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Sidebar 
           variant="sidebar" 
           collapsible={isMobile ? "offcanvas" : "icon"}
-          // Set the sidebar background to orange - unified theme
-          className="border-r border-gray-200 bg-formality-primary"
+          className="border-r border-gray-200 bg-white"
         >
-          <SidebarHeader className="border-b border-gray-100 bg-formality-primary">
+          <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
             <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
                 <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
@@ -79,8 +81,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </div>
           </SidebarHeader>
           
-          <SidebarContent className="px-3 py-4 bg-formality-primary">
+          <SidebarContent className="px-3 py-4 bg-white">
             <SidebarMenu className="space-y-2">
+              {/* Show Mail feature to Admin and Juriste only */}
               {(user?.role === "ADMIN" || user?.role === "JURIST") && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -88,8 +91,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     isActive={isActive("/dashboard/mail")}
                     className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard/mail")
-                        ? "bg-white/5 text-white font-semibold border border-white/20 shadow-sm hover:bg-white/10"
-                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                        ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
                     <Link
@@ -103,14 +106,15 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </SidebarMenuItem>
               )}
 
+              {/* Show Dossiers feature to all users */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive("/dashboard/dossiers")}
                   className={`transition-all duration-200 rounded-lg ${
                     isActive("/dashboard/dossiers")
-                      ? "bg-white/5 text-white font-semibold border border-white/20 shadow-sm hover:bg-white/10"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                      ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                   }`}
                 >
                   <Link
@@ -123,6 +127,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
+              {/* Show Settings feature to Admin and Jurist only */}
               {(user?.role === "ADMIN" || user?.role === "JURIST") && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
@@ -130,8 +135,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     isActive={isActive("/dashboard")}
                     className={`transition-all duration-200 rounded-lg ${
                       isActive("/dashboard")
-                        ? "bg-white/5 text-white font-semibold border border-white/20 shadow-sm hover:bg-white/10"
-                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                        ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
                     }`}
                   >
                     <Link
@@ -147,11 +152,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </SidebarMenu>
           </SidebarContent>
           
-          <SidebarFooter className="border-t border-amber-200 bg-formality-primary/90 px-3 py-3">
+          <SidebarFooter className="border-t border-gray-100 bg-gray-50/50 px-3 py-3">
             <Button
               variant="ghost"
               onClick={logout}
-              className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-white/80 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-data-[collapsible=icon]:justify-center"
+              className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-data-[collapsible=icon]:justify-center"
             >
               <LogOut size={18} className="flex-shrink-0" />
               <span className="group-data-[collapsible=icon]:hidden font-medium">Déconnexion</span>
@@ -162,25 +167,22 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         {/* Main content area */}
         <main className="flex-1 overflow-auto bg-gray-50">
           {/* Mobile header - always visible on mobile */}
-          <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-formality-primary px-4 py-3 shadow-sm md:hidden">
-            <SidebarTrigger className="rounded-md border border-amber-200 bg-formality-primary p-2 hover:bg-amber-100/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
-              <Menu className="h-5 w-5 text-white" />
+          <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm md:hidden">
+            <SidebarTrigger className="rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
+              <Menu className="h-5 w-5 text-gray-700" />
             </SidebarTrigger>
             <Link to="/dashboard" className="flex items-center">
               <Logo />
             </Link>
             {user && (
-              <div className="ml-auto text-xs font-medium text-white bg-formality-primary/20 px-2 py-1 rounded">
+              <div className="ml-auto text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">
                 {user.role}
               </div>
             )}
           </div>
-          {/* Breadcrumbs header with unified background */}
-          <div className="sticky top-0 z-40 bg-formality-primary px-6 py-3 shadow-sm">
-            {/* Use white text for contrast */}
-            <AppBreadcrumbs />
-          </div>
+          
           <div className="p-6 w-full">
+            <AppBreadcrumbs />
             {children}
           </div>
         </main>
