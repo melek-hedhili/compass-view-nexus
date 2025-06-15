@@ -10,6 +10,7 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  DragOverEvent,
   closestCenter,
   PointerSensor,
   useSensor,
@@ -47,7 +48,9 @@ function SortableFamille({
   onAddSousFamille,
   onEditSousFamille,
   onSaveSousFamille,
-  onDeleteSousFamille
+  onDeleteSousFamille,
+  isDraggedOver,
+  draggedOverPosition
 }: {
   famille: Famille;
   famIdx: number;
@@ -57,6 +60,8 @@ function SortableFamille({
   onEditSousFamille: (famIdx: number, sfIdx: number) => void;
   onSaveSousFamille: (famIdx: number, sfIdx: number, newName: string) => void;
   onDeleteSousFamille: (famIdx: number, sfIdx: number) => void;
+  isDraggedOver?: boolean;
+  draggedOverPosition?: 'above' | 'below';
 }) {
   const {
     attributes,
@@ -64,97 +69,121 @@ function SortableFamille({
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id: famille.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: transition || 'transform 200ms ease',
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="group relative">
-      <Card className="transition-all duration-200 hover:shadow-md">
-        <CardContent className="p-3 sm:p-4">
-          {/* Famille Header */}
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-              <GripVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-formality-primary transition-colors flex-shrink-0" />
-            </div>
-            <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0"></div>
-            <div className="flex-1 min-w-0 flex items-center gap-2">
-              {famille.isEditing ? (
-                <Input 
-                  defaultValue={famille.name}
-                  autoFocus
-                  onBlur={(e) => onSave(famIdx, e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      onSave(famIdx, e.currentTarget.value);
-                    }
-                  }}
-                  className="font-medium text-sm sm:text-base" 
-                />
-              ) : (
-                <div 
-                  className="font-medium cursor-pointer hover:bg-gray-50 p-2 rounded text-sm sm:text-base truncate flex-1"
-                  onClick={() => onEdit(famIdx)}
-                >
-                  {famille.name}
+    <>
+      {/* Drop indicator above */}
+      {isDraggedOver && draggedOverPosition === 'above' && (
+        <div className="h-1 bg-blue-500 rounded-full mx-4 animate-pulse" />
+      )}
+      
+      <div 
+        ref={setNodeRef} 
+        style={style} 
+        className={cn(
+          "group relative transition-all duration-200",
+          isDragging && "opacity-50 scale-95 z-50",
+          isDraggedOver && "scale-105"
+        )}
+      >
+        <Card className={cn(
+          "transition-all duration-200 hover:shadow-md border-2",
+          isDraggedOver ? "border-blue-300 shadow-lg" : "border-transparent"
+        )}>
+          <CardContent className="p-3 sm:p-4">
+            {/* Famille Header */}
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+                <GripVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-formality-primary transition-colors flex-shrink-0" />
+              </div>
+              <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0"></div>
+              <div className="flex-1 min-w-0 flex items-center gap-2">
+                {famille.isEditing ? (
+                  <Input 
+                    defaultValue={famille.name}
+                    autoFocus
+                    onBlur={(e) => onSave(famIdx, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        onSave(famIdx, e.currentTarget.value);
+                      }
+                    }}
+                    className="font-medium text-sm sm:text-base" 
+                  />
+                ) : (
+                  <div 
+                    className="font-medium cursor-pointer hover:bg-gray-50 p-2 rounded text-sm sm:text-base truncate flex-1"
+                    onClick={() => onEdit(famIdx)}
+                  >
+                    {famille.name}
+                  </div>
+                )}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="bg-blue-50 text-blue-600 border-blue-200 h-7 px-2 text-xs"
+                    onClick={() => onEdit(famIdx)}
+                  >
+                    <Edit3 className="h-3 w-3 sm:mr-1" />
+                    <span className="hidden sm:inline">Famille</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2"
+                    onClick={() => onAddSousFamille(famIdx)}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
                 </div>
-              )}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-blue-50 text-blue-600 border-blue-200 h-7 px-2 text-xs"
-                  onClick={() => onEdit(famIdx)}
-                >
-                  <Edit3 className="h-3 w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">Famille</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2"
-                  onClick={() => onAddSousFamille(famIdx)}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
               </div>
             </div>
-          </div>
 
-          {/* Sous Familles */}
-          <div className="ml-4 sm:ml-8 space-y-2">
-            <SortableContext 
-              items={famille.sousFamilles.map(sf => sf.id)} 
-              strategy={verticalListSortingStrategy}
-            >
-              {famille.sousFamilles.map((sf, sfIdx) => (
-                <SortableSousFamille
-                  key={sf.id}
-                  sousFamille={sf}
-                  famIdx={famIdx}
-                  sfIdx={sfIdx}
-                  onEdit={onEditSousFamille}
-                  onSave={onSaveSousFamille}
-                  onDelete={onDeleteSousFamille}
-                />
-              ))}
-            </SortableContext>
-            
-            {/* Add Sous Famille Button */}
-            <div 
-              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border-2 border-dashed border-gray-200 hover:border-green-300 hover:bg-green-50/50 transition-all duration-200 cursor-pointer group/add"
-              onClick={() => onAddSousFamille(famIdx)}
-            >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 group-hover/add:text-green-500 transition-colors flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-gray-500 group-hover/add:text-green-600 transition-colors">Ajouter une sous-famille</span>
+            {/* Sous Familles */}
+            <div className="ml-4 sm:ml-8 space-y-2">
+              <SortableContext 
+                items={famille.sousFamilles.map(sf => sf.id)} 
+                strategy={verticalListSortingStrategy}
+              >
+                {famille.sousFamilles.map((sf, sfIdx) => (
+                  <SortableSousFamille
+                    key={sf.id}
+                    sousFamille={sf}
+                    famIdx={famIdx}
+                    sfIdx={sfIdx}
+                    onEdit={onEditSousFamille}
+                    onSave={onSaveSousFamille}
+                    onDelete={onDeleteSousFamille}
+                  />
+                ))}
+              </SortableContext>
+              
+              {/* Add Sous Famille Button */}
+              <div 
+                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border-2 border-dashed border-gray-200 hover:border-green-300 hover:bg-green-50/50 transition-all duration-200 cursor-pointer group/add"
+                onClick={() => onAddSousFamille(famIdx)}
+              >
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 group-hover/add:text-green-500 transition-colors flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-gray-500 group-hover/add:text-green-600 transition-colors">Ajouter une sous-famille</span>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Drop indicator below */}
+      {isDraggedOver && draggedOverPosition === 'below' && (
+        <div className="h-1 bg-blue-500 rounded-full mx-4 animate-pulse" />
+      )}
+    </>
   );
 }
 
@@ -165,7 +194,9 @@ function SortableSousFamille({
   sfIdx,
   onEdit,
   onSave,
-  onDelete
+  onDelete,
+  isDraggedOver,
+  draggedOverPosition
 }: {
   sousFamille: SousFamille;
   famIdx: number;
@@ -173,6 +204,8 @@ function SortableSousFamille({
   onEdit: (famIdx: number, sfIdx: number) => void;
   onSave: (famIdx: number, sfIdx: number, newName: string) => void;
   onDelete: (famIdx: number, sfIdx: number) => void;
+  isDraggedOver?: boolean;
+  draggedOverPosition?: 'above' | 'below';
 }) {
   const {
     attributes,
@@ -180,65 +213,82 @@ function SortableSousFamille({
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id: sousFamille.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: transition || 'transform 200ms ease',
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200 hover:bg-gray-50"
-    >
-      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-        <GripVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-colors flex-shrink-0" />
-      </div>
-      <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0"></div>
-      <div className="flex-1 min-w-0 flex items-center gap-2">
-        {sousFamille.isEditing ? (
-          <Input 
-            defaultValue={sousFamille.name}
-            autoFocus
-            onBlur={(e) => onSave(famIdx, sfIdx, e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                onSave(famIdx, sfIdx, e.currentTarget.value);
-              }
-            }}
-            className="text-xs sm:text-sm" 
-          />
-        ) : (
-          <div 
-            className="text-xs sm:text-sm cursor-pointer hover:bg-gray-50 p-2 rounded truncate flex-1"
-            onClick={() => onEdit(famIdx, sfIdx)}
-          >
-            {sousFamille.name}
-          </div>
+    <>
+      {/* Drop indicator above */}
+      {isDraggedOver && draggedOverPosition === 'above' && (
+        <div className="h-0.5 bg-green-500 rounded-full mx-2 animate-pulse" />
+      )}
+      
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200",
+          isDragging ? "opacity-50 scale-95 z-50" : "hover:bg-gray-50",
+          isDraggedOver && "bg-green-50 scale-105 shadow-md"
         )}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="bg-green-50 text-green-600 border-green-200 opacity-0 group-hover/sf:opacity-100 transition-opacity h-6 px-1 text-xs"
-            onClick={() => onEdit(famIdx, sfIdx)}
-          >
-            <Edit3 className="h-2 w-2 sm:h-3 sm:w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Sous Famille</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="opacity-0 group-hover/sf:opacity-100 transition-opacity text-red-500 hover:text-red-700 h-6 px-1"
-            onClick={() => onDelete(famIdx, sfIdx)}
-          >
-            <X className="h-2 w-2 sm:h-3 sm:w-3" />
-          </Button>
+      >
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <GripVertical className="h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-colors flex-shrink-0" />
+        </div>
+        <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0"></div>
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          {sousFamille.isEditing ? (
+            <Input 
+              defaultValue={sousFamille.name}
+              autoFocus
+              onBlur={(e) => onSave(famIdx, sfIdx, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onSave(famIdx, sfIdx, e.currentTarget.value);
+                }
+              }}
+              className="text-xs sm:text-sm" 
+            />
+          ) : (
+            <div 
+              className="text-xs sm:text-sm cursor-pointer hover:bg-gray-50 p-2 rounded truncate flex-1"
+              onClick={() => onEdit(famIdx, sfIdx)}
+            >
+              {sousFamille.name}
+            </div>
+          )}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-green-50 text-green-600 border-green-200 opacity-0 group-hover/sf:opacity-100 transition-opacity h-6 px-1 text-xs"
+              onClick={() => onEdit(famIdx, sfIdx)}
+            >
+              <Edit3 className="h-2 w-2 sm:h-3 sm:w-3 sm:mr-1" />
+              <span className="hidden sm:inline">Sous Famille</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="opacity-0 group-hover/sf:opacity-100 transition-opacity text-red-500 hover:text-red-700 h-6 px-1"
+              onClick={() => onDelete(famIdx, sfIdx)}
+            >
+              <X className="h-2 w-2 sm:h-3 sm:w-3" />
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Drop indicator below */}
+      {isDraggedOver && draggedOverPosition === 'below' && (
+        <div className="h-0.5 bg-green-500 rounded-full mx-2 animate-pulse" />
+      )}
+    </>
   );
 }
 
@@ -263,6 +313,7 @@ export const ArborescenceTreePreview: React.FC = () => {
   });
 
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -327,7 +378,6 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Add handlers
   const handleAddFamille = () => {
     const newFamille: Famille = {
       id: generateId(),
@@ -358,7 +408,6 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Delete handlers
   const handleDeleteSousFamille = (famIdx: number, sfIdx: number) => {
     setTree(prev => ({
       ...prev,
@@ -371,14 +420,19 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Drag handlers
+  // Enhanced drag handlers
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    setOverId(event.over?.id as string || null);
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
+    setOverId(null);
 
     if (!over || active.id === over.id) return;
 
@@ -415,11 +469,46 @@ export const ArborescenceTreePreview: React.FC = () => {
     }
   }
 
+  // Helper function to determine if an item is being dragged over
+  const getItemDragState = (itemId: string) => {
+    if (!activeId || !overId || activeId === itemId) return {};
+    
+    const isDraggedOver = overId === itemId;
+    return {
+      isDraggedOver,
+      draggedOverPosition: 'below' as const // You could make this more sophisticated
+    };
+  };
+
+  // Get the dragged item for overlay
+  const getDraggedItem = () => {
+    if (!activeId) return null;
+
+    // Check if it's a famille
+    const famille = tree.familles.find(f => f.id === activeId);
+    if (famille) {
+      return { type: 'famille', item: famille };
+    }
+
+    // Check if it's a sous-famille
+    for (const fam of tree.familles) {
+      const sousFamille = fam.sousFamilles.find(sf => sf.id === activeId);
+      if (sousFamille) {
+        return { type: 'sousFamille', item: sousFamille };
+      }
+    }
+
+    return null;
+  };
+
+  const draggedItem = getDraggedItem();
+
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div className="min-h-[500px] p-3 sm:p-6">
@@ -477,6 +566,7 @@ export const ArborescenceTreePreview: React.FC = () => {
                     onEditSousFamille={handleEditSousFamille}
                     onSaveSousFamille={handleSaveSousFamille}
                     onDeleteSousFamille={handleDeleteSousFamille}
+                    {...getItemDragState(famille.id)}
                   />
                 ))}
               </SortableContext>
@@ -516,15 +606,23 @@ export const ArborescenceTreePreview: React.FC = () => {
         </div>
       </div>
 
-      <DragOverlay>
-        {activeId ? (
-          <div className="opacity-50">
-            <Card className="shadow-lg">
+      <DragOverlay dropAnimation={{
+        duration: 200,
+        easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+      }}>
+        {draggedItem ? (
+          <div className="opacity-90 rotate-3 scale-105">
+            <Card className="shadow-2xl border-2 border-blue-400">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
-                  <GripVertical className="h-4 w-4 text-gray-400" />
-                  <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
-                  <span className="font-medium">Dragging...</span>
+                  <GripVertical className="h-4 w-4 text-blue-500" />
+                  <div className={cn(
+                    "w-1 h-6 rounded-full",
+                    draggedItem.type === 'famille' ? "bg-blue-500" : "bg-green-500"
+                  )}></div>
+                  <span className="font-medium text-gray-800">
+                    {draggedItem.item.name}
+                  </span>
                 </div>
               </CardContent>
             </Card>
