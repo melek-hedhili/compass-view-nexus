@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ReactNode } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 
 // Extend EmailDto with additional properties we need
 interface ExtendedEmailDto extends EmailDto {
@@ -114,6 +115,11 @@ const Mail = () => {
   const sentData = sentQuery.data;
   const isSentLoading = sentQuery.isLoading;
   const sentError = sentQuery.error;
+
+  // Counts for each tab (Inbox, Archived, Sent)
+  const inboxCount = inboxData?.count || 0;
+  const archivedCount = archivedData?.count || 0;
+  const sentCount = sentData?.count || 0;
 
   // Find the selected mail based on the active tab
   const selectedMailData = useMemo(() => {
@@ -387,36 +393,108 @@ const Mail = () => {
           </div>
         </div>
 
-        {/* No Card/Box, just the Tabs and DataTable */}
-        <div className="card-elegant w-full">
-          <DataTable
-            data={sortedInboxData || []}
-            count={inboxData?.count}
-            columns={columns}
-            loading={isLoading}
-            onRowClick={(row) => handleSelectMail(row._id as string)}
-            page={paginationParams.page}
-            perPage={paginationParams.perPage}
-            onPageChange={handlePageChange}
-            onPerPageChange={handlePerPageChange}
-            sortField={paginationParams.sortField}
-            sortOrder={paginationParams.sortOrder}
-            onSort={handleSort}
-            renderListEmpty={() => (
-              <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                Aucun mail trouvé
-              </div>
-            )}
-          />
-        </div>
+        {/* Segmented Tabs with counts */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+          <TabsList className="flex gap-2 rounded-lg bg-gray-100 p-1 w-full md:w-auto">
+            <TabsTrigger value="boite-mail" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+              Boîte de réception
+              <Badge variant="secondary" className="ml-2 px-2">
+                {inboxCount}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="archives" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+              Archivé
+              <Badge variant="secondary" className="ml-2 px-2">
+                {archivedCount}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="envoye" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+              Envoyé
+              <Badge variant="secondary" className="ml-2 px-2">
+                {sentCount}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="boite-mail" className="focus-visible:outline-none mt-4">
+            <div className="bg-white rounded-lg shadow p-0">
+              <DataTable
+                data={sortedInboxData || []}
+                count={inboxData?.count}
+                columns={columns}
+                loading={isLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                page={paginationParams.page}
+                perPage={paginationParams.perPage}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
+                sortField={paginationParams.sortField}
+                sortOrder={paginationParams.sortOrder}
+                onSort={handleSort}
+                renderListEmpty={() => (
+                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                    Aucun mail trouvé
+                  </div>
+                )}
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="archives" className="focus-visible:outline-none mt-4">
+            <div className="bg-white rounded-lg shadow p-0">
+              <DataTable
+                data={sortedArchivedData || []}
+                count={archivedData?.count}
+                columns={columns}
+                loading={isLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                page={paginationParams.page}
+                perPage={paginationParams.perPage}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
+                sortField={paginationParams.sortField}
+                sortOrder={paginationParams.sortOrder}
+                onSort={handleSort}
+                renderListEmpty={() => (
+                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                    Aucun mail archivé trouvé
+                  </div>
+                )}
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="envoye" className="focus-visible:outline-none mt-4">
+            <div className="bg-white rounded-lg shadow p-0">
+              <DataTable
+                data={sortedSentData || []}
+                count={sentData?.count}
+                columns={columns}
+                loading={isLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                page={paginationParams.page}
+                perPage={paginationParams.perPage}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
+                sortField={paginationParams.sortField}
+                sortOrder={paginationParams.sortOrder}
+                onSort={handleSort}
+                renderListEmpty={() => (
+                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                    Aucun mail envoyé trouvé
+                  </div>
+                )}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Mail Detail Drawer */}
         <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <SheetContent
             side="right"
-            className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+            className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
+            style={{ overflow: "auto" }}
           >
-            <div className="py-4">
+            {/* Make whole drawer scrollable, not just form: remove internal py/padding that creates fixed height */}
+            <div className="h-full">
               <MailDetail
                 mail={selectedMailData}
                 onClose={handleCloseDrawer}
@@ -434,9 +512,10 @@ const Mail = () => {
         <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
           <SheetContent
             side="right"
-            className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+            className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
+            style={{ overflow: "auto" }}
           >
-            <div className="py-4">
+            <div className="h-full">
               {replyToEmail && (
                 <ReplyModal
                   onClose={() => {
@@ -454,10 +533,12 @@ const Mail = () => {
         <Sheet open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
           <SheetContent
             side="right"
-            className="w-full sm:max-w-xl overflow-y-auto lg:w-[600px] animate-slide-in-right p-0"
-            style={{ boxShadow: "0 8px 40px 0 rgba(0,0,0,.10)" }}
+            className="w-full sm:max-w-xl lg:w-[600px] h-full max-h-screen p-0"
+            style={{ overflow: "auto", boxShadow: "0 8px 40px 0 rgba(0,0,0,.10)" }}
           >
-            <NewMessageModal onClose={() => setIsNewMessageOpen(false)} />
+            <div className="h-full">
+              <NewMessageModal onClose={() => setIsNewMessageOpen(false)} />
+            </div>
           </SheetContent>
         </Sheet>
       </div>
