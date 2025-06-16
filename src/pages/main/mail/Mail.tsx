@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from "react";
-import AppLayout from "../../../components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -330,219 +329,213 @@ const Mail = () => {
   // Display loading state
   if (isLoading) {
     return (
-      <AppLayout>
-        <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary"></div>
-              <p className="text-gray-600">Chargement des emails...</p>
-            </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary"></div>
+            <p className="text-gray-600">Chargement des emails...</p>
           </div>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
   // Display error state
   if (error) {
     return (
-      <AppLayout>
-        <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-red-600">
-                Une erreur est survenue lors du chargement des emails.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  queryClient.invalidateQueries({ queryKey: ["emails"] })
-                }
-              >
-                Réessayer
-              </Button>
-            </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-red-600">
+              Une erreur est survenue lors du chargement des emails.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() =>
+                queryClient.invalidateQueries({ queryKey: ["emails"] })
+              }
+            >
+              Réessayer
+            </Button>
           </div>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div className="flex-1" />
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Recherche..."
-                className="pl-10 border-gray-200"
-                value={paginationParams.searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-            <Button
-              className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2"
-              onClick={() => setIsNewMessageOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Nouveau message</span>
-            </Button>
+    <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div className="flex-1" />
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Recherche..."
+              className="pl-10 border-gray-200"
+              value={paginationParams.searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
           </div>
+          <Button
+            className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2"
+            onClick={() => setIsNewMessageOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Nouveau message</span>
+          </Button>
         </div>
-
-        {/* Segmented Tabs with counts */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-          <TabsList className="flex gap-2 rounded-lg bg-gray-100 p-1 w-full md:w-auto">
-            <TabsTrigger value="boite-mail" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
-              Boîte de réception
-              <Badge variant="secondary" className="ml-2 px-2">
-                {inboxCount}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="archives" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
-              Archivé
-              <Badge variant="secondary" className="ml-2 px-2">
-                {archivedCount}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="envoye" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
-              Envoyé
-              <Badge variant="secondary" className="ml-2 px-2">
-                {sentCount}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="boite-mail" className="focus-visible:outline-none mt-4">
-            <div className="bg-white rounded-lg shadow p-0">
-              <DataTable
-                data={sortedInboxData || []}
-                count={inboxData?.count}
-                columns={columns}
-                loading={isLoading}
-                onRowClick={(row) => handleSelectMail(row._id as string)}
-                page={paginationParams.page}
-                perPage={paginationParams.perPage}
-                onPageChange={handlePageChange}
-                onPerPageChange={handlePerPageChange}
-                sortField={paginationParams.sortField}
-                sortOrder={paginationParams.sortOrder}
-                onSort={handleSort}
-                renderListEmpty={() => (
-                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                    Aucun mail trouvé
-                  </div>
-                )}
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="archives" className="focus-visible:outline-none mt-4">
-            <div className="bg-white rounded-lg shadow p-0">
-              <DataTable
-                data={sortedArchivedData || []}
-                count={archivedData?.count}
-                columns={columns}
-                loading={isLoading}
-                onRowClick={(row) => handleSelectMail(row._id as string)}
-                page={paginationParams.page}
-                perPage={paginationParams.perPage}
-                onPageChange={handlePageChange}
-                onPerPageChange={handlePerPageChange}
-                sortField={paginationParams.sortField}
-                sortOrder={paginationParams.sortOrder}
-                onSort={handleSort}
-                renderListEmpty={() => (
-                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                    Aucun mail archivé trouvé
-                  </div>
-                )}
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="envoye" className="focus-visible:outline-none mt-4">
-            <div className="bg-white rounded-lg shadow p-0">
-              <DataTable
-                data={sortedSentData || []}
-                count={sentData?.count}
-                columns={columns}
-                loading={isLoading}
-                onRowClick={(row) => handleSelectMail(row._id as string)}
-                page={paginationParams.page}
-                perPage={paginationParams.perPage}
-                onPageChange={handlePageChange}
-                onPerPageChange={handlePerPageChange}
-                sortField={paginationParams.sortField}
-                sortOrder={paginationParams.sortOrder}
-                onSort={handleSort}
-                renderListEmpty={() => (
-                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
-                    Aucun mail envoyé trouvé
-                  </div>
-                )}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* Mail Detail Drawer */}
-        <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-          <SheetContent
-            side="right"
-            className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
-            style={{ overflow: "auto" }}
-          >
-            {/* Make whole drawer scrollable, not just form: remove internal py/padding that creates fixed height */}
-            <div className="h-full">
-              <MailDetail
-                mail={selectedMailData}
-                onClose={handleCloseDrawer}
-                onReply={handleReply}
-                onArchive={handleArchive}
-                onUnarchive={handleUnarchive}
-                isArchiving={archiveMutation.isPending}
-                activeTab={activeTab}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        {/* Reply Drawer */}
-        <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
-          <SheetContent
-            side="right"
-            className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
-            style={{ overflow: "auto" }}
-          >
-            <div className="h-full">
-              {replyToEmail && (
-                <ReplyModal
-                  onClose={() => {
-                    setIsReplyOpen(false);
-                    setReplyToEmail(null);
-                  }}
-                  originalEmail={replyToEmail}
-                />
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        {/* New Message Sheet Drawer */}
-        <Sheet open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
-          <SheetContent
-            side="right"
-            className="w-full sm:max-w-xl lg:w-[600px] h-full max-h-screen p-0"
-            style={{ overflow: "auto", boxShadow: "0 8px 40px 0 rgba(0,0,0,.10)" }}
-          >
-            <div className="h-full">
-              <NewMessageModal onClose={() => setIsNewMessageOpen(false)} />
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
-    </AppLayout>
+
+      {/* Segmented Tabs with counts */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+        <TabsList className="flex gap-2 rounded-lg bg-gray-100 p-1 w-full md:w-auto">
+          <TabsTrigger value="boite-mail" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+            Boîte de réception
+            <Badge variant="secondary" className="ml-2 px-2">
+              {inboxCount}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="archives" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+            Archivé
+            <Badge variant="secondary" className="ml-2 px-2">
+              {archivedCount}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="envoye" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+            Envoyé
+            <Badge variant="secondary" className="ml-2 px-2">
+              {sentCount}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="boite-mail" className="focus-visible:outline-none mt-4">
+          <div className="bg-white rounded-lg shadow p-0">
+            <DataTable
+              data={sortedInboxData || []}
+              count={inboxData?.count}
+              columns={columns}
+              loading={isLoading}
+              onRowClick={(row) => handleSelectMail(row._id as string)}
+              page={paginationParams.page}
+              perPage={paginationParams.perPage}
+              onPageChange={handlePageChange}
+              onPerPageChange={handlePerPageChange}
+              sortField={paginationParams.sortField}
+              sortOrder={paginationParams.sortOrder}
+              onSort={handleSort}
+              renderListEmpty={() => (
+                <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                  Aucun mail trouvé
+                </div>
+              )}
+            />
+          </div>
+        </TabsContent>
+        <TabsContent value="archives" className="focus-visible:outline-none mt-4">
+          <div className="bg-white rounded-lg shadow p-0">
+            <DataTable
+              data={sortedArchivedData || []}
+              count={archivedData?.count}
+              columns={columns}
+              loading={isLoading}
+              onRowClick={(row) => handleSelectMail(row._id as string)}
+              page={paginationParams.page}
+              perPage={paginationParams.perPage}
+              onPageChange={handlePageChange}
+              onPerPageChange={handlePerPageChange}
+              sortField={paginationParams.sortField}
+              sortOrder={paginationParams.sortOrder}
+              onSort={handleSort}
+              renderListEmpty={() => (
+                <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                  Aucun mail archivé trouvé
+                </div>
+              )}
+            />
+          </div>
+        </TabsContent>
+        <TabsContent value="envoye" className="focus-visible:outline-none mt-4">
+          <div className="bg-white rounded-lg shadow p-0">
+            <DataTable
+              data={sortedSentData || []}
+              count={sentData?.count}
+              columns={columns}
+              loading={isLoading}
+              onRowClick={(row) => handleSelectMail(row._id as string)}
+              page={paginationParams.page}
+              perPage={paginationParams.perPage}
+              onPageChange={handlePageChange}
+              onPerPageChange={handlePerPageChange}
+              sortField={paginationParams.sortField}
+              sortOrder={paginationParams.sortOrder}
+              onSort={handleSort}
+              renderListEmpty={() => (
+                <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                  Aucun mail envoyé trouvé
+                </div>
+              )}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Mail Detail Drawer */}
+      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
+          style={{ overflow: "auto" }}
+        >
+          {/* Make whole drawer scrollable, not just form: remove internal py/padding that creates fixed height */}
+          <div className="h-full">
+            <MailDetail
+              mail={selectedMailData}
+              onClose={handleCloseDrawer}
+              onReply={handleReply}
+              onArchive={handleArchive}
+              onUnarchive={handleUnarchive}
+              isArchiving={archiveMutation.isPending}
+              activeTab={activeTab}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Reply Drawer */}
+      <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
+          style={{ overflow: "auto" }}
+        >
+          <div className="h-full">
+            {replyToEmail && (
+              <ReplyModal
+                onClose={() => {
+                  setIsReplyOpen(false);
+                  setReplyToEmail(null);
+                }}
+                originalEmail={replyToEmail}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* New Message Sheet Drawer */}
+      <Sheet open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-xl lg:w-[600px] h-full max-h-screen p-0"
+          style={{ overflow: "auto", boxShadow: "0 8px 40px 0 rgba(0,0,0,.10)" }}
+        >
+          <div className="h-full">
+            <NewMessageModal onClose={() => setIsNewMessageOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 };
 
