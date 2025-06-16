@@ -1,107 +1,244 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
+import AppLayout from "../../../components/layout/AppLayout";
+import NavTabs from "../../../components/dashboard/NavTabs";
+import { ClientForm } from "../../../components/dashboard/ClientForm";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Settings, Users, FileText, List, BarChart3, Shield, Building } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import Quotes from "./tabs/quotes/Quotes";
-import Controls from "./tabs/controls/Controls";
-import Documents from "./tabs/documents/Documents";
-import Lists from "./tabs/lists/Lists";
-import Users from "./tabs/users/Users";
-import Contracts from "./tabs/contracts/Contracts";
+import { Search, Plus } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ClientDto,
+  ClientService,
+  CreateClientDto,
+  UpdateClientDto,
+} from "@/api-swagger";
+import { DataTable } from "@/components/ui/data-table";
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("quotes");
+  const [selectedClient, setSelectedClient] = useState<ClientDto | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Consolidated pagination state
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
+    searchTerm: "",
+    sortField: "",
+    sortOrder: "asc" as "asc" | "desc",
+  });
+
+  const { data: clients, isLoading } = useQuery({
+    queryKey: [
+      "clients",
+      paginationParams.page,
+      paginationParams.perPage,
+      paginationParams.sortField,
+      paginationParams.sortOrder,
+    ],
+    queryFn: () =>
+      ClientService.clientControllerFindAll({
+        page: paginationParams.page.toString(),
+        perPage: paginationParams.perPage.toString(),
+        ...(paginationParams.sortField && {
+          sortField: paginationParams.sortField,
+        }),
+        ...(paginationParams.sortOrder && {
+          sortOrder: paginationParams.sortOrder,
+        }),
+      }),
+  });
+
+  const createClientMutation = useMutation({
+    mutationFn: (createClientDto: CreateClientDto) =>
+      ClientService.clientControllerCreate({
+        requestBody: createClientDto,
+      }),
+    onSuccess: async () => {
+      toast.success("Client ajouté avec succès");
+      await queryClient.invalidateQueries({ queryKey: ["clients"] });
+    },
+  });
+
+  const updateClientMutation = useMutation({
+    mutationFn: ({
+      id,
+      updateClientDto,
+    }: {
+      id: string;
+      updateClientDto: UpdateClientDto;
+    }) =>
+      ClientService.clientControllerUpdate({
+        id,
+        requestBody: updateClientDto,
+      }),
+  });
+
+  const handleSelectClient = (client: ClientDto) => {
+    setSelectedClient(client);
+    setIsDrawerOpen(true);
+  };
+
+  const handleSaveClient = async (clientData: ClientDto) => {
+    if (selectedClient) {
+      // Update existing client
+      updateClientMutation.mutateAsync({
+        id: selectedClient._id,
+        updateClientDto: selectedClient,
+      });
+      toast.success("Client mis à jour avec succès");
+    } else {
+      // Add new client
+      createClientMutation.mutateAsync(clientData);
+    }
+
+    setSelectedClient(null);
+    setIsDrawerOpen(false);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      perPage: newPerPage,
+      page: 1, // Reset to first page when changing items per page
+    }));
+  };
+
+  const handleSort = (field: string, order: "asc" | "desc") => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      sortField: field,
+      sortOrder: order,
+    }));
+  };
+
+  const handleSearch = (value: string) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      searchTerm: value,
+      page: 1, // Reset to first page when searching
+    }));
+  };
+
+  const filteredClients = clients?.data?.filter((client) => {
+    if (!paginationParams.searchTerm) return true;
+    const term = paginationParams.searchTerm.toLowerCase();
+    return (
+      client.lastName?.toLowerCase().includes(term) ||
+      client.firstName?.toLowerCase().includes(term) ||
+      client.email?.toLowerCase().includes(term) ||
+      (client.phone && client.phone.includes(term))
+    );
+  });
+
+  const addNewClient = () => {
+    setSelectedClient(null);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setSelectedClient(null);
+  };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="h-6 w-6 text-formality-primary" />
-        <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
+    <AppLayout>
+      <NavTabs />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 mt-6">
+        <div className="flex items-center mb-4 md:mb-0"></div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Recherche..."
+              className="pl-10 input-elegant"
+              value={paginationParams.searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+          <Button
+            className="bg-formality-primary flex items-center gap-2"
+            onClick={addNewClient}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Nouveau client</span>
+          </Button>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6 mb-6">
-          <TabsTrigger 
-            value="quotes" 
-            className="flex items-center gap-2 text-sm"
-            onClick={() => navigate("/dashboard/quotes")}
-          >
-            <BarChart3 className="h-4 w-4" />
-            Données
-          </TabsTrigger>
-          <TabsTrigger 
-            value="controls"
-            className="flex items-center gap-2 text-sm"
-            onClick={() => navigate("/dashboard/controls")}
-          >
-            <Shield className="h-4 w-4" />
-            Contrôles
-          </TabsTrigger>
-          <TabsTrigger 
-            value="documents"
-            className="flex items-center gap-2 text-sm"
-            onClick={() => navigate("/dashboard/documents")}
-          >
-            <FileText className="h-4 w-4" />
-            Documents
-          </TabsTrigger>
-          <TabsTrigger 
-            value="lists"
-            className="flex items-center gap-2 text-sm"
-            onClick={() => navigate("/dashboard/lists")}
-          >
-            <List className="h-4 w-4" />
-            Listes
-          </TabsTrigger>
-          <TabsTrigger 
-            value="users"
-            className="flex items-center gap-2 text-sm"
-            onClick={() => navigate("/dashboard/users")}
-          >
-            <Users className="h-4 w-4" />
-            Utilisateurs
-          </TabsTrigger>
-          <TabsTrigger 
-            value="contracts"
-            className="flex items-center gap-2 text-sm"
-            onClick={() => navigate("/dashboard/contracts")}
-          >
-            <Building className="h-4 w-4" />
-            Arborescences
-          </TabsTrigger>
-        </TabsList>
+      <div className="card-elegant w-full">
+        <DataTable
+          data={filteredClients}
+          count={clients?.count}
+          columns={[
+            {
+              key: "lastName",
+              header: "Nom",
+              sortable: true,
+              align: "left",
+            },
+            {
+              key: "firstName",
+              header: "Prénom",
+              sortable: true,
+              align: "left",
+            },
+            {
+              key: "email",
+              header: "Email",
+              sortable: true,
+              align: "left",
+            },
+            {
+              key: "phone",
+              header: "Téléphone",
+              sortable: true,
+              align: "left",
+            },
+            {
+              key: "creationPrice",
+              header: "Tarif",
+              sortable: true,
+              align: "right",
+            },
+          ]}
+          loading={isLoading}
+          onRowClick={handleSelectClient}
+          page={paginationParams.page}
+          perPage={paginationParams.perPage}
+          onPageChange={handlePageChange}
+          onPerPageChange={handlePerPageChange}
+          sortField={paginationParams.sortField}
+          sortOrder={paginationParams.sortOrder}
+          onSort={handleSort}
+        />
+      </div>
 
-        <TabsContent value="quotes">
-          <Quotes />
-        </TabsContent>
-
-        <TabsContent value="controls">
-          <Controls />
-        </TabsContent>
-
-        <TabsContent value="documents">
-          <Documents />
-        </TabsContent>
-
-        <TabsContent value="lists">
-          <Lists />
-        </TabsContent>
-
-        <TabsContent value="users">
-          <Users />
-        </TabsContent>
-
-        <TabsContent value="contracts">
-          <Contracts />
-        </TabsContent>
-      </Tabs>
-    </div>
+      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-4xl overflow-y-auto lg:w-[900px]"
+        >
+          <div className="py-4">
+            <ClientForm
+              onSave={handleSaveClient}
+              client={selectedClient}
+              onCancel={handleCloseDrawer}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </AppLayout>
   );
 };
 

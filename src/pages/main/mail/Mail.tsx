@@ -1,238 +1,548 @@
-
-import React, { useState, useEffect } from "react";
-import { Mail as MailIcon, Search, Plus, Filter, Archive, Send, Trash2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useMemo } from "react";
+import AppLayout from "../../../components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import MailDetail from "./MailDetail";
-import NewMessageModal from "./NewMessageModal";
-import { useQuery } from "@tanstack/react-query";
-import { EmailService } from "@/api-swagger";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { Search, Plus, MailIcon, Paperclip } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
+import { EmailService } from "@/api-swagger/services/EmailService";
+import { EmailDto } from "@/api-swagger/models/EmailDto";
 
-interface Email {
-  id: string;
-  sender: string;
-  subject: string;
-  preview: string;
-  date: string;
-  isRead: boolean;
-  hasAttachments: boolean;
-  isImportant: boolean;
+import NewMessageModal from "./NewMessageModal";
+import ReplyModal from "./ReplyModal";
+import MailDetail from "./MailDetail";
+import { DataTable, Column } from "@/components/ui/data-table";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { ReactNode } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
+
+// Extend EmailDto with additional properties we need
+interface ExtendedEmailDto extends EmailDto {
+  _id: string;
+  status?: "non-lu" | "lu";
+  attachments?: number;
 }
 
 const Mail = () => {
-  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [selectedMail, setSelectedMail] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("boite-mail");
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("inbox");
+  const [isReplyOpen, setIsReplyOpen] = useState(false);
+  const [replyToEmail, setReplyToEmail] = useState<ExtendedEmailDto | null>(
+    null
+  );
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: emails = [], isLoading } = useQuery({
-    queryKey: ['emails'],
-    queryFn: () => EmailService.emailControllerFindAll(1, 50),
+  // Consolidated pagination state
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
+    searchTerm: "",
+    sortField: "",
+    sortOrder: "asc" as "asc" | "desc",
   });
 
-  // Mock data structure for UI consistency
-  const mockEmails: Email[] = [
-    {
-      id: "1",
-      sender: "ilyes@example.com",
-      subject: "Hello",
-      preview: "This is a test email...",
-      date: "2025-01-15",
-      isRead: false,
-      hasAttachments: false,
-      isImportant: true,
-    },
-    {
-      id: "2",
-      sender: "client@company.com", 
-      subject: "Demande de création de dossier",
-      preview: "Bonjour, nous souhaiterions créer un nouveau dossier...",
-      date: "2025-01-14",
-      isRead: true,
-      hasAttachments: true,
-      isImportant: false,
-    },
-    {
-      id: "3",
-      sender: "hedhili@law.com",
-      subject: "Rapport d'analyse",
-      preview: "Veuillez trouver ci-joint le rapport d'analyse...",
-      date: "2025-01-13",
-      isRead: false,
-      hasAttachments: true,
-      isImportant: false,
-    },
-  ];
+  // Fetch emails using TanStack Query
+  const emailQueries = useQueries({
+    queries: [
+      {
+        queryKey: [
+          "emails",
+          "inbox",
+          paginationParams.page,
+          paginationParams.perPage,
+          paginationParams.searchTerm,
+        ],
+        queryFn: () =>
+          EmailService.emailControllerFindAll({
+            page: paginationParams.page.toString(),
+            perPage: paginationParams.perPage.toString(),
+            value: paginationParams.searchTerm,
+            searchFields: ["client.clientName", "from", "subject"],
+          }),
+      },
+      {
+        queryKey: [
+          "emails",
+          "archived",
+          paginationParams.page,
+          paginationParams.perPage,
+          paginationParams.searchTerm,
+        ],
+        queryFn: () =>
+          EmailService.emailControllerFindAllArchived({
+            page: paginationParams.page.toString(),
+            perPage: paginationParams.perPage.toString(),
+            value: paginationParams.searchTerm,
+            searchFields: ["client.clientName", "from", "subject"],
+          }),
+      },
+      {
+        queryKey: [
+          "emails",
+          "sent",
+          paginationParams.page,
+          paginationParams.perPage,
+          paginationParams.searchTerm,
+        ],
+        queryFn: () =>
+          EmailService.emailControllerFindAllSent({
+            page: paginationParams.page.toString(),
+            perPage: paginationParams.perPage.toString(),
+            value: paginationParams.searchTerm,
+            searchFields: ["client.clientName", "to", "subject"],
+          }),
+      },
+    ],
+  });
+  const [inboxQuery, archivedQuery, sentQuery] = emailQueries;
 
-  const filteredEmails = mockEmails.filter(email =>
-    email.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    email.subject.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const inboxData = inboxQuery.data;
+  const isInboxLoading = inboxQuery.isLoading;
+  const inboxError = inboxQuery.error;
 
-  const getTabCount = (tab: string) => {
-    switch (tab) {
-      case "inbox":
-        return mockEmails.filter(e => !e.isRead).length;
-      case "sent":
-        return 5;
-      case "archive":
-        return 12;
+  const archivedData = archivedQuery.data;
+  const isArchivedLoading = archivedQuery.isLoading;
+  const archivedError = archivedQuery.error;
+
+  const sentData = sentQuery.data;
+  const isSentLoading = sentQuery.isLoading;
+  const sentError = sentQuery.error;
+
+  // Counts for each tab (Inbox, Archived, Sent)
+  const inboxCount = inboxData?.count || 0;
+  const archivedCount = archivedData?.count || 0;
+  const sentCount = sentData?.count || 0;
+
+  // Find the selected mail based on the active tab
+  const selectedMailData = useMemo(() => {
+    if (!selectedMail) return null;
+
+    switch (activeTab) {
+      case "boite-mail":
+        return inboxData?.data.find((mail) => mail._id === selectedMail);
+      case "archives":
+        return archivedData?.data.find((mail) => mail._id === selectedMail);
+      case "envoye":
+        return sentData?.data.find((mail) => mail._id === selectedMail);
       default:
-        return 0;
+        return null;
+    }
+  }, [selectedMail, activeTab, inboxData, archivedData, sentData]);
+
+  // Get current loading and error states
+  const isLoading =
+    isInboxLoading ||
+    (activeTab === "archives" && isArchivedLoading) ||
+    (activeTab === "envoye" && isSentLoading);
+  const error =
+    inboxError ||
+    (activeTab === "archives" && archivedError) ||
+    (activeTab === "envoye" && sentError);
+
+  // Archive mutation
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => EmailService.emailControllerArchive({ id }),
+    onSuccess: () => {
+      setSelectedMail(null);
+      toast({
+        title: "Archivé",
+        description: "Le mail a été archivé avec succès.",
+      });
+      //close drawer
+      setIsDrawerOpen(false);
+      // Invalidate and refetch the relevant queries
+      queryClient.invalidateQueries({ queryKey: ["emails", "inbox"] });
+      queryClient.invalidateQueries({ queryKey: ["emails", "archived"] });
+    },
+    onError: (error) => {
+      console.error("Error archiving email:", error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de l'archivage du mail. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle archiving an email
+  const handleArchive = async () => {
+    if (selectedMailData) {
+      await archiveMutation.mutateAsync(selectedMailData._id);
     }
   };
 
-  if (selectedEmail) {
+  // Handle unarchiving an email
+  const handleUnarchive = async () => {
+    if (selectedMailData) {
+      await archiveMutation.mutateAsync(selectedMailData._id);
+    }
+  };
+
+  // Handle opening reply modal
+  const handleReply = () => {
+    if (selectedMailData) {
+      setReplyToEmail(selectedMailData as unknown as ExtendedEmailDto);
+      setIsReplyOpen(true);
+    }
+  };
+
+  // Handle closing the new message modal
+  const handleCloseNewMessageModal = () => {
+    setIsNewMessageOpen(false);
+  };
+
+  // Handle search
+  const handleSearch = (value: string) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      searchTerm: value,
+      page: 1, // Reset to first page when searching
+    }));
+  };
+
+  const handleSelectMail = (mailId: string) => {
+    setSelectedMail(mailId);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setSelectedMail(null);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      perPage: newPerPage,
+      page: 1, // Reset to first page when changing items per page
+    }));
+  };
+
+  const handleSort = (field: string, order: "asc" | "desc") => {
+    setPaginationParams((prev) => ({
+      ...prev,
+      sortField: field,
+      sortOrder: order,
+    }));
+  };
+
+  // Sort data based on current sort field and order
+  const sortData = (data: EmailDto[] | undefined) => {
+    if (!data || !paginationParams.sortField) return data;
+
+    return [...data].sort((a, b) => {
+      const aValue = a[paginationParams.sortField as keyof EmailDto];
+      const bValue = b[paginationParams.sortField as keyof EmailDto];
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      const comparison = String(aValue).localeCompare(String(bValue));
+      return paginationParams.sortOrder === "asc" ? comparison : -comparison;
+    });
+  };
+
+  // Get sorted data for each tab
+  const sortedInboxData = sortData(inboxData?.data);
+  const sortedArchivedData = sortData(archivedData?.data);
+  const sortedSentData = sortData(sentData?.data);
+
+  // Define columns variable with the correct type
+  const columns: Column<Record<string, unknown>>[] = [
+    {
+      key: "status",
+      header: "Statut",
+      render: (value: unknown, row: Record<string, unknown>) =>
+        (
+          <div className="flex justify-center">
+            <div
+              className={`w-3 h-3 rounded-full mx-auto ${
+                row.status === "non-lu" ? "bg-formality-primary" : "bg-gray-300"
+              }`}
+            ></div>
+          </div>
+        ) as ReactNode,
+      className: "w-16 text-center font-medium",
+    },
+    {
+      key: "clientName",
+      header: "Nom du Client",
+      render: (_: unknown, row: Record<string, unknown>) =>
+        ((row.client as { clientName: string })?.clientName ||
+          "N/A") as ReactNode,
+      className: "text-left font-medium",
+    },
+    {
+      key: "from",
+      header: activeTab === "envoye" ? "Destinataire" : "Expéditeur",
+      render: (_: unknown, row: Record<string, unknown>) =>
+        (activeTab === "envoye"
+          ? (row.to as string)
+          : (row.from as string)) as ReactNode,
+      className: "text-left font-medium",
+    },
+    {
+      key: "subject",
+      header: "Sujet",
+      className: "text-left font-medium",
+    },
+    {
+      key: "date",
+      header: "Date/H",
+      render: (value: unknown, row: Record<string, unknown>) =>
+        (
+          <div className="text-sm text-gray-500">
+            {format(new Date(row.date as string), "dd/MM/yyyy HH:mm", {
+              locale: fr,
+            })}
+          </div>
+        ) as ReactNode,
+      className: "text-left font-medium w-32",
+    },
+    {
+      key: "attachments",
+      header: "PJ",
+      render: (value: unknown, row) =>
+        (row.attachments && (row.attachments as number) > 0 ? (
+          <div className="flex items-center justify-center gap-1 text-xs font-medium bg-gray-100 rounded-md px-1.5 py-0.5">
+            <Paperclip className="h-3 w-3" />
+            {row.attachments as number}
+          </div>
+        ) : null) as ReactNode,
+      className: "w-16 text-center font-medium",
+    },
+  ];
+
+  // Display loading state
+  if (isLoading) {
     return (
-      <MailDetail
-        emailId={selectedEmail}
-        onClose={() => setSelectedEmail(null)}
-      />
+      <AppLayout>
+        <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary"></div>
+              <p className="text-gray-600">Chargement des emails...</p>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Display error state
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-red-600">
+                Une erreur est survenue lors du chargement des emails.
+              </p>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  queryClient.invalidateQueries({ queryKey: ["emails"] })
+                }
+              >
+                Réessayer
+              </Button>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <MailIcon className="h-6 w-6 text-formality-primary" />
-          <h1 className="text-2xl font-bold text-gray-900">Boîte mail</h1>
-        </div>
-        <Button
-          onClick={() => setIsNewMessageOpen(true)}
-          className="bg-formality-primary hover:bg-formality-primary/90"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Nouveau message
-        </Button>
-      </div>
-
-      {/* Search and filters */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Rechercher dans les emails..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Button variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
-          Filtres
-        </Button>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
-          <TabsTrigger value="inbox" className="flex items-center gap-2">
-            Boîte de réception
-            {getTabCount("inbox") > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {getTabCount("inbox")}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="sent" className="flex items-center gap-2">
-            Envoyés
-            <Badge variant="secondary" className="ml-1">
-              {getTabCount("sent")}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="archive" className="flex items-center gap-2">
-            Archivés
-            <Badge variant="secondary" className="ml-1">
-              {getTabCount("archive")}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="inbox" className="mt-6">
-          {/* Email list */}
-          <div className="space-y-2">
-            {filteredEmails.map((email) => (
-              <div
-                key={email.id}
-                onClick={() => setSelectedEmail(email.id)}
-                className={`p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
-                  !email.isRead ? "bg-blue-50 border-blue-200" : "bg-white"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`font-medium ${!email.isRead ? "font-semibold" : ""}`}>
-                        {email.sender}
-                      </span>
-                      {email.isImportant && (
-                        <Badge variant="destructive" className="text-xs">
-                          Important
-                        </Badge>
-                      )}
-                    </div>
-                    <h3 className={`text-sm mb-1 ${!email.isRead ? "font-semibold" : ""}`}>
-                      {email.subject}
-                    </h3>
-                    <p className="text-gray-500 text-sm truncate">{email.preview}</p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <span className="text-xs text-gray-500">{email.date}</span>
-                    {email.hasAttachments && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {filteredEmails.length === 0 && (
-            <div className="text-center py-12">
-              <MailIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Aucun email trouvé
-              </h3>
-              <p className="text-gray-500">
-                Aucun email ne correspond à votre recherche.
-              </p>
+    <AppLayout>
+      <div className="w-full px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div className="flex-1" />
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Recherche..."
+                className="pl-10 border-gray-200"
+                value={paginationParams.searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
             </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="sent" className="mt-6">
-          <div className="text-center py-12">
-            <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Messages envoyés
-            </h3>
-            <p className="text-gray-500">
-              Vos messages envoyés apparaîtront ici.
-            </p>
+            <Button
+              className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2"
+              onClick={() => setIsNewMessageOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Nouveau message</span>
+            </Button>
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="archive" className="mt-6">
-          <div className="text-center py-12">
-            <Archive className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Messages archivés
-            </h3>
-            <p className="text-gray-500">
-              Vos messages archivés apparaîtront ici.
-            </p>
-          </div>
-        </TabsContent>
-      </Tabs>
+        {/* Segmented Tabs with counts */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+          <TabsList className="flex gap-2 rounded-lg bg-gray-100 p-1 w-full md:w-auto">
+            <TabsTrigger value="boite-mail" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+              Boîte de réception
+              <Badge variant="secondary" className="ml-2 px-2">
+                {inboxCount}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="archives" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+              Archivé
+              <Badge variant="secondary" className="ml-2 px-2">
+                {archivedCount}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="envoye" className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors">
+              Envoyé
+              <Badge variant="secondary" className="ml-2 px-2">
+                {sentCount}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="boite-mail" className="focus-visible:outline-none mt-4">
+            <div className="bg-white rounded-lg shadow p-0">
+              <DataTable
+                data={sortedInboxData || []}
+                count={inboxData?.count}
+                columns={columns}
+                loading={isLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                page={paginationParams.page}
+                perPage={paginationParams.perPage}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
+                sortField={paginationParams.sortField}
+                sortOrder={paginationParams.sortOrder}
+                onSort={handleSort}
+                renderListEmpty={() => (
+                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                    Aucun mail trouvé
+                  </div>
+                )}
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="archives" className="focus-visible:outline-none mt-4">
+            <div className="bg-white rounded-lg shadow p-0">
+              <DataTable
+                data={sortedArchivedData || []}
+                count={archivedData?.count}
+                columns={columns}
+                loading={isLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                page={paginationParams.page}
+                perPage={paginationParams.perPage}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
+                sortField={paginationParams.sortField}
+                sortOrder={paginationParams.sortOrder}
+                onSort={handleSort}
+                renderListEmpty={() => (
+                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                    Aucun mail archivé trouvé
+                  </div>
+                )}
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="envoye" className="focus-visible:outline-none mt-4">
+            <div className="bg-white rounded-lg shadow p-0">
+              <DataTable
+                data={sortedSentData || []}
+                count={sentData?.count}
+                columns={columns}
+                loading={isLoading}
+                onRowClick={(row) => handleSelectMail(row._id as string)}
+                page={paginationParams.page}
+                perPage={paginationParams.perPage}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
+                sortField={paginationParams.sortField}
+                sortOrder={paginationParams.sortOrder}
+                onSort={handleSort}
+                renderListEmpty={() => (
+                  <div className="h-24 text-center text-gray-500 flex items-center justify-center">
+                    Aucun mail envoyé trouvé
+                  </div>
+                )}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
 
-      <NewMessageModal
-        isOpen={isNewMessageOpen}
-        onClose={() => setIsNewMessageOpen(false)}
-      />
-    </div>
+        {/* Mail Detail Drawer */}
+        <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
+            style={{ overflow: "auto" }}
+          >
+            {/* Make whole drawer scrollable, not just form: remove internal py/padding that creates fixed height */}
+            <div className="h-full">
+              <MailDetail
+                mail={selectedMailData}
+                onClose={handleCloseDrawer}
+                onReply={handleReply}
+                onArchive={handleArchive}
+                onUnarchive={handleUnarchive}
+                isArchiving={archiveMutation.isPending}
+                activeTab={activeTab}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Reply Drawer */}
+        <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
+            style={{ overflow: "auto" }}
+          >
+            <div className="h-full">
+              {replyToEmail && (
+                <ReplyModal
+                  onClose={() => {
+                    setIsReplyOpen(false);
+                    setReplyToEmail(null);
+                  }}
+                  originalEmail={replyToEmail}
+                />
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* New Message Sheet Drawer */}
+        <Sheet open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-xl lg:w-[600px] h-full max-h-screen p-0"
+            style={{ overflow: "auto", boxShadow: "0 8px 40px 0 rgba(0,0,0,.10)" }}
+          >
+            <div className="h-full">
+              <NewMessageModal onClose={() => setIsNewMessageOpen(false)} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </AppLayout>
   );
 };
 
