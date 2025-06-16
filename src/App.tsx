@@ -14,6 +14,7 @@ import { MainRoutes } from "./routes/main";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { OpenAPI } from "./api-swagger";
 import { URL_API } from "./utils/constants";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 import { toast } from "sonner";
 import { SocketProvider } from "./context/SocketContext";
@@ -87,7 +88,14 @@ const App = () => (
             <Routes>
               <Route path="/" element={<RootRoute />} />
               <Route path="/auth/*" element={<AuthRoutes />} />
-              <Route path="/*" element={<MainRoutes />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <MainRoutes />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
             {renderReactQueryDevtools()}
           </SocketProvider>

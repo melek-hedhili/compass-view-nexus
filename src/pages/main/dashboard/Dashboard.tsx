@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import AppLayout from "../../../components/layout/AppLayout";
 import NavTabs from "../../../components/dashboard/NavTabs";
@@ -151,7 +152,7 @@ const Dashboard = () => {
   };
 
   return (
-    <>
+    <AppLayout>
       <NavTabs />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 mt-6">
         <div className="flex items-center mb-4 md:mb-0"></div>
@@ -237,7 +238,7 @@ const Dashboard = () => {
           </div>
         </SheetContent>
       </Sheet>
-    </>
+    </AppLayout>
   );
 };
 
