@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -24,11 +25,10 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { logout, user, isAuthenticated } = useAuth(); // add isAuthenticated!
+  const { logout, user, isAuthenticated } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
 
-  // Only set up email notifications when authenticated
   useEmailNotifications({ isAuthenticated });
 
   const isActive = (path: string) => {
@@ -67,7 +67,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
                 <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
-                  <span className="text-formality-primary font-bold text-lg">F</span>
+                  <span className="text-formality-primary font-bold text-lg">X</span>
                 </div>
                 <span className="ml-3 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
                   Formality
@@ -152,7 +152,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </SidebarMenu>
           </SidebarContent>
           
-          <SidebarFooter className="border-t border-gray-100 bg-gray-50/50 px-3 py-3">
+          <SidebarFooter className="border-t border-gray-100 bg-white px-3 py-3">
             <Button
               variant="ghost"
               onClick={logout}

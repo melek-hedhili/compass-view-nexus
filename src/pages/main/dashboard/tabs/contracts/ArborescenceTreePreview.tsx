@@ -14,7 +14,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragMoveEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -233,7 +232,6 @@ function SortableSousFamille({
   onSave,
   onDelete,
   dragState,
-  placeholder,
 }: {
   sousFamille: SousFamille;
   famIdx: number;
@@ -248,23 +246,7 @@ function SortableSousFamille({
     dropPosition?: 'above' | 'below';
     dragType?: 'famille' | 'sousFamille';
   };
-  placeholder?: boolean;
 }) {
-  // Don't use useSortable if this is a placeholder
-  if (placeholder) {
-    return (
-      <div
-        className="relative my-2 rounded-lg"
-        style={{
-          height: 52,
-          background: 'rgba(34,197,94,0.08)',
-          border: '2px dashed #34d399',
-          boxShadow: '0 4px 12px 0 rgba(16,185,129,0.08)',
-        }}
-      />
-    );
-  }
-
   const {
     attributes,
     listeners,
@@ -278,93 +260,76 @@ function SortableSousFamille({
     transform: CSS.Transform.toString(transform),
     transition: isDragging ? 'none' : transition || 'transform 200ms cubic-bezier(0.25, 1, 0.5, 1)',
     zIndex: isDragging ? 1000 : 'auto',
-    opacity: isDragging ? 0 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   const { isActive, isOver, dropPosition, dragType } = dragState;
-  const showDropIndicator = isActive && isOver && dragType === 'sousFamille';
 
   return (
-    <div className="relative">
-      {/* Drop indicator above */}
-      {showDropIndicator && dropPosition === 'above' && (
-        <div className="h-2 flex items-center justify-center mb-1 animate-fade-in">
-          <div className="h-0.5 bg-green-500 rounded-full flex-1 shadow-md animate-pulse" />
-        </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200 ease-out bg-white border border-gray-100",
+        isDragging ? "shadow-lg rotate-1 scale-105" : "hover:bg-gray-50 hover:shadow-sm",
+        isActive && isOver && dragType === 'sousFamille' && "ring-1 ring-green-300/60 bg-green-50/30"
       )}
-      
-      <div
-        ref={setNodeRef}
-        style={style}
+    >
+      <div 
+        {...attributes} 
+        {...listeners} 
         className={cn(
-          "group/sf flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-200 ease-out",
-          isDragging ? "opacity-0" : "hover:bg-gray-50",
-          isActive && isOver && dragType === 'sousFamille' && "bg-green-50 scale-[1.02] shadow-md ring-1 ring-green-300/60"
+          "cursor-grab active:cursor-grabbing transition-all duration-150 hover:scale-110",
+          isDragging && "cursor-grabbing"
         )}
       >
-        <div 
-          {...attributes} 
-          {...listeners} 
-          className={cn(
-            "cursor-grab active:cursor-grabbing transition-all duration-150 hover:scale-110",
-            isDragging && "cursor-grabbing"
-          )}
-        >
-          <GripVertical className={cn(
-            "h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-all duration-150 flex-shrink-0",
-            isActive && isOver && "text-green-500"
-          )} />
-        </div>
-        <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
-        <div className="flex-1 min-w-0 flex items-center gap-2">
-          {sousFamille.isEditing ? (
-            <Input 
-              defaultValue={sousFamille.name}
-              autoFocus
-              onBlur={(e) => onSave(famIdx, sfIdx, e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  onSave(famIdx, sfIdx, e.currentTarget.value);
-                }
-              }}
-              className="text-xs sm:text-sm transition-all duration-150" 
-            />
-          ) : (
-            <div 
-              className="text-xs sm:text-sm cursor-pointer hover:bg-gray-50 p-2 rounded truncate flex-1 transition-all duration-150"
-              onClick={() => onEdit(famIdx, sfIdx)}
-            >
-              {sousFamille.name}
-            </div>
-          )}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="bg-green-50 text-green-600 border-green-200 opacity-0 group-hover/sf:opacity-100 transition-all duration-150 h-6 px-1 text-xs hover:bg-green-100"
-              onClick={() => onEdit(famIdx, sfIdx)}
-            >
-              <Edit3 className="h-2 w-2 sm:h-3 sm:w-3 sm:mr-1" />
-              <span className="hidden sm:inline">Sous Famille</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="opacity-0 group-hover/sf:opacity-100 transition-all duration-150 text-red-500 hover:text-red-700 hover:bg-red-50 h-6 px-1"
-              onClick={() => onDelete(famIdx, sfIdx)}
-            >
-              <X className="h-2 w-2 sm:h-3 sm:w-3" />
-            </Button>
+        <GripVertical className={cn(
+          "h-3 w-3 sm:h-4 sm:w-4 text-gray-300 group-hover/sf:text-green-500 transition-all duration-150 flex-shrink-0",
+          isActive && isOver && "text-green-500"
+        )} />
+      </div>
+      <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
+      <div className="flex-1 min-w-0 flex items-center gap-2">
+        {sousFamille.isEditing ? (
+          <Input 
+            defaultValue={sousFamille.name}
+            autoFocus
+            onBlur={(e) => onSave(famIdx, sfIdx, e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                onSave(famIdx, sfIdx, e.currentTarget.value);
+              }
+            }}
+            className="text-xs sm:text-sm transition-all duration-150" 
+          />
+        ) : (
+          <div 
+            className="text-xs sm:text-sm cursor-pointer hover:bg-gray-50 p-2 rounded truncate flex-1 transition-all duration-150"
+            onClick={() => onEdit(famIdx, sfIdx)}
+          >
+            {sousFamille.name}
           </div>
+        )}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-green-50 text-green-600 border-green-200 opacity-0 group-hover/sf:opacity-100 transition-all duration-150 h-6 px-1 text-xs hover:bg-green-100"
+            onClick={() => onEdit(famIdx, sfIdx)}
+          >
+            <Edit3 className="h-2 w-2 sm:h-3 sm:w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Sous Famille</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="opacity-0 group-hover/sf:opacity-100 transition-all duration-150 text-red-500 hover:text-red-700 hover:bg-red-50 h-6 px-1"
+            onClick={() => onDelete(famIdx, sfIdx)}
+          >
+            <X className="h-2 w-2 sm:h-3 sm:w-3" />
+          </Button>
         </div>
       </div>
-
-      {/* Drop indicator below */}
-      {showDropIndicator && dropPosition === 'below' && (
-        <div className="h-2 flex items-center justify-center mt-1 animate-fade-in">
-          <div className="h-0.5 bg-green-500 rounded-full flex-1 shadow-md animate-pulse" />
-        </div>
-      )}
     </div>
   );
 }
@@ -400,7 +365,6 @@ export const ArborescenceTreePreview: React.FC = () => {
     })
   );
 
-  // Edit handlers
   const handleEditRubrique = () => {
     setTree(prev => ({ ...prev, isEditingRubrique: true }));
   };
@@ -497,48 +461,18 @@ export const ArborescenceTreePreview: React.FC = () => {
     }));
   };
 
-  // Enhanced: Track which sous famille is being dragged and where to show a placeholder
-  const [draggedSousFamille, setDraggedSousFamille] = useState<{ famIdx: number; sfIdx: number; id: string } | null>(null);
-  const [sousFamilleDrop, setSousFamilleDrop] = useState<{ famIdx: number; atIndex: number } | null>(null);
-
   function handleDragStart(event: DragStartEvent) {
     setActiveId(event.active.id as string);
-    // Track sous famille
-    for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
-      const sfIdx = tree.familles[famIdx].sousFamilles.findIndex(sf => sf.id === event.active.id);
-      if (sfIdx !== -1) {
-        setDraggedSousFamille({ famIdx, sfIdx, id: event.active.id as string });
-        setSousFamilleDrop({ famIdx, atIndex: sfIdx });
-        break;
-      }
-    }
   }
 
   function handleDragOver(event: DragOverEvent) {
     setOverId(event.over?.id as string || null);
-
-    // If dragging sous-famille, compute dynamic drop index
-    if (draggedSousFamille) {
-      for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
-        const famille = tree.familles[famIdx];
-        const overSfIndex = famille.sousFamilles.findIndex(sf => sf.id === event.over?.id);
-        if (overSfIndex !== -1) {
-          setSousFamilleDrop({ famIdx, atIndex: overSfIndex });
-          return;
-        }
-      }
-      // If not over any sous-famille, keep old value
-    }
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveId(null);
     setOverId(null);
-
-    // Reset after drop
-    setDraggedSousFamille(null);
-    setSousFamilleDrop(null);
 
     if (!over || active.id === over.id) return;
 
@@ -553,34 +487,48 @@ export const ArborescenceTreePreview: React.FC = () => {
       return;
     }
 
-    // Handle sous-famille reordering across families
-    if (draggedSousFamille && sousFamilleDrop) {
-      const srcFamIdx = draggedSousFamille.famIdx;
-      const srcSfIdx = draggedSousFamille.sfIdx;
-      const destFamIdx = sousFamilleDrop.famIdx;
-      let destSfIdx = sousFamilleDrop.atIndex;
+    // Handle sous-famille reordering
+    let sourceFamIdx = -1, sourceSfIdx = -1, targetFamIdx = -1, targetSfIdx = -1;
 
+    for (let famIdx = 0; famIdx < tree.familles.length; famIdx++) {
+      const famille = tree.familles[famIdx];
+      const activeIndex = famille.sousFamilles.findIndex(sf => sf.id === active.id);
+      const overIndex = famille.sousFamilles.findIndex(sf => sf.id === over.id);
+      
+      if (activeIndex !== -1) {
+        sourceFamIdx = famIdx;
+        sourceSfIdx = activeIndex;
+      }
+      if (overIndex !== -1) {
+        targetFamIdx = famIdx;
+        targetSfIdx = overIndex;
+      }
+    }
+
+    if (sourceFamIdx !== -1 && targetFamIdx !== -1) {
       setTree(prev => {
-        const fams = [...prev.familles];
-        const srcFam = { ...fams[srcFamIdx], sousFamilles: [...fams[srcFamIdx].sousFamilles] };
-        const [movedItem] = srcFam.sousFamilles.splice(srcSfIdx, 1);
-
-        if (srcFamIdx === destFamIdx && srcSfIdx < destSfIdx) {
-          // Account for removal shift
-          destSfIdx -= 1;
+        const newFamilles = [...prev.familles];
+        const sourceFamily = { ...newFamilles[sourceFamIdx] };
+        const targetFamily = sourceFamIdx === targetFamIdx ? sourceFamily : { ...newFamilles[targetFamIdx] };
+        
+        const [movedItem] = sourceFamily.sousFamilles.splice(sourceSfIdx, 1);
+        
+        if (sourceFamIdx === targetFamIdx && sourceSfIdx < targetSfIdx) {
+          targetSfIdx -= 1;
         }
-
-        fams[srcFamIdx] = srcFam;
-        const destFam = { ...fams[destFamIdx], sousFamilles: [...fams[destFamIdx].sousFamilles] };
-        destFam.sousFamilles.splice(destSfIdx, 0, movedItem);
-        fams[destFamIdx] = destFam;
-        return { ...prev, familles: fams };
+        
+        targetFamily.sousFamilles.splice(targetSfIdx, 0, movedItem);
+        
+        newFamilles[sourceFamIdx] = sourceFamily;
+        if (sourceFamIdx !== targetFamIdx) {
+          newFamilles[targetFamIdx] = targetFamily;
+        }
+        
+        return { ...prev, familles: newFamilles };
       });
-      return;
     }
   }
 
-  // Helper functions for drag state management (unchanged)
   const getDragState = (itemId: string) => {
     const isActive = !!activeId;
     const isDragging = activeId === itemId;
@@ -598,12 +546,10 @@ export const ArborescenceTreePreview: React.FC = () => {
   const getActiveDragType = (): 'famille' | 'sousFamille' | undefined => {
     if (!activeId) return undefined;
     
-    // Check if it's a famille
     if (tree.familles.find(f => f.id === activeId)) {
       return 'famille';
     }
     
-    // Check if it's a sous-famille
     for (const fam of tree.familles) {
       if (fam.sousFamilles.find(sf => sf.id === activeId)) {
         return 'sousFamille';
@@ -613,17 +559,14 @@ export const ArborescenceTreePreview: React.FC = () => {
     return undefined;
   };
 
-  // Get the dragged item for overlay
   const getDraggedItem = () => {
     if (!activeId) return null;
 
-    // Check if it's a famille
     const famille = tree.familles.find(f => f.id === activeId);
     if (famille) {
       return { type: 'famille', item: famille };
     }
 
-    // Check if it's a sous-famille
     for (const fam of tree.familles) {
       const sousFamille = fam.sousFamilles.find(sf => sf.id === activeId);
       if (sousFamille) {
@@ -635,87 +578,6 @@ export const ArborescenceTreePreview: React.FC = () => {
   };
 
   const draggedItem = getDraggedItem();
-
-  // Inline helper so it gets access to state/handlers
-  function renderSousFamillesWithPlaceholder(famille: Famille, famIdx: number) {
-    // If not dragging, just render all as usual
-    if (!draggedSousFamille || sousFamilleDrop?.famIdx !== famIdx) {
-      return famille.sousFamilles.map((sf, sfIdx) => (
-        <SortableSousFamille
-          key={sf.id}
-          sousFamille={sf}
-          famIdx={famIdx}
-          sfIdx={sfIdx}
-          onEdit={handleEditSousFamille}
-          onSave={handleSaveSousFamille}
-          onDelete={handleDeleteSousFamille}
-          dragState={getDragState(sf.id)}
-        />
-      ));
-    }
-
-    // Build list with placeholder at intended drop position
-    const items: JSX.Element[] = [];
-    famille.sousFamilles.forEach((sf, sfIdx) => {
-      // Insert the placeholder at the hover index BEFORE the normal card
-      if (sfIdx === sousFamilleDrop.atIndex) {
-        items.push(
-          <div
-            key="sousfamille-drop-placeholder"
-            className="relative my-2 rounded-lg"
-            style={{
-              height: 48,
-              border: '2px dashed #34d399',
-              background: 'rgba(34,197,94,0.09)',
-              position: 'relative',
-              transition: 'all 0.2s',
-              outline: '2px solid #22c55e40',
-              zIndex: 10,
-            }}
-          />
-        );
-      }
-
-      // Hide the card being dragged from the list!
-      if (sf.id === draggedSousFamille.id && famIdx === draggedSousFamille.famIdx) {
-        // do not render the original item here (overlay will handle)
-        return;
-      }
-      items.push(
-        <SortableSousFamille
-          sousFamille={sf}
-          famIdx={famIdx}
-          sfIdx={sfIdx}
-          onEdit={handleEditSousFamille}
-          onSave={handleSaveSousFamille}
-          onDelete={handleDeleteSousFamille}
-          dragState={getDragState(sf.id)}
-          key={sf.id}
-        />
-      );
-    });
-
-    // If dropping at end of list, show placeholder last
-    if (sousFamilleDrop.atIndex === famille.sousFamilles.length) {
-      items.push(
-        <div
-          key="sousfamille-drop-placeholder-end"
-          className="relative my-2 rounded-lg"
-          style={{
-            height: 48,
-            border: '2px dashed #34d399',
-            background: 'rgba(34,197,94,0.09)',
-            position: 'relative',
-            transition: 'all 0.2s',
-            outline: '2px solid #22c55e40',
-            zIndex: 10,
-          }}
-        />
-      );
-    }
-
-    return items;
-  }
 
   return (
     <DndContext
@@ -781,7 +643,6 @@ export const ArborescenceTreePreview: React.FC = () => {
                     onSaveSousFamille={handleSaveSousFamille}
                     onDeleteSousFamille={handleDeleteSousFamille}
                     dragState={getDragState(famille.id)}
-                    renderSousFamilleList={() => renderSousFamillesWithPlaceholder(famille, famIdx)}
                   />
                 ))}
               </SortableContext>
