@@ -1,4 +1,4 @@
- 
+
 import { useState } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -24,17 +24,13 @@ const DossierDetail = ({ dossierId, onClose }: DossierDetailProps) => {
   const requiredDocumentsPercent = 25 // Valeur statique pour l'exemple, à remplacer par un calcul réel
 
   return (
-    <div className="w-full">
-      <div className="border-b mb-4">
-        <div className="flex justify-between items-center py-2">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose} className="flex items-center gap-1">
-              <ChevronLeft className="h-4 w-4" />
-              Retour
-            </Button>
-            <h1 className="text-lg font-medium">Dossiers &gt; Création - Chocolat & Co (Cabinet MAZARS)</h1>
-          </div>
-        </div>
+    <div className="p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <Button variant="ghost" size="sm" onClick={onClose} className="flex items-center gap-1">
+          <ChevronLeft className="h-4 w-4" />
+          Retour
+        </Button>
+        <h1 className="text-lg font-medium">Création - Chocolat & Co (Cabinet MAZARS)</h1>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

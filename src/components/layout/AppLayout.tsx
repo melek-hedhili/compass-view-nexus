@@ -181,9 +181,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             )}
           </div>
           
-          <div className="p-6 w-full">
+          {/* Fixed padding container */}
+          <div className="p-6 w-full max-w-7xl mx-auto">
             <AppBreadcrumbs />
-            {children}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[calc(100vh-12rem)]">
+              {children}
+            </div>
           </div>
         </main>
       </div>
