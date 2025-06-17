@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppTabs, AppTabsContent, AppTabsList, AppTabsTrigger } from "@/components/ui/app-tabs";
 import { Search, Plus, Paperclip } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +17,6 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ReactNode } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
 
 // Extend EmailDto with additional properties we need
 interface ExtendedEmailDto extends EmailDto {
@@ -368,41 +367,21 @@ const Mail = () => {
         </div>
       </div>
 
-      {/* Segmented Tabs with counts */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-        <TabsList className="flex gap-2 rounded-lg bg-gray-100 p-1 w-full md:w-auto">
-          <TabsTrigger
-            value="boite-mail"
-            className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors"
-          >
+      {/* Unified Tabs */}
+      <AppTabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <AppTabsList>
+          <AppTabsTrigger value="boite-mail" badge={inboxCount}>
             Boîte de réception
-            <Badge variant="secondary" className="ml-2 px-2">
-              {inboxCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger
-            value="archives"
-            className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors"
-          >
+          </AppTabsTrigger>
+          <AppTabsTrigger value="archives" badge={archivedCount}>
             Archivé
-            <Badge variant="secondary" className="ml-2 px-2">
-              {archivedCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger
-            value="envoye"
-            className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors"
-          >
+          </AppTabsTrigger>
+          <AppTabsTrigger value="envoye" badge={sentCount}>
             Envoyé
-            <Badge variant="secondary" className="ml-2 px-2">
-              {sentCount}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent
-          value="boite-mail"
-          className="focus-visible:outline-none mt-4"
-        >
+          </AppTabsTrigger>
+        </AppTabsList>
+        
+        <AppTabsContent value="boite-mail">
           <div className="card-elegant w-full">
             <DataTable
               data={sortedInboxData || []}
@@ -424,11 +403,9 @@ const Mail = () => {
               )}
             />
           </div>
-        </TabsContent>
-        <TabsContent
-          value="archives"
-          className="focus-visible:outline-none mt-4"
-        >
+        </AppTabsContent>
+        
+        <AppTabsContent value="archives">
           <div className="card-elegant w-full">
             <DataTable
               data={sortedArchivedData || []}
@@ -450,8 +427,9 @@ const Mail = () => {
               )}
             />
           </div>
-        </TabsContent>
-        <TabsContent value="envoye" className="focus-visible:outline-none mt-4">
+        </AppTabsContent>
+        
+        <AppTabsContent value="envoye">
           <div className="card-elegant w-full">
             <DataTable
               data={sortedSentData || []}
@@ -473,8 +451,8 @@ const Mail = () => {
               )}
             />
           </div>
-        </TabsContent>
-      </Tabs>
+        </AppTabsContent>
+      </AppTabs>
 
       {/* Mail Detail Drawer */}
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
