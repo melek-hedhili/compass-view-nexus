@@ -1,6 +1,6 @@
-
+ 
 import { useState } from "react"
-import { AppTabs, AppTabsList, AppTabsTrigger, AppTabsContent } from "@/components/ui/app-tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import InformationsSection from "./informations-section"
@@ -25,8 +25,8 @@ const DossierDetail = ({ dossierId, onClose }: DossierDetailProps) => {
 
   return (
     <div className="w-full">
-      <div className="border-b mb-6 pb-4">
-        <div className="flex justify-between items-center">
+      <div className="border-b mb-4">
+        <div className="flex justify-between items-center py-2">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={onClose} className="flex items-center gap-1">
               <ChevronLeft className="h-4 w-4" />
@@ -37,66 +37,95 @@ const DossierDetail = ({ dossierId, onClose }: DossierDetailProps) => {
         </div>
       </div>
 
-      <AppTabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <AppTabsList>
-          <AppTabsTrigger value="informations">
-            Informations
-          </AppTabsTrigger>
-          <AppTabsTrigger value="mails">
-            Mails
-          </AppTabsTrigger>
-          <AppTabsTrigger value="documents" badge={`${requiredDocumentsPercent}%`}>
-            Documents
-          </AppTabsTrigger>
-          <AppTabsTrigger value="analyse">
-            Analyse
-          </AppTabsTrigger>
-          <AppTabsTrigger value="rapport">
-            Rapport
-          </AppTabsTrigger>
-          <AppTabsTrigger value="annonce">
-            Annonce
-          </AppTabsTrigger>
-          <AppTabsTrigger value="saisie">
-            Saisie
-          </AppTabsTrigger>
-          <AppTabsTrigger value="controle">
-            Contrôle
-          </AppTabsTrigger>
-        </AppTabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="border-b mb-6">
+          <TabsList className="flex flex-wrap gap-1 h-auto bg-transparent p-0 w-full justify-start bg-white">
+            <TabsTrigger
+              value="informations"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Informations
+            </TabsTrigger>
+            <TabsTrigger
+              value="mails"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Mails
+            </TabsTrigger>
+            <TabsTrigger
+              value="documents"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Documents
+              <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
+                {requiredDocumentsPercent}%
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="analyse"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Analyse
+            </TabsTrigger>
+            <TabsTrigger
+              value="rapport"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Rapport
+            </TabsTrigger>
+            <TabsTrigger
+              value="annonce"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Annonce
+            </TabsTrigger>
+            <TabsTrigger
+              value="saisie"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Saisie
+            </TabsTrigger>
+            <TabsTrigger
+              value="controle"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-formality-primary data-[state=active]:text-formality-primary data-[state=active]:bg-transparent bg-white text-gray-600 font-medium"
+            >
+              Contrôle
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <AppTabsContent value="informations">
+        <TabsContent value="informations">
           <InformationsSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="mails">
+        <TabsContent value="mails">
           <MailsSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="documents">
+        <TabsContent value="documents">
           <DocumentsSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="analyse">
+        <TabsContent value="analyse">
           <AnalyseSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="rapport">
+        <TabsContent value="rapport">
           <RapportSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="annonce">
+        <TabsContent value="annonce">
           <AnnonceSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="saisie">
+        <TabsContent value="saisie">
           <SaisieSection dossierId={dossierId} />
-        </AppTabsContent>
+        </TabsContent>
 
-        <AppTabsContent value="controle">
+        <TabsContent value="controle">
           <ControleSection dossierId={dossierId} />
-        </AppTabsContent>
-      </AppTabs>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

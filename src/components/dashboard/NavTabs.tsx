@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Users, Database, List, FileText, Folder, User } from "lucide-react";
@@ -31,7 +30,7 @@ export function NavTabs() {
   const tabsToShow = isDashboardPath ? secondaryTabs : primaryTabs;
 
   return (
-    <div className="bg-white border-b border-gray-200 mb-6">
+    <div className="bg-white shadow-sm mb-6 rounded-md">
       <nav
         className="max-w-full overflow-x-auto scrollbar-none"
         aria-label="Tabs"
@@ -42,10 +41,10 @@ export function NavTabs() {
               key={tab.name}
               to={tab.path}
               className={cn(
-                "inline-flex items-center justify-center whitespace-nowrap px-4 py-3 text-sm font-medium transition-all border-b-2 hover:text-gray-900 hover:border-gray-300 flex-shrink-0",
                 location.pathname === tab.path
-                  ? "text-formality-primary border-formality-primary"
-                  : "text-gray-600 border-transparent"
+                  ? "border-formality-primary text-formality-primary "
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50",
+                "flex items-center whitespace-nowrap border-b-2 py-3 px-4 text-sm font-medium transition-all"
               )}
             >
               <tab.icon className="mr-2 h-4 w-4" />
