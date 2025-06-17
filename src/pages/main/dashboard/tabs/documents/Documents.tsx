@@ -1,18 +1,14 @@
-
-import { useEffect, useState } from "react";
-import AppLayout from "../../../../../components/layout/AppLayout";
-import { NavTabs } from "../../../../../components/dashboard/NavTabs";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DocumentService } from "@/api-swagger";
-import { toast } from "sonner";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { DocumentsGrid } from "./DocumentsGrid";
 import { DocumentForm } from "./DocumentForm";
 import { usePagination } from "./hooks/usePagination";
-import { useDocumentMutations } from "./hooks/useDocumentMutations";
+import { toast } from "sonner";
 
 const Documents = () => {
   const queryClient = useQueryClient();
@@ -22,7 +18,6 @@ const Documents = () => {
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
   const { paginationParams, handleSearch } = usePagination();
-  const { deleteDocumentMutation } = useDocumentMutations();
 
   // Fetch all documents
   const { data: documentsData, isLoading } = useQuery({
@@ -45,7 +40,18 @@ const Documents = () => {
         }),
       }),
   });
-
+  const deleteDocumentMutation = useMutation({
+    mutationFn: (docId: string) =>
+      DocumentService.documentControllerRemove({ id: docId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      toast.success("Document supprimé avec succès");
+    },
+    onError: (error) => {
+      toast.error("Erreur lors de la suppression du document");
+      console.error("Delete error:", error);
+    },
+  });
   const handleDeleteDocument = (docId: string) => {
     setDocumentToDelete(docId);
     setIsConfirmModalOpen(true);
@@ -92,29 +98,24 @@ const Documents = () => {
   });
 
   return (
-    <AppLayout>
-      <NavTabs />
+    <div className="w-full animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div className="flex items-center mb-4 md:mb-0"></div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-between">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Rechercher..."
-              className="pl-10 border-gray-700"
-              value={paginationParams.searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10 border-gray-200"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              className="flex items-center gap-2 bg-formality-primary hover:bg-formality-primary/90 text-white"
-              onClick={() => handleOpenDrawer()}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Document</span>
-            </Button>
-          </div>
+          <Button
+            onClick={() => handleOpenDrawer()}
+            className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Nouveau document</span>
+          </Button>
         </div>
       </div>
 
@@ -139,7 +140,7 @@ const Documents = () => {
         title="Supprimer le document"
         description="Êtes-vous sûr de vouloir supprimer ce document ?"
       />
-    </AppLayout>
+    </div>
   );
 };
 

@@ -1,7 +1,4 @@
-
 import { useState } from "react";
-import AppLayout from "../../../../../components/layout/AppLayout";
-import { NavTabs } from "../../../../../components/dashboard/NavTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Database, Search } from "lucide-react";
@@ -14,6 +11,11 @@ interface DataItem {
   legalForms: string[];
   arborescence: string;
   modifiable: boolean;
+  responseType: string;
+}
+
+interface FormData {
+  dataNumber: string;
   responseType: string;
 }
 
@@ -72,7 +74,7 @@ const Quotes = () => {
     setEditingData(null);
   };
 
-  const handleSaveData = (formData: any) => {
+  const handleSaveData = (formData: FormData) => {
     if (editingData) {
       setDataItems(
         dataItems.map((item) =>
@@ -118,8 +120,7 @@ const Quotes = () => {
   };
 
   return (
-    <AppLayout>
-      <NavTabs />
+    <div className="w-full animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 mt-6">
         <div className="flex items-center mb-4 md:mb-0"></div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-between">
@@ -169,7 +170,7 @@ const Quotes = () => {
         dataItems={dataItems}
         onSave={handleSaveData}
       />
-    </AppLayout>
+    </div>
   );
 };
 

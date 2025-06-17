@@ -1,12 +1,8 @@
-
-import type React from "react";
 import { useState } from "react";
-import AppLayout from "../../../../../components/layout/AppLayout";
-import { NavTabs } from "../../../../../components/dashboard/NavTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ListService } from "@/api-swagger/services/ListService";
 import { ListDto } from "@/api-swagger";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
@@ -17,7 +13,6 @@ import { usePagination } from "./hooks/usePagination";
 import { useListMutations } from "./hooks/useListMutations";
 
 const Lists = () => {
-  const queryClient = useQueryClient();
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
@@ -108,8 +103,7 @@ const Lists = () => {
     }) || [];
 
   return (
-    <AppLayout>
-      <NavTabs />
+    <div className="w-full animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div className="flex items-center mb-4 md:mb-0"></div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-between">
@@ -174,7 +168,7 @@ const Lists = () => {
         title="Supprimer la liste"
         description="Êtes-vous sûr de vouloir supprimer cette liste ?"
       />
-    </AppLayout>
+    </div>
   );
 };
 

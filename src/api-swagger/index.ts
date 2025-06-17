@@ -1,4 +1,4 @@
-/* generated using openapi-typescript-codegen -- do not edit */
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -13,6 +13,7 @@ export { CreateDocumentDto } from './models/CreateDocumentDto';
 export type { CreateEmailDto } from './models/CreateEmailDto';
 export { CreateFileDto } from './models/CreateFileDto';
 export type { CreateListDto } from './models/CreateListDto';
+export { CreateTreeDto } from './models/CreateTreeDto';
 export { CreateUserDto } from './models/CreateUserDto';
 export { DocumentDto } from './models/DocumentDto';
 export type { EmailDto } from './models/EmailDto';
@@ -26,11 +27,14 @@ export type { PaginatedDocumentDto } from './models/PaginatedDocumentDto';
 export type { PaginatedEmailDto } from './models/PaginatedEmailDto';
 export type { PaginatedFileDto } from './models/PaginatedFileDto';
 export type { PaginatedListDto } from './models/PaginatedListDto';
+export type { PaginatedTreeDto } from './models/PaginatedTreeDto';
 export type { PaginatedUserDto } from './models/PaginatedUserDto';
+export { TreeDto } from './models/TreeDto';
 export { UpdateClientDto } from './models/UpdateClientDto';
 export { UpdateDocumentDto } from './models/UpdateDocumentDto';
 export { UpdateFileDto } from './models/UpdateFileDto';
 export type { UpdateListDto } from './models/UpdateListDto';
+export { UpdateTreeDto } from './models/UpdateTreeDto';
 export { UpdateUserDto } from './models/UpdateUserDto';
 export { UserDto } from './models/UserDto';
 
@@ -40,4 +44,5 @@ export { DocumentService } from './services/DocumentService';
 export { EmailService } from './services/EmailService';
 export { FileService } from './services/FileService';
 export { ListService } from './services/ListService';
+export { TreeService } from './services/TreeService';
 export { UserService } from './services/UserService';

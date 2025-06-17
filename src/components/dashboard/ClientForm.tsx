@@ -10,27 +10,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { ClientDto, CreateClientDto, UpdateClientDto } from "@/api-swagger";
 import { ClientService } from "@/api-swagger/services/ClientService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ConfirmationModal } from "../ui/confirmation-modal";
 
 interface ClientFormProps {
-  onSave: (client: Partial<ClientDto>) => void;
   client?: ClientDto | null;
   onCancel: () => void;
   onDelete?: (id: string) => void;
 }
 
 export const ClientForm: React.FC<ClientFormProps> = ({
-  onSave,
   client,
   onCancel,
   onDelete,
 }) => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [delegation, setDelegation] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<ClientDto>>({
     clientName: "",
     firstName: "",
@@ -53,7 +51,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     onSuccess: () => {
       toast.success("Client créé avec succès");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      navigate("/dashboard");
+      onCancel();
     },
     onError: (error) => {
       toast.error("Erreur lors de la création du client");
@@ -68,7 +66,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     onSuccess: () => {
       toast.success("Client mis à jour avec succès");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      navigate("/dashboard");
+      onCancel();
     },
     onError: (error) => {
       toast.error("Erreur lors de la mise à jour du client");
@@ -77,16 +75,31 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   });
   //Archive client mutation
   const archiveClientMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateClientDto }) =>
+    mutationFn: ({
+      id,
+      data,
+      action,
+    }: {
+      id: string;
+      data: UpdateClientDto;
+      action: "archive" | "unarchive";
+    }) =>
       ClientService.clientControllerUpdate({
         id,
-        requestBody: data,
+        requestBody: {
+          ...data,
+          isArchived: action === "archive" ? true : false,
+        },
       }),
-    onSuccess: () => {
-      toast.success("Client archivé avec succès");
+    onSuccess: (_, variables) => {
+      toast.success(
+        `Client ${
+          variables.action === "archive" ? "archivé" : "désarchivé"
+        } avec succès`
+      );
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      navigate("/dashboard");
+      //close drawer
+      onCancel();
     },
     onError: (error) => {
       toast.error("Erreur lors de l'archivage du client");
@@ -97,16 +110,16 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   const deleteClientMutation = useMutation({
     mutationFn: (id: string) => ClientService.clientControllerRemove({ id }),
     onSuccess: () => {
-      toast.success("Client archivé avec succès");
+      toast.success("Client supprimé avec succès");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       if (onDelete && client?._id) {
         onDelete(client._id);
       }
-      navigate("/dashboard");
+      onCancel();
     },
     onError: (error) => {
-      toast.error("Erreur lors de l'archivage du client");
-      console.error("Error archiving client:", error);
+      toast.error("Erreur lors de la suppression du client");
+      console.error("Error deleting client:", error);
     },
   });
 
@@ -163,17 +176,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   const handleDelete = async () => {
     if (!client?._id) return;
 
-    if (window.confirm("Êtes-vous sûr de vouloir archiver ce client ?")) {
-      try {
-        await deleteClientMutation.mutateAsync(client._id);
-      } catch (error) {
-        console.error("Error archiving client:", error);
-      }
-    }
+    await deleteClientMutation.mutateAsync(client._id);
   };
   const handleArchive = async () => {
     if (!client?._id) return;
-    
+
     // Create payload without isArchived since it's not in UpdateClientDto
     const updatePayload: UpdateClientDto = {
       clientName: formData.clientName,
@@ -187,10 +194,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({
       submissionPrice: formData.submissionPrice,
       delegatePayment: formData.delegatePayment,
     };
-    
+
     await archiveClientMutation.mutateAsync({
       id: client._id,
       data: updatePayload,
+      action: client.isArchived ? "unarchive" : "archive",
     });
   };
 
@@ -348,20 +356,20 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           <Button
             type="button"
             variant="destructive"
-            onClick={handleDelete}
+            onClick={() => setIsConfirmationModalOpen(true)}
             loading={deleteClientMutation.isPending}
           >
-            {deleteClientMutation.isPending ? "Archivage..." : "Archiver"}
+            Supprimer
           </Button>
         )}
         {client?._id && (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={handleArchive}
             loading={archiveClientMutation.isPending}
           >
-            Archiver
+            {client.isArchived ? "Désarchiver" : "Archiver"}
           </Button>
         )}
         <Button
@@ -373,6 +381,13 @@ export const ClientForm: React.FC<ClientFormProps> = ({
           Enregistrer
         </Button>
       </div>
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        onPressConfirm={handleDelete}
+        title={"Supprimer le client"}
+        description={`Êtes-vous sûr de vouloir supprimer le client ${client?.clientName} ?`}
+      />
     </form>
   );
 };

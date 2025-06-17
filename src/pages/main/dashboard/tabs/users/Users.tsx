@@ -1,14 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { UserService } from "@/api-swagger/services/UserService";
 import type { UserDto } from "@/api-swagger/models/UserDto";
 import type { CreateUserDto } from "@/api-swagger/models/CreateUserDto";
-import AppLayout from "@/components/layout/AppLayout";
-import NavTabs from "@/components/dashboard/NavTabs";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { UserForm } from "./UserForm";
 import { UsersList } from "./UsersList";
@@ -33,20 +30,23 @@ const Users = () => {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { createUserMutation, updateUserMutation, deleteUserMutation } = useUserMutations();
+  const { createUserMutation, updateUserMutation, deleteUserMutation } =
+    useUserMutations();
 
   const {
     data: usersData,
-    isLoading,
-    error,
+    isLoading: queryLoading,
+    error: queryError,
   } = useQuery({
     queryKey: ["users", currentPage, itemsPerPage],
     queryFn: () =>
       UserService.userControllerFindAll({
         page: currentPage.toString(),
         perPage: itemsPerPage.toString(),
-        value: searchTerm,
+        searchValue: searchTerm,
         searchFields: ["username", "email", "role"],
       }),
   });
@@ -137,39 +137,38 @@ const Users = () => {
 
   const totalPages = Math.ceil((usersData?.data.length || 0) / itemsPerPage);
 
-  if (isLoading) {
+  if (queryLoading) {
     return (
-      <AppLayout>
-        <NavTabs />
+      <div className="w-full animate-fade-in">
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-2">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary"></div>
             <p className="text-gray-600">Chargement...</p>
           </div>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
-  if (error) {
+  if (queryError) {
     return (
-      <AppLayout>
-        <NavTabs />
+      <div className="w-full animate-fade-in">
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-2">
             <p className="text-red-600">
               Une erreur est survenue lors du chargement des utilisateurs.
             </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Réessayer
+            </Button>
           </div>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      <NavTabs />
-
+    <div className="w-full animate-fade-in">
       <div className="space-y-8">
         <UserForm
           newUser={newUser}
@@ -179,18 +178,22 @@ const Users = () => {
         />
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-            <h2 className="text-lg font-medium text-gray-700">
-              Utilisateurs existants
-            </h2>
-            <div className="relative mt-2 sm:mt-0 w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Rechercher..."
-                className="pl-10 border-gray-700"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div className="flex items-center mb-4 md:mb-0"></div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Rechercher..."
+                  className="pl-10 border-gray-200"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                <span>Nouvel utilisateur</span>
+              </Button>
             </div>
           </div>
 
@@ -228,7 +231,7 @@ const Users = () => {
         title="Supprimer l'utilisateur"
         description="Êtes-vous sûr de vouloir supprimer cet utilisateur ?"
       />
-    </AppLayout>
+    </div>
   );
 };
 

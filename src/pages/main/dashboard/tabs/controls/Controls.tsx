@@ -1,10 +1,7 @@
-
-import React, { useState } from "react";
-import AppLayout from "../../../../../components/layout/AppLayout";
-import { NavTabs } from "../../../../../components/dashboard/NavTabs";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Database } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { ControlsGrid } from "./ControlsGrid";
 import { ControlForm } from "./ControlForm";
@@ -115,7 +112,9 @@ const Controls = () => {
           archivedControls.filter((control) => control.id !== controlToDelete)
         );
       } else {
-        setControls(controls.filter((control) => control.id !== controlToDelete));
+        setControls(
+          controls.filter((control) => control.id !== controlToDelete)
+        );
       }
     }
     setIsConfirmModalOpen(false);
@@ -128,40 +127,21 @@ const Controls = () => {
   };
 
   return (
-    <AppLayout>
-      <NavTabs />
+    <div className="w-full animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div className="flex items-center mb-4 md:mb-0"></div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-between">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Rechercher..."
-              className="pl-10 border border-gray-200"
+              className="pl-10 border-gray-200"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              className={`flex items-center gap-2 ${
-                viewingArchived ? "bg-gray-100" : ""
-              }`}
-              onClick={() => setViewingArchived(!viewingArchived)}
-            >
-              <Database className="h-4 w-4" />
-              <span>
-                {viewingArchived ? "Liste principale" : "Liste des archives"}
-              </span>
-            </Button>
-            <Button
-              className="flex items-center gap-2 bg-formality-primary hover:bg-formality-primary/90 text-white"
-              onClick={handleCreateControl}
-              disabled={viewingArchived}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Contrôle</span>
-            </Button>
-          </div>
+          <Button className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            <span>Nouveau contrôle</span>
+          </Button>
         </div>
       </div>
 
@@ -210,7 +190,7 @@ const Controls = () => {
         title="Supprimer le contrôle"
         description="Êtes-vous sûr de vouloir supprimer ce contrôle ?"
       />
-    </AppLayout>
+    </div>
   );
 };
 

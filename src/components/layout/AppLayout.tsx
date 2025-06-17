@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -58,8 +57,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-gray-50">
         {/* Sidebar */}
-        <Sidebar 
-          variant="sidebar" 
+        <Sidebar
+          variant="sidebar"
           collapsible={isMobile ? "offcanvas" : "icon"}
           className="border-r border-gray-200 bg-white"
         >
@@ -67,7 +66,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
                 <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
-                  <span className="text-formality-primary font-bold text-lg">X</span>
+                  <span className="text-formality-primary font-bold text-lg">
+                    X
+                  </span>
                 </div>
                 <span className="ml-3 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
                   Formality
@@ -80,7 +81,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               )}
             </div>
           </SidebarHeader>
-          
+
           <SidebarContent className="px-3 py-4 bg-white">
             <SidebarMenu className="space-y-2">
               {/* Show Mail feature to Admin and Juriste only */}
@@ -100,7 +101,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                       className="flex items-center gap-3 px-3 py-2.5 w-full"
                     >
                       <Mail className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">Boîte mail</span>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Boîte mail
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -122,7 +125,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                     className="flex items-center gap-3 px-3 py-2.5 w-full"
                   >
                     <Folder className="h-5 w-5 flex-shrink-0" />
-                    <span className="font-medium group-data-[collapsible=icon]:hidden">Dossiers</span>
+                    <span className="font-medium group-data-[collapsible=icon]:hidden">
+                      Dossiers
+                    </span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -144,14 +149,16 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                       className="flex items-center gap-3 px-3 py-2.5 w-full"
                     >
                       <Settings className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">Paramètres</span>
+                      <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        Paramètres
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarContent>
-          
+
           <SidebarFooter className="border-t border-gray-100 bg-white px-3 py-3">
             <Button
               variant="ghost"
@@ -159,7 +166,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-data-[collapsible=icon]:justify-center"
             >
               <LogOut size={18} className="flex-shrink-0" />
-              <span className="group-data-[collapsible=icon]:hidden font-medium">Déconnexion</span>
+              <span className="group-data-[collapsible=icon]:hidden font-medium">
+                Déconnexion
+              </span>
             </Button>
           </SidebarFooter>
         </Sidebar>
@@ -180,7 +189,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </div>
             )}
           </div>
-          
+
           <div className="p-6 w-full">
             <AppBreadcrumbs />
             {children}

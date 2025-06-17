@@ -2,12 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ListDto } from './ListDto';
-export type PaginatedListDto = {
+import type { TreeDto } from './TreeDto';
+export type PaginatedTreeDto = {
     page?: number;
     pagesCount?: number;
     count?: number;
     perPage?: number;
-    data?: Array<ListDto>;
+    data?: Array<TreeDto>;
 };
 

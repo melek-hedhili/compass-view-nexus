@@ -1,4 +1,4 @@
-/* generated using openapi-typescript-codegen -- do not edit */
+/* generated using openapi-typescript-codegen -- do no edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -67,15 +67,17 @@ export class EmailService {
     public static emailControllerFindAllArchived({
         page,
         perPage,
-        value,
+        searchValue,
         searchFields,
         additionalFields,
+        filters,
     }: {
         page?: string,
         perPage?: string,
-        value?: string,
+        searchValue?: string,
         searchFields?: Array<string>,
         additionalFields?: Array<string>,
+        filters?: string,
     }): CancelablePromise<PaginatedEmailDto> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -83,9 +85,10 @@ export class EmailService {
             query: {
                 'page': page,
                 'perPage': perPage,
-                'value': value,
+                'searchValue': searchValue,
                 'searchFields': searchFields,
                 'additionalFields': additionalFields,
+                'filters': filters,
             },
         });
     }
@@ -96,15 +99,17 @@ export class EmailService {
     public static emailControllerFindAllSent({
         page,
         perPage,
-        value,
+        searchValue,
         searchFields,
         additionalFields,
+        filters,
     }: {
         page?: string,
         perPage?: string,
-        value?: string,
+        searchValue?: string,
         searchFields?: Array<string>,
         additionalFields?: Array<string>,
+        filters?: string,
     }): CancelablePromise<PaginatedEmailDto> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -112,9 +117,10 @@ export class EmailService {
             query: {
                 'page': page,
                 'perPage': perPage,
-                'value': value,
+                'searchValue': searchValue,
                 'searchFields': searchFields,
                 'additionalFields': additionalFields,
+                'filters': filters,
             },
         });
     }
@@ -125,15 +131,17 @@ export class EmailService {
     public static emailControllerFindAll({
         page,
         perPage,
-        value,
+        searchValue,
         searchFields,
         additionalFields,
+        filters,
     }: {
         page?: string,
         perPage?: string,
-        value?: string,
+        searchValue?: string,
         searchFields?: Array<string>,
         additionalFields?: Array<string>,
+        filters?: string,
     }): CancelablePromise<PaginatedEmailDto> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -141,9 +149,10 @@ export class EmailService {
             query: {
                 'page': page,
                 'perPage': perPage,
-                'value': value,
+                'searchValue': searchValue,
                 'searchFields': searchFields,
                 'additionalFields': additionalFields,
+                'filters': filters,
             },
         });
     }
