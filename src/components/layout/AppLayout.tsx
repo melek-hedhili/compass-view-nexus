@@ -72,14 +72,14 @@ const SidebarNavigation = () => {
             className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
               isActive("/dashboard/mail")
                 ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
-                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/50 hover:text-formality-primary hover:shadow-md hover:transform hover:scale-[1.01]"
+                : "text-gray-700 hover:bg-formality-primary/5 hover:text-formality-primary"
             }`}
           >
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
               <Mail className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
                 isActive("/dashboard/mail") 
                   ? "scale-110 drop-shadow-sm" 
-                  : "group-hover:scale-105 group-hover:rotate-3"
+                  : "group-hover:scale-105"
               }`} />
               <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
                 Boîte mail
@@ -103,14 +103,14 @@ const SidebarNavigation = () => {
           className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
             isActive("/dashboard/dossiers")
               ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
-              : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/50 hover:text-formality-primary hover:shadow-md hover:transform hover:scale-[1.01]"
+              : "text-gray-700 hover:bg-formality-primary/5 hover:text-formality-primary"
           }`}
         >
           <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
             <Folder className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
               isActive("/dashboard/dossiers") 
                 ? "scale-110 drop-shadow-sm" 
-                : "group-hover:scale-105 group-hover:rotate-3"
+                : "group-hover:scale-105"
             }`} />
             <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
               Dossiers
@@ -134,14 +134,14 @@ const SidebarNavigation = () => {
             className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
               isActive("/dashboard")
                 ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
-                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/50 hover:text-formality-primary hover:shadow-md hover:transform hover:scale-[1.01]"
+                : "text-gray-700 hover:bg-formality-primary/5 hover:text-formality-primary"
             }`}
           >
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
               <Settings className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
                 isActive("/dashboard") 
                   ? "scale-110 drop-shadow-sm" 
-                  : "group-hover:scale-105 group-hover:rotate-12"
+                  : "group-hover:scale-105"
               }`} />
               <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
                 Paramètres
