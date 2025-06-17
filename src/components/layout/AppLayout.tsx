@@ -1,8 +1,9 @@
+
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, Mail, Folder, Settings, Menu } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import Logo from "../Logo";
 import AppBreadcrumbs from "../AppBreadcrumbs";
 import {
@@ -15,6 +16,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEmailNotifications } from "@/hooks/use-email-notifications";
@@ -23,12 +25,12 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-const AppLayout = ({ children }: AppLayoutProps) => {
-  const { logout, user, isAuthenticated } = useAuth();
+const SidebarNavigation = () => {
+  const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
-
-  useEmailNotifications({ isAuthenticated });
 
   const isActive = (path: string) => {
     if (path === "/dashboard" && location.pathname === "/dashboard") {
@@ -52,6 +54,103 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       (location.pathname.startsWith(path) && path !== "/dashboard")
     );
   };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
+  return (
+    <SidebarMenu className="space-y-1">
+      {/* Show Mail feature to Admin and Juriste only */}
+      {(user?.role === "ADMIN" || user?.role === "JURIST") && (
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            onClick={() => handleNavigation("/dashboard/mail")}
+            isActive={isActive("/dashboard/mail")}
+            className={`transition-all duration-300 ease-in-out rounded-xl group relative overflow-hidden ${
+              isActive("/dashboard/mail")
+                ? "bg-gradient-to-r from-formality-primary/20 to-formality-primary/10 text-formality-primary border-l-4 border-formality-primary shadow-lg shadow-formality-primary/20 font-semibold"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-formality-primary hover:shadow-md"
+            }`}
+          >
+            <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
+              <Mail className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
+                isActive("/dashboard/mail") ? "scale-110" : "group-hover:scale-105"
+              }`} />
+              <span className="font-medium group-data-[collapsible=icon]:hidden">
+                Boîte mail
+              </span>
+            </div>
+            {isActive("/dashboard/mail") && (
+              <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/5 to-transparent opacity-50" />
+            )}
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      )}
+
+      {/* Show Dossiers feature to all users */}
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={() => handleNavigation("/dashboard/dossiers")}
+          isActive={isActive("/dashboard/dossiers")}
+          className={`transition-all duration-300 ease-in-out rounded-xl group relative overflow-hidden ${
+            isActive("/dashboard/dossiers")
+              ? "bg-gradient-to-r from-formality-primary/20 to-formality-primary/10 text-formality-primary border-l-4 border-formality-primary shadow-lg shadow-formality-primary/20 font-semibold"
+              : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-formality-primary hover:shadow-md"
+          }`}
+        >
+          <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
+            <Folder className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
+              isActive("/dashboard/dossiers") ? "scale-110" : "group-hover:scale-105"
+            }`} />
+            <span className="font-medium group-data-[collapsible=icon]:hidden">
+              Dossiers
+            </span>
+          </div>
+          {isActive("/dashboard/dossiers") && (
+            <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/5 to-transparent opacity-50" />
+          )}
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+
+      {/* Show Settings feature to Admin and Jurist only */}
+      {(user?.role === "ADMIN" || user?.role === "JURIST") && (
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            onClick={() => handleNavigation("/dashboard")}
+            isActive={isActive("/dashboard")}
+            className={`transition-all duration-300 ease-in-out rounded-xl group relative overflow-hidden ${
+              isActive("/dashboard")
+                ? "bg-gradient-to-r from-formality-primary/20 to-formality-primary/10 text-formality-primary border-l-4 border-formality-primary shadow-lg shadow-formality-primary/20 font-semibold"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-formality-primary hover:shadow-md"
+            }`}
+          >
+            <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
+              <Settings className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
+                isActive("/dashboard") ? "scale-110" : "group-hover:scale-105"
+              }`} />
+              <span className="font-medium group-data-[collapsible=icon]:hidden">
+                Paramètres
+              </span>
+            </div>
+            {isActive("/dashboard") && (
+              <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/5 to-transparent opacity-50" />
+            )}
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      )}
+    </SidebarMenu>
+  );
+};
+
+const AppLayout = ({ children }: AppLayoutProps) => {
+  const { logout, user, isAuthenticated } = useAuth();
+  const isMobile = useIsMobile();
+
+  useEmailNotifications({ isAuthenticated });
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
@@ -83,89 +182,16 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           </SidebarHeader>
 
           <SidebarContent className="px-3 py-4 bg-white">
-            <SidebarMenu className="space-y-2">
-              {/* Show Mail feature to Admin and Juriste only */}
-              {(user?.role === "ADMIN" || user?.role === "JURIST") && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive("/dashboard/mail")}
-                    className={`transition-all duration-200 rounded-lg ${
-                      isActive("/dashboard/mail")
-                        ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
-                    }`}
-                  >
-                    <Link
-                      to="/dashboard/mail"
-                      className="flex items-center gap-3 px-3 py-2.5 w-full"
-                    >
-                      <Mail className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">
-                        Boîte mail
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-
-              {/* Show Dossiers feature to all users */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive("/dashboard/dossiers")}
-                  className={`transition-all duration-200 rounded-lg ${
-                    isActive("/dashboard/dossiers")
-                      ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
-                  }`}
-                >
-                  <Link
-                    to="/dashboard/dossiers"
-                    className="flex items-center gap-3 px-3 py-2.5 w-full"
-                  >
-                    <Folder className="h-5 w-5 flex-shrink-0" />
-                    <span className="font-medium group-data-[collapsible=icon]:hidden">
-                      Dossiers
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* Show Settings feature to Admin and Jurist only */}
-              {(user?.role === "ADMIN" || user?.role === "JURIST") && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive("/dashboard")}
-                    className={`transition-all duration-200 rounded-lg ${
-                      isActive("/dashboard")
-                        ? "bg-formality-primary/10 text-formality-primary font-semibold border border-formality-primary/20 shadow-sm hover:bg-formality-primary/15"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-formality-primary"
-                    }`}
-                  >
-                    <Link
-                      to="/dashboard"
-                      className="flex items-center gap-3 px-3 py-2.5 w-full"
-                    >
-                      <Settings className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium group-data-[collapsible=icon]:hidden">
-                        Paramètres
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
+            <SidebarNavigation />
           </SidebarContent>
 
           <SidebarFooter className="border-t border-gray-100 bg-white px-3 py-3">
             <Button
               variant="ghost"
               onClick={logout}
-              className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-data-[collapsible=icon]:justify-center"
+              className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group-data-[collapsible=icon]:justify-center hover:shadow-md"
             >
-              <LogOut size={18} className="flex-shrink-0" />
+              <LogOut size={18} className="flex-shrink-0 transition-transform duration-300 hover:scale-110" />
               <span className="group-data-[collapsible=icon]:hidden font-medium">
                 Déconnexion
               </span>
@@ -177,7 +203,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <main className="flex-1 overflow-auto bg-gray-50">
           {/* Mobile header - always visible on mobile */}
           <div className="sticky top-0 z-50 flex items-center gap-4 border-b bg-white px-4 py-3 shadow-sm md:hidden">
-            <SidebarTrigger className="rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary">
+            <SidebarTrigger className="rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary transition-all duration-200">
               <Menu className="h-5 w-5 text-gray-700" />
             </SidebarTrigger>
             <Link to="/dashboard" className="flex items-center">
