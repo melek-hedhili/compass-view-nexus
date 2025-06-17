@@ -1,8 +1,7 @@
-
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Mail, Folder, Settings, Menu, ChevronLeft } from "lucide-react";
+import { LogOut, Mail, Folder, Settings, Menu } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import Logo from "../Logo";
 import AppBreadcrumbs from "../AppBreadcrumbs";
@@ -161,33 +160,6 @@ const SidebarNavigation = () => {
   );
 };
 
-const SidebarResizeButton = () => {
-  const { state, toggleSidebar } = useSidebar();
-  const isMobile = useIsMobile();
-
-  // Don't show on mobile
-  if (isMobile) return null;
-
-  const isExpanded = state === "expanded";
-
-  return (
-    <Button
-      onClick={toggleSidebar}
-      variant="ghost"
-      size="icon"
-      className={`absolute -right-3 top-1/2 transform -translate-y-1/2 z-20 h-6 w-6 rounded-full border border-gray-200 bg-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 ${
-        isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-      }`}
-    >
-      <ChevronLeft 
-        className={`h-4 w-4 text-gray-600 transition-transform duration-300 ${
-          isExpanded ? "rotate-0" : "rotate-180"
-        }`} 
-      />
-    </Button>
-  );
-};
-
 const AppLayout = ({ children }: AppLayoutProps) => {
   const { logout, user, isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
@@ -198,53 +170,48 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-gray-50">
         {/* Sidebar */}
-        <div className="relative group">
-          <Sidebar
-            variant="sidebar"
-            collapsible={isMobile ? "offcanvas" : "icon"}
-            className="border-r border-gray-200 bg-white"
-          >
-            <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
-              <div className="flex items-center justify-between px-4 py-4">
-                <Link to="/dashboard" className="flex items-center">
-                  <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
-                    <span className="text-formality-primary font-bold text-lg">
-                      X
-                    </span>
-                  </div>
-                  <span className="ml-3 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
-                    Formality
+        <Sidebar
+          variant="sidebar"
+          collapsible={isMobile ? "offcanvas" : "icon"}
+          className="border-r border-gray-200 bg-white"
+        >
+          <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
+            <div className="flex items-center justify-between px-4 py-4">
+              <Link to="/dashboard" className="flex items-center">
+                <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
+                  <span className="text-formality-primary font-bold text-lg">
+                    X
                   </span>
-                </Link>
-                {user && (
-                  <div className="text-xs font-medium text-white/90 bg-white/20 px-2 py-1 rounded-full group-data-[collapsible=icon]:hidden">
-                    {user.role}
-                  </div>
-                )}
-              </div>
-            </SidebarHeader>
-
-            <SidebarContent className="px-3 py-4 bg-white">
-              <SidebarNavigation />
-            </SidebarContent>
-
-            <SidebarFooter className="border-t border-gray-100 bg-white px-3 py-3">
-              <Button
-                variant="ghost"
-                onClick={logout}
-                className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group-data-[collapsible=icon]:justify-center hover:shadow-md"
-              >
-                <LogOut size={18} className="flex-shrink-0 transition-transform duration-300 hover:scale-110" />
-                <span className="group-data-[collapsible=icon]:hidden font-medium">
-                  Déconnexion
+                </div>
+                <span className="ml-3 text-lg font-semibold text-white group-data-[collapsible=icon]:hidden">
+                  Formality
                 </span>
-              </Button>
-            </SidebarFooter>
-          </Sidebar>
+              </Link>
+              {user && (
+                <div className="text-xs font-medium text-white/90 bg-white/20 px-2 py-1 rounded-full group-data-[collapsible=icon]:hidden">
+                  {user.role}
+                </div>
+              )}
+            </div>
+          </SidebarHeader>
 
-          {/* Sidebar Resize Button */}
-          <SidebarResizeButton />
-        </div>
+          <SidebarContent className="px-3 py-4 bg-white">
+            <SidebarNavigation />
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-gray-100 bg-white px-3 py-3">
+            <Button
+              variant="ghost"
+              onClick={logout}
+              className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group-data-[collapsible=icon]:justify-center hover:shadow-md"
+            >
+              <LogOut size={18} className="flex-shrink-0 transition-transform duration-300 hover:scale-110" />
+              <span className="group-data-[collapsible=icon]:hidden font-medium">
+                Déconnexion
+              </span>
+            </Button>
+          </SidebarFooter>
+        </Sidebar>
 
         {/* Main content area */}
         <main className="flex-1 overflow-auto bg-gray-50">
