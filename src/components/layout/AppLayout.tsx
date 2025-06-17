@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -63,30 +62,35 @@ const SidebarNavigation = () => {
   };
 
   return (
-    <SidebarMenu className="space-y-1">
+    <SidebarMenu className="space-y-2">
       {/* Show Mail feature to Admin and Juriste only */}
       {(user?.role === "ADMIN" || user?.role === "JURIST") && (
         <SidebarMenuItem>
           <SidebarMenuButton
             onClick={() => handleNavigation("/dashboard/mail")}
             isActive={isActive("/dashboard/mail")}
-            className={`transition-all duration-300 ease-in-out rounded-xl group relative overflow-hidden ${
+            className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
               isActive("/dashboard/mail")
-                ? "bg-gradient-to-r from-formality-primary/20 to-formality-primary/10 text-formality-primary border-l-4 border-formality-primary shadow-lg shadow-formality-primary/20 font-semibold"
-                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-formality-primary hover:shadow-md"
+                ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/50 hover:text-formality-primary hover:shadow-md hover:transform hover:scale-[1.01]"
             }`}
           >
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
-              <Mail className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
-                isActive("/dashboard/mail") ? "scale-110" : "group-hover:scale-105"
+              <Mail className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
+                isActive("/dashboard/mail") 
+                  ? "scale-110 drop-shadow-sm" 
+                  : "group-hover:scale-105 group-hover:rotate-3"
               }`} />
-              <span className="font-medium group-data-[collapsible=icon]:hidden">
+              <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
                 Boîte mail
               </span>
             </div>
             {isActive("/dashboard/mail") && (
-              <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/5 to-transparent opacity-50" />
+              <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
             )}
+            <div className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
+              isActive("/dashboard/mail") ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
+            }`} />
           </SidebarMenuButton>
         </SidebarMenuItem>
       )}
@@ -96,23 +100,28 @@ const SidebarNavigation = () => {
         <SidebarMenuButton
           onClick={() => handleNavigation("/dashboard/dossiers")}
           isActive={isActive("/dashboard/dossiers")}
-          className={`transition-all duration-300 ease-in-out rounded-xl group relative overflow-hidden ${
+          className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
             isActive("/dashboard/dossiers")
-              ? "bg-gradient-to-r from-formality-primary/20 to-formality-primary/10 text-formality-primary border-l-4 border-formality-primary shadow-lg shadow-formality-primary/20 font-semibold"
-              : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-formality-primary hover:shadow-md"
+              ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
+              : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/50 hover:text-formality-primary hover:shadow-md hover:transform hover:scale-[1.01]"
           }`}
         >
           <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
-            <Folder className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
-              isActive("/dashboard/dossiers") ? "scale-110" : "group-hover:scale-105"
+            <Folder className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
+              isActive("/dashboard/dossiers") 
+                ? "scale-110 drop-shadow-sm" 
+                : "group-hover:scale-105 group-hover:rotate-3"
             }`} />
-            <span className="font-medium group-data-[collapsible=icon]:hidden">
+            <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
               Dossiers
             </span>
           </div>
           {isActive("/dashboard/dossiers") && (
-            <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/5 to-transparent opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
           )}
+          <div className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
+            isActive("/dashboard/dossiers") ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
+          }`} />
         </SidebarMenuButton>
       </SidebarMenuItem>
 
@@ -122,23 +131,28 @@ const SidebarNavigation = () => {
           <SidebarMenuButton
             onClick={() => handleNavigation("/dashboard")}
             isActive={isActive("/dashboard")}
-            className={`transition-all duration-300 ease-in-out rounded-xl group relative overflow-hidden ${
+            className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
               isActive("/dashboard")
-                ? "bg-gradient-to-r from-formality-primary/20 to-formality-primary/10 text-formality-primary border-l-4 border-formality-primary shadow-lg shadow-formality-primary/20 font-semibold"
-                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 hover:text-formality-primary hover:shadow-md"
+                ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
+                : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/50 hover:text-formality-primary hover:shadow-md hover:transform hover:scale-[1.01]"
             }`}
           >
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
-              <Settings className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
-                isActive("/dashboard") ? "scale-110" : "group-hover:scale-105"
+              <Settings className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
+                isActive("/dashboard") 
+                  ? "scale-110 drop-shadow-sm" 
+                  : "group-hover:scale-105 group-hover:rotate-12"
               }`} />
-              <span className="font-medium group-data-[collapsible=icon]:hidden">
+              <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
                 Paramètres
               </span>
             </div>
             {isActive("/dashboard") && (
-              <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/5 to-transparent opacity-50" />
+              <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
             )}
+            <div className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
+              isActive("/dashboard") ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
+            }`} />
           </SidebarMenuButton>
         </SidebarMenuItem>
       )}
