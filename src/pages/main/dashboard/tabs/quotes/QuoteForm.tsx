@@ -16,6 +16,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { Plus, X } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -99,17 +100,18 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent
-        side="right"
-        className="w-[800px] sm:w-[900px] p-6 overflow-y-auto"
-      >
-        <SheetHeader>
-          <SheetTitle className="text-2xl font-bold flex justify-between items-center">
+      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+          <SheetTitle className="text-2xl font-bold text-formality-accent">
             {editingData ? "Modifier la donnée" : "Nouvelle donnée"}
           </SheetTitle>
+          <SheetDescription className="text-gray-600">
+            Remplissez les informations de la donnée ci-dessous.
+          </SheetDescription>
         </SheetHeader>
+
         <Form methods={methods} onSubmit={onSubmit}>
-          <div className="space-y-6 mt-6">
+          <div className="p-6 space-y-6">
             <ControlledInput
               name="fieldName"
               label="Donnée N°"
@@ -331,7 +333,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-6 border-t border-gray-100">
               <Button
                 className="bg-formality-primary hover:bg-formality-primary/90 text-white"
                 type="submit"

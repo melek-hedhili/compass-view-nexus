@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -5,6 +6,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import {
   CreateDocumentDto,
@@ -121,17 +123,18 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent
-        side="right"
-        className="w-[450px] sm:w-[900px] p-6 overflow-y-auto"
-      >
-        <SheetHeader>
-          <SheetTitle className="text-2xl font-bold flex justify-between items-center">
+      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+          <SheetTitle className="text-2xl font-bold text-formality-accent">
             {editingId ? "Modifier le document" : "Nouveau document"}
           </SheetTitle>
+          <SheetDescription className="text-gray-600">
+            Remplissez les informations du document ci-dessous.
+          </SheetDescription>
         </SheetHeader>
+
         <Form methods={methods} onSubmit={onSubmit}>
-          <div className="space-y-6 mt-6">
+          <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ControlledInput
                 name="shortName"
@@ -147,7 +150,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <ControlledSelect
                 name="benefit"
                 label="Prestation"
@@ -177,7 +180,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
               />
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-6 border-t border-gray-100">
               <Button
                 className="bg-formality-primary hover:bg-formality-primary/90 text-white"
                 type="submit"

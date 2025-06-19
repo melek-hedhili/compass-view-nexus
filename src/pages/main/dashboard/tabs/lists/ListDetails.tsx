@@ -31,16 +31,18 @@ export const ListDetails: React.FC<ListDetailsProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md md:max-w-4xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Détails de la liste</SheetTitle>
-          <SheetDescription>
+      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+          <SheetTitle className="text-2xl font-bold text-formality-accent">
+            Détails de la liste
+          </SheetTitle>
+          <SheetDescription className="text-gray-600">
             Informations détaillées de la liste
           </SheetDescription>
         </SheetHeader>
 
         {selectedList && (
-          <div className="space-y-6 py-6">
+          <div className="p-6 space-y-6">
             <div>
               <Label className="block text-sm font-medium text-gray-500 mb-1">
                 Nom du champ

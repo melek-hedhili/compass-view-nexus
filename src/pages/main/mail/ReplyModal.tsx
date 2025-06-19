@@ -7,6 +7,13 @@ import { EmailService } from "@/api-swagger/services/EmailService";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { EmailDto } from "@/api-swagger/models/EmailDto";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 // Extend EmailDto with additional properties we need
 interface ExtendedEmailDto extends EmailDto {
@@ -15,14 +22,14 @@ interface ExtendedEmailDto extends EmailDto {
   attachments?: number;
 }
 
-// ReplyModal component
-function ReplyModal({
-  onClose,
-  originalEmail,
-}: {
+interface ReplyModalProps {
+  isOpen: boolean;
   onClose: () => void;
   originalEmail: ExtendedEmailDto;
-}) {
+}
+
+// ReplyModal component
+function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
   const [emailData, setEmailData] = useState({
     to: originalEmail.from,
     subject: originalEmail.subject?.startsWith("Re: ")
@@ -79,92 +86,101 @@ function ReplyModal({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="border-b border-gray-100 relative">
-        <h2 className="text-xl font-bold text-formality-accent mb-3 pr-8">
-          Répondre
-        </h2>
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-[100px_1fr] items-center">
-            <label
-              htmlFor="reply-to-email"
-              className="font-medium text-gray-700"
-            >
-              À:
-            </label>
-            <Input
-              id="reply-to-email"
-              placeholder="Adresse email du destinataire"
-              className="border-gray-200"
-              value={emailData.to}
-              onChange={(e) =>
-                setEmailData((prev) => ({ ...prev, to: e.target.value }))
-              }
-            />
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+          <SheetTitle className="text-2xl font-bold text-formality-accent">
+            Répondre
+          </SheetTitle>
+          <SheetDescription className="text-gray-600">
+            Rédigez votre réponse ci-dessous.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="p-6">
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="grid grid-cols-[100px_1fr] items-center">
+              <label
+                htmlFor="reply-to-email"
+                className="font-medium text-gray-700"
+              >
+                À:
+              </label>
+              <Input
+                id="reply-to-email"
+                placeholder="Adresse email du destinataire"
+                className="border-gray-200"
+                value={emailData.to}
+                onChange={(e) =>
+                  setEmailData((prev) => ({ ...prev, to: e.target.value }))
+                }
+              />
+            </div>
+            
+            <div className="grid grid-cols-[100px_1fr] items-center">
+              <label
+                htmlFor="reply-subject-email"
+                className="font-medium text-gray-700"
+              >
+                Objet:
+              </label>
+              <Input
+                id="reply-subject-email"
+                placeholder="Objet du message"
+                className="border-gray-200"
+                value={emailData.subject}
+                onChange={(e) =>
+                  setEmailData((prev) => ({
+                    ...prev,
+                    subject: e.target.value,
+                  }))
+                }
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-[100px_1fr] items-center">
-            <label
-              htmlFor="reply-subject-email"
-              className="font-medium text-gray-700"
+
+          <div className="mb-6">
+            <div className="border border-gray-200 rounded-md min-h-[300px] p-4">
+              <textarea
+                className="w-full h-full min-h-[300px] resize-none focus:outline-none"
+                placeholder="Rédigez votre réponse ici..."
+                value={emailData.message}
+                onChange={(e) =>
+                  setEmailData((prev) => ({ ...prev, message: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="mb-6 p-4 bg-gray-50 rounded-md border border-gray-100">
+            <h3 className="text-sm font-medium mb-3 text-gray-700">
+              Pièces jointes
+            </h3>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex gap-1.5 items-center"
+              >
+                <Paperclip className="h-4 w-4" />
+                Ajouter une pièce jointe
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-6 border-t border-gray-100">
+            <Button
+              className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-1.5"
+              size="sm"
+              onClick={handleSend}
+              disabled={isSending}
             >
-              Objet:
-            </label>
-            <Input
-              id="reply-subject-email"
-              placeholder="Objet du message"
-              className="border-gray-200"
-              value={emailData.subject}
-              onChange={(e) =>
-                setEmailData((prev) => ({
-                  ...prev,
-                  subject: e.target.value,
-                }))
-              }
-            />
+              {isSending ? "Envoi..." : "Envoyer"}
+            </Button>
           </div>
         </div>
-      </div>
-
-      <div className="px-6 py-4 flex-grow overflow-auto">
-        <div className="border border-gray-200 rounded-md min-h-[300px] p-4">
-          <textarea
-            className="w-full h-full min-h-[300px] resize-none focus:outline-none"
-            placeholder="Rédigez votre réponse ici..."
-            value={emailData.message}
-            onChange={(e) =>
-              setEmailData((prev) => ({ ...prev, message: e.target.value }))
-            }
-          />
-        </div>
-      </div>
-
-      <div className="px-4 py-4 bg-gray-50 border-t border-gray-100">
-        <h3 className="text-sm font-medium mb-3 text-gray-700">
-          Pièces jointes
-        </h3>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex gap-1.5 items-center"
-          >
-            <Paperclip className="h-4 w-4" />
-            Ajouter une pièce jointe
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex justify-end p-6 border-t border-gray-100">
-        <Button
-          className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-1.5"
-          size="sm"
-          onClick={handleSend}
-          disabled={isSending}
-        >
-          {isSending ? "Envoi..." : "Envoyer"}
-        </Button>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 

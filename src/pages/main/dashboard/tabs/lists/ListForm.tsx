@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,15 +58,17 @@ export const ListForm: React.FC<ListFormProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md md:max-w-4xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>
+      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+          <SheetTitle className="text-2xl font-bold text-formality-accent">
+            {title}
+          </SheetTitle>
+          <SheetDescription className="text-gray-600">
             Remplissez les informations de la liste ci-dessous.
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-6 py-6">
+        <form onSubmit={(e) => e.preventDefault()} className="p-6">
           <div className="space-y-6">
             <div>
               <Label className="block text-sm font-medium text-gray-500 mb-1">
@@ -94,7 +97,7 @@ export const ListForm: React.FC<ListFormProps> = ({
               />
             </div>
 
-            <SheetFooter className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
               <SheetClose asChild>
                 <Button type="button" variant="outline">
                   Annuler
@@ -107,7 +110,7 @@ export const ListForm: React.FC<ListFormProps> = ({
               >
                 Enregistrer
               </Button>
-            </SheetFooter>
+            </div>
           </div>
         </form>
       </SheetContent>
