@@ -1,7 +1,8 @@
+
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, Mail, Folder, Settings, Menu } from "lucide-react";
+import { LogOut, Mail, Folder, Settings, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import Logo from "../Logo";
 import AppBreadcrumbs from "../AppBreadcrumbs";
@@ -28,7 +29,7 @@ const SidebarNavigation = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, state } = useSidebar();
   const isMobile = useIsMobile();
 
   const isActive = (path: string) => {
@@ -61,6 +62,8 @@ const SidebarNavigation = () => {
     }
   };
 
+  const isCollapsed = state === "collapsed";
+
   return (
     <SidebarMenu className="space-y-2">
       {/* Show Mail feature to Admin and Juriste only */}
@@ -69,6 +72,7 @@ const SidebarNavigation = () => {
           <SidebarMenuButton
             onClick={() => handleNavigation("/dashboard/mail")}
             isActive={isActive("/dashboard/mail")}
+            tooltip={isCollapsed ? "Boîte mail" : undefined}
             className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
               isActive("/dashboard/mail")
                 ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
@@ -106,6 +110,7 @@ const SidebarNavigation = () => {
         <SidebarMenuButton
           onClick={() => handleNavigation("/dashboard/dossiers")}
           isActive={isActive("/dashboard/dossiers")}
+          tooltip={isCollapsed ? "Dossiers" : undefined}
           className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
             isActive("/dashboard/dossiers")
               ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
@@ -143,6 +148,7 @@ const SidebarNavigation = () => {
           <SidebarMenuButton
             onClick={() => handleNavigation("/dashboard")}
             isActive={isActive("/dashboard")}
+            tooltip={isCollapsed ? "Paramètres" : undefined}
             className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
               isActive("/dashboard")
                 ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
@@ -232,6 +238,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </span>
             </Button>
           </SidebarFooter>
+
+          {/* Desktop Arrow Toggle Button */}
+          {!isMobile && <DesktopSidebarToggle />}
         </Sidebar>
 
         {/* Main content area */}
@@ -258,6 +267,25 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         </main>
       </div>
     </SidebarProvider>
+  );
+};
+
+const DesktopSidebarToggle = () => {
+  const { toggleSidebar, state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
+  return (
+    <button
+      onClick={toggleSidebar}
+      className="absolute -right-4 top-20 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md hover:bg-gray-50 transition-all duration-200 hover:shadow-lg"
+      aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+    >
+      {isCollapsed ? (
+        <ChevronRight className="h-4 w-4 text-gray-600" />
+      ) : (
+        <ChevronLeft className="h-4 w-4 text-gray-600" />
+      )}
+    </button>
   );
 };
 
