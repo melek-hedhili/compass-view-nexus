@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -37,9 +38,9 @@ function MailDetail({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="border-b border-gray-100 relative">
-        <h2 className="text-xl font-bold text-formality-accent mb-3 pr-8">
+    <div className="flex flex-col h-full p-6">
+      <div className="border-b border-gray-100 pb-4 mb-6">
+        <h2 className="text-xl font-bold text-formality-accent mb-3">
           {mail.subject}
         </h2>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
@@ -61,20 +62,20 @@ function MailDetail({
           )}
         </div>
       </div>
-      <div className="px-6 py-8 prose max-w-none mb-2 flex-grow overflow-auto">
+      <div className="prose max-w-none mb-6 flex-grow overflow-auto">
         {mail.htmlBody ? (
           <div dangerouslySetInnerHTML={{ __html: mail.htmlBody }} />
         ) : (
           <p>{mail.textBody}</p>
         )}
       </div>
-      <div className="px-4 py-4 bg-gray-50 border-y border-gray-100">
+      <div className="py-4 bg-gray-50 border-y border-gray-100 mb-6 px-4 rounded-md">
         <h3 className="text-sm font-medium mb-3 text-gray-700">
           Pièces jointes
         </h3>
         <p className="text-sm text-gray-500">Aucune pièce jointe</p>
       </div>
-      <div className="flex justify-between p-6 border-t border-gray-100">
+      <div className="flex justify-between border-t border-gray-100 pt-4">
         <div className="flex gap-2">
           {activeTab !== "envoye" && (
             <>

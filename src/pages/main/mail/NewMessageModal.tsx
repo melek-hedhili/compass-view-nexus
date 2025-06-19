@@ -67,9 +67,9 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
-        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
-          <SheetTitle className="text-2xl font-bold text-formality-accent">
+      <SheetContent className="w-[450px] sm:w-[900px] overflow-y-auto">
+        <SheetHeader className="pb-6">
+          <SheetTitle className="text-xl font-semibold">
             Nouveau message
           </SheetTitle>
           <SheetDescription className="text-gray-600">
@@ -77,74 +77,72 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="p-6">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  À
-                </label>
-                <Input
-                  placeholder="Adresse email du destinataire"
-                  className="border-gray-200"
-                  value={emailData.to}
-                  onChange={(e) =>
-                    setEmailData((prev) => ({ ...prev, to: e.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Objet
-                </label>
-                <Input
-                  placeholder="Objet du message"
-                  className="border-gray-200"
-                  value={emailData.subject}
-                  onChange={(e) =>
-                    setEmailData((prev) => ({
-                      ...prev,
-                      subject: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-            
+        <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Message
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                À
               </label>
-              <textarea
-                className="w-full min-h-[180px] border border-gray-200 rounded-md p-3 resize-none"
-                placeholder="Rédigez votre message ici..."
-                value={emailData.message}
+              <Input
+                placeholder="Adresse email du destinataire"
+                className="border-gray-200"
+                value={emailData.to}
                 onChange={(e) =>
-                  setEmailData((prev) => ({ ...prev, message: e.target.value }))
+                  setEmailData((prev) => ({ ...prev, to: e.target.value }))
                 }
               />
             </div>
-            
             <div>
-              <h3 className="text-sm font-medium mb-2 text-gray-700">
-                Pièces jointes
-              </h3>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex gap-1.5 items-center"
-                disabled
-              >
-                <Paperclip className="h-4 w-4" />
-                Ajouter une pièce jointe
-              </Button>
-              <span className="text-xs text-gray-400 ml-2">
-                (Bientôt disponible)
-              </span>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Objet
+              </label>
+              <Input
+                placeholder="Objet du message"
+                className="border-gray-200"
+                value={emailData.subject}
+                onChange={(e) =>
+                  setEmailData((prev) => ({
+                    ...prev,
+                    subject: e.target.value,
+                  }))
+                }
+              />
             </div>
           </div>
           
-          <div className="flex justify-end pt-6 border-t border-gray-100 mt-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Message
+            </label>
+            <textarea
+              className="w-full min-h-[180px] border border-gray-200 rounded-md p-3 resize-none"
+              placeholder="Rédigez votre message ici..."
+              value={emailData.message}
+              onChange={(e) =>
+                setEmailData((prev) => ({ ...prev, message: e.target.value }))
+              }
+            />
+          </div>
+          
+          <div>
+            <h3 className="text-sm font-medium mb-2 text-gray-700">
+              Pièces jointes
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex gap-1.5 items-center"
+              disabled
+            >
+              <Paperclip className="h-4 w-4" />
+              Ajouter une pièce jointe
+            </Button>
+            <span className="text-xs text-gray-400 ml-2">
+              (Bientôt disponible)
+            </span>
+          </div>
+          
+          <div className="flex justify-end pt-6 border-t border-gray-100">
             <Button
               className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-1.5"
               size="sm"

@@ -498,42 +498,23 @@ const Mail = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Reply Drawer */}
-      <Sheet open={isReplyOpen} onOpenChange={setIsReplyOpen}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-4xl lg:w-[900px] h-full max-h-screen p-0"
-          style={{ overflow: "auto" }}
-        >
-          <div className="h-full">
-            {replyToEmail && (
-              <ReplyModal
-                onClose={() => {
-                  setIsReplyOpen(false);
-                  setReplyToEmail(null);
-                }}
-                originalEmail={replyToEmail}
-              />
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* New Message Sheet Drawer */}
-      <Sheet open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-xl lg:w-[600px] h-full max-h-screen p-0"
-          style={{
-            overflow: "auto",
-            boxShadow: "0 8px 40px 0 rgba(0,0,0,.10)",
+      {/* Reply Modal */}
+      {replyToEmail && (
+        <ReplyModal
+          isOpen={isReplyOpen}
+          onClose={() => {
+            setIsReplyOpen(false);
+            setReplyToEmail(null);
           }}
-        >
-          <div className="h-full">
-            <NewMessageModal onClose={() => setIsNewMessageOpen(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
+          originalEmail={replyToEmail}
+        />
+      )}
+
+      {/* New Message Modal */}
+      <NewMessageModal 
+        isOpen={isNewMessageOpen} 
+        onClose={handleCloseNewMessageModal} 
+      />
     </div>
   );
 };

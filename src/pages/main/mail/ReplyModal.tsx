@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,9 +88,9 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
-        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
-          <SheetTitle className="text-2xl font-bold text-formality-accent">
+      <SheetContent className="w-[450px] sm:w-[900px] overflow-y-auto">
+        <SheetHeader className="pb-6">
+          <SheetTitle className="text-xl font-semibold">
             Répondre
           </SheetTitle>
           <SheetDescription className="text-gray-600">
@@ -97,8 +98,8 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="p-6">
-          <div className="flex flex-col gap-4 mb-6">
+        <div className="space-y-6">
+          <div className="space-y-4">
             <div className="grid grid-cols-[100px_1fr] items-center">
               <label
                 htmlFor="reply-to-email"
@@ -139,7 +140,7 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
             </div>
           </div>
 
-          <div className="mb-6">
+          <div>
             <div className="border border-gray-200 rounded-md min-h-[300px] p-4">
               <textarea
                 className="w-full h-full min-h-[300px] resize-none focus:outline-none"
@@ -152,7 +153,7 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
             </div>
           </div>
 
-          <div className="mb-6 p-4 bg-gray-50 rounded-md border border-gray-100">
+          <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
             <h3 className="text-sm font-medium mb-3 text-gray-700">
               Pièces jointes
             </h3>
