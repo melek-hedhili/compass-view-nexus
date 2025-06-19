@@ -6,14 +6,13 @@ import { EmailDto } from "@/api-swagger/models/EmailDto";
 
 function MailDetail({
   mail,
-  onClose,
   onReply,
   onArchive,
   onUnarchive,
   isArchiving,
   activeTab,
 }: {
-  mail: EmailDto | null;
+  mail: EmailDto | null | undefined;
   onClose: () => void;
   onReply: () => void;
   onArchive: () => void;

@@ -8,13 +8,14 @@ export type CreateClientDto = {
     updated_at?: string;
     clientName: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    phone: string;
-    jounals: CreateClientDto.jounals;
-    creationPrice: number;
-    modificationPrice: number;
-    submissionPrice: number;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    jounals?: CreateClientDto.jounals;
+    accounts?: Array<string>;
+    creationPrice?: number;
+    modificationPrice?: number;
+    submissionPrice?: number;
     delegatePayment?: string;
 };
 export namespace CreateClientDto {

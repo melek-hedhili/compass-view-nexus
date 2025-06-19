@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { ClientDto, CreateClientDto, UpdateClientDto } from "@/api-swagger";
 import { ClientService } from "@/api-swagger/services/ClientService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ConfirmationModal } from "../ui/confirmation-modal";
+import { Form } from "@/components/ui/form";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
+import { ControlledSelect } from "@/components/ui/controlled/controlled-select/controlled-select";
 
 interface ClientFormProps {
   client?: ClientDto | null;
@@ -21,28 +16,59 @@ interface ClientFormProps {
   onDelete?: (id: string) => void;
 }
 
+const journalOptions = [
+  { label: "Local", value: ClientDto.jounals.LOCAL },
+  { label: "National", value: ClientDto.jounals.NATIONAL },
+  { label: "BODACC", value: ClientDto.jounals.BODACC },
+];
+
+const initialForm: Partial<CreateClientDto> = {
+  clientName: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  jounals: undefined,
+  creationPrice: undefined,
+  modificationPrice: undefined,
+  submissionPrice: undefined,
+  delegatePayment: undefined,
+};
+
 export const ClientForm: React.FC<ClientFormProps> = ({
   client,
   onCancel,
   onDelete,
 }) => {
   const queryClient = useQueryClient();
-  const [delegation, setDelegation] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<ClientDto>>({
-    clientName: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    jounals: ClientDto.jounals.LOCAL,
-    accounts: [],
-    creationPrice: 0,
-    modificationPrice: 0,
-    submissionPrice: 0,
-    delegatePayment: "",
-    isArchived: false,
+  const [delegation, setDelegation] = useState(false);
+
+  const methods = useForm<Partial<CreateClientDto>>({
+    defaultValues: initialForm,
   });
+
+  // Populate form when client changes
+  useEffect(() => {
+    if (client) {
+      methods.reset({
+        clientName: client.clientName || "",
+        firstName: client.firstName || "",
+        lastName: client.lastName || "",
+        email: client.email || "",
+        phone: client.phone || "",
+        jounals: client.jounals || undefined,
+        creationPrice: client.creationPrice || undefined,
+        modificationPrice: client.modificationPrice || undefined,
+        submissionPrice: client.submissionPrice || undefined,
+        delegatePayment: client.delegatePayment || undefined,
+      });
+      setDelegation(!!client.delegatePayment);
+    } else {
+      methods.reset(initialForm);
+      setDelegation(false);
+    }
+  }, [client, methods]);
 
   // Create client mutation
   const createClientMutation = useMutation({
@@ -98,7 +124,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         } avec succès`
       );
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      //close drawer
       onCancel();
     },
     onError: (error) => {
@@ -123,42 +148,19 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     },
   });
 
-  useEffect(() => {
-    if (client) {
-      setFormData(client);
-      setDelegation(!!client.delegatePayment);
-    }
-  }, [client]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.clientName) {
-      toast.error("Veuillez remplir le nom du client");
-      return;
-    }
-
+  const onSubmit: SubmitHandler<Partial<CreateClientDto>> = async (data) => {
     const payload: CreateClientDto = {
-      clientName: formData.clientName || "",
-      email: formData.email || "",
-      firstName: formData.firstName || "",
-      lastName: formData.lastName || "",
-      phone: formData.phone || "",
-      jounals: formData.jounals || ClientDto.jounals.LOCAL,
-
-      creationPrice: formData.creationPrice || 0,
-      modificationPrice: formData.modificationPrice || 0,
-      submissionPrice: formData.submissionPrice || 0,
-      delegatePayment: delegation ? formData.delegatePayment || "" : "",
+      clientName: data.clientName,
+      email: data.email || undefined,
+      firstName: data.firstName || undefined,
+      lastName: data.lastName || undefined,
+      phone: data.phone || undefined,
+      jounals: data.jounals || undefined,
+      creationPrice: data.creationPrice || undefined,
+      modificationPrice: data.modificationPrice || undefined,
+      submissionPrice: data.submissionPrice || undefined,
+      delegatePayment: delegation ? data.delegatePayment : undefined,
     };
-
     try {
       if (client?._id) {
         await updateClientMutation.mutateAsync({
@@ -175,26 +177,22 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
   const handleDelete = async () => {
     if (!client?._id) return;
-
     await deleteClientMutation.mutateAsync(client._id);
   };
   const handleArchive = async () => {
     if (!client?._id) return;
-
-    // Create payload without isArchived since it's not in UpdateClientDto
     const updatePayload: UpdateClientDto = {
-      clientName: formData.clientName,
-      email: formData.email,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      phone: formData.phone,
-      jounals: formData.jounals,
-      creationPrice: formData.creationPrice,
-      modificationPrice: formData.modificationPrice,
-      submissionPrice: formData.submissionPrice,
-      delegatePayment: formData.delegatePayment,
+      clientName: methods.getValues("clientName"),
+      email: methods.getValues("email"),
+      firstName: methods.getValues("firstName"),
+      lastName: methods.getValues("lastName"),
+      phone: methods.getValues("phone"),
+      jounals: methods.getValues("jounals"),
+      creationPrice: methods.getValues("creationPrice"),
+      modificationPrice: methods.getValues("modificationPrice"),
+      submissionPrice: methods.getValues("submissionPrice"),
+      delegatePayment: methods.getValues("delegatePayment"),
     };
-
     await archiveClientMutation.mutateAsync({
       id: client._id,
       data: updatePayload,
@@ -203,122 +201,38 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <Form methods={methods} onSubmit={onSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="clientName">Nom du client *</Label>
-          <Input
-            id="clientName"
-            name="clientName"
-            value={formData.clientName || ""}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="firstName">Prénom</Label>
-          <Input
-            id="firstName"
-            name="firstName"
-            value={formData.firstName || ""}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Nom</Label>
-          <Input
-            id="lastName"
-            name="lastName"
-            value={formData.lastName || ""}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email || ""}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phone">Téléphone</Label>
-          <Input
-            id="phone"
-            name="phone"
-            value={formData.phone || ""}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="jounals">Journal officiel</Label>
-          <Select
-            value={formData.jounals || ClientDto.jounals.LOCAL}
-            onValueChange={(value: ClientDto.jounals) =>
-              setFormData((prev) => ({ ...prev, jounals: value }))
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Sélectionner un journal" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ClientDto.jounals.LOCAL}>Local</SelectItem>
-              <SelectItem value={ClientDto.jounals.NATIONAL}>
-                National
-              </SelectItem>
-              <SelectItem value={ClientDto.jounals.BODACC}>BODACC</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="creationPrice">Tarif création</Label>
-          <Input
-            id="creationPrice"
-            name="creationPrice"
-            type="number"
-            value={formData.creationPrice || 0}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="modificationPrice">Tarif modification</Label>
-          <Input
-            id="modificationPrice"
-            name="modificationPrice"
-            type="number"
-            value={formData.modificationPrice || 0}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="submissionPrice">Tarif dépôt</Label>
-          <Input
-            id="submissionPrice"
-            name="submissionPrice"
-            type="number"
-            value={formData.submissionPrice || 0}
-            onChange={handleChange}
-            className="input-elegant mt-1 border-gray-700"
-          />
-        </div>
-
-        <div className="space-y-2">
+        <ControlledInput name="clientName" label="Nom du client" required />
+        <ControlledInput name="email" label="Email" type="email" required />
+        <ControlledInput name="firstName" label="Prénom" />
+        <ControlledInput name="lastName" label="Nom" />
+        <ControlledInput name="phone" label="Téléphone" />
+        <ControlledSelect
+          name="jounals"
+          label="Journal officiel"
+          placeholder="Sélectionner un journal"
+          data={journalOptions}
+          getOptionValue={(option) => option.value}
+          getOptionLabel={(option) => option.label}
+          className="w-full"
+        />
+        <ControlledInput
+          name="creationPrice"
+          label="Tarif création"
+          type="number"
+        />
+        <ControlledInput
+          name="modificationPrice"
+          label="Tarif modification"
+          type="number"
+        />
+        <ControlledInput
+          name="submissionPrice"
+          label="Tarif dépôt"
+          type="number"
+        />
+        <div className="space-y-2 col-span-2">
           <div className="flex items-center space-x-2">
             <input
               type="checkbox"
@@ -327,20 +241,16 @@ export const ClientForm: React.FC<ClientFormProps> = ({
               onChange={(e) => setDelegation(e.target.checked)}
               className="rounded border-gray-300"
             />
-            <Label htmlFor="delegation">Délégation de paiement</Label>
+            <label htmlFor="delegation">Délégation de paiement</label>
           </div>
           {delegation && (
-            <Input
+            <ControlledInput
               placeholder="Email pour la délégation"
               name="delegatePayment"
-              value={formData.delegatePayment || ""}
-              onChange={handleChange}
-              className="input-elegant mt-1 border-gray-700"
             />
           )}
         </div>
       </div>
-
       <div className="flex justify-end space-x-4">
         <Button
           type="button"
@@ -388,6 +298,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         title={"Supprimer le client"}
         description={`Êtes-vous sûr de vouloir supprimer le client ${client?.clientName} ?`}
       />
-    </form>
+    </Form>
   );
 };

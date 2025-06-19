@@ -4,6 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Plus, Database, Search } from "lucide-react";
 import { QuotesGrid } from "./QuotesGrid";
 import { QuoteForm } from "./QuoteForm";
+import {
+  CreateDataDto,
+  DataDto,
+  DataService,
+  TreeService,
+  UpdateDataDto,
+} from "@/api-swagger";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface DataItem {
   id: string;
@@ -21,46 +30,55 @@ interface FormData {
 
 const Quotes = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingData, setEditingData] = useState<DataItem | null>(null);
+  const [editingData, setEditingData] = useState<DataDto | null>(null);
   const [viewingArchived, setViewingArchived] = useState(false);
-  const [dataItems, setDataItems] = useState<DataItem[]>([
-    {
-      id: "1",
-      name: "Dénomination sociale",
-      legalForms: ["SAS", "SARL", "EURL", "SA", "SCI"],
-      arborescence: "Informations générales > Identité",
-      modifiable: true,
-      responseType: "text",
+  const { data: dataItems } = useQuery({
+    queryKey: ["dataItems"],
+    queryFn: () => DataService.dataControllerFindAll({}),
+  });
+  const { data: trees } = useQuery({
+    queryKey: ["trees"],
+    queryFn: () => TreeService.treeControllerFindAll({}),
+  });
+  const updateDataItems = useMutation({
+    mutationFn: (data: UpdateDataDto) =>
+      DataService.dataControllerUpdate({
+        id: data._id!,
+        requestBody: data,
+      }),
+    onSuccess: () => {
+      toast.success("Donnée mise à jour avec succès");
     },
-    {
-      id: "2",
-      name: "Capital social",
-      legalForms: ["SAS", "SARL", "EURL"],
-      arborescence: "Informations générales > Capital",
-      modifiable: true,
-      responseType: "number",
+    onError: () => {
+      toast.error("Erreur lors de la mise à jour de la donnée");
     },
-    {
-      id: "3",
-      name: "Date de création",
-      legalForms: ["SAS", "SARL", "EURL", "SCI"],
-      arborescence: "Informations générales > Dates",
-      modifiable: false,
-      responseType: "date",
+  });
+  const createDataMutation = useMutation({
+    mutationFn: (data: CreateDataDto) =>
+      DataService.dataControllerCreate({
+        requestBody: data,
+      }),
+    onSuccess: () => {
+      toast.success("Donnée créée avec succès");
     },
-    {
-      id: "4",
-      name: "Type d'activité",
-      legalForms: ["SAS", "SARL", "EURL", "SA", "SCI"],
-      arborescence: "Activité > Classification",
-      modifiable: true,
-      responseType: "multiple",
+    onError: () => {
+      toast.error("Erreur lors de la création de la donnée");
     },
-  ]);
+  });
+  const deleteDataMutation = useMutation({
+    mutationFn: (id: string) =>
+      DataService.dataControllerRemove({
+        id: id,
+      }),
+    onSuccess: () => {
+      toast.success("Donnée supprimée avec succès");
+    },
+    onError: () => {
+      toast.error("Erreur lors de la suppression de la donnée");
+    },
+  });
 
-  const [archivedItems, setArchivedItems] = useState<DataItem[]>([]);
-
-  const handleOpenDrawer = (data?: DataItem) => {
+  const handleOpenDrawer = (data: DataDto | null) => {
     if (data) {
       setEditingData(data);
     } else {
@@ -74,48 +92,39 @@ const Quotes = () => {
     setEditingData(null);
   };
 
-  const handleSaveData = (formData: FormData) => {
+  const handleSaveData = (formData: CreateDataDto) => {
     if (editingData) {
-      setDataItems(
-        dataItems.map((item) =>
-          item.id === editingData.id
-            ? {
-                ...item,
-                name: formData.dataNumber,
-                responseType: formData.responseType,
-              }
-            : item
-        )
-      );
+      updateDataItems.mutate({
+        ...formData,
+        _id: editingData._id!,
+      });
     } else {
-      setDataItems([
-        ...dataItems,
-        {
-          id: (dataItems.length + 1).toString(),
-          name: formData.dataNumber,
-          legalForms: ["SAS", "SARL", "EURL"],
-          arborescence: "Informations générales > Identité",
-          modifiable: true,
-          responseType: formData.responseType,
-        },
-      ]);
+      createDataMutation.mutate(formData);
     }
     handleCloseDrawer();
   };
 
   const handleArchiveData = (id: string) => {
-    const itemToArchive = dataItems.find((item) => item.id === id);
+    const itemToArchive = dataItems?.data?.find((item) => item._id === id);
     if (itemToArchive) {
-      setArchivedItems([...archivedItems, itemToArchive]);
-      setDataItems(dataItems.filter((item) => item.id !== id));
+      updateDataItems.mutate({
+        ...itemToArchive,
+        isArchived: true,
+      });
     }
   };
 
+  const handleDeleteData = (id: string) => {
+    deleteDataMutation.mutate(id);
+  };
+
   const handleRestoreData = (id: string) => {
-    const itemToRestore = archivedItems.find((item) => item.id === id);
+    const itemToRestore = dataItems?.data?.find((item) => item._id === id);
     if (itemToRestore) {
-      setDataItems([...dataItems, itemToRestore]);
-      setArchivedItems(archivedItems.filter((item) => item.id !== id));
+      updateDataItems.mutate({
+        ...itemToRestore,
+        isArchived: false,
+      });
     }
   };
 
@@ -146,7 +155,7 @@ const Quotes = () => {
 
           <Button
             className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2"
-            onClick={() => handleOpenDrawer()}
+            onClick={() => handleOpenDrawer(null)}
             disabled={viewingArchived}
           >
             <Plus className="h-4 w-4" />
@@ -156,7 +165,7 @@ const Quotes = () => {
       </div>
 
       <QuotesGrid
-        dataItems={viewingArchived ? archivedItems : dataItems}
+        dataItems={viewingArchived ? dataItems : dataItems}
         viewingArchived={viewingArchived}
         onEdit={handleOpenDrawer}
         onArchive={handleArchiveData}
@@ -168,6 +177,7 @@ const Quotes = () => {
         onClose={handleCloseDrawer}
         editingData={editingData}
         dataItems={dataItems}
+        trees={trees}
         onSave={handleSaveData}
       />
     </div>

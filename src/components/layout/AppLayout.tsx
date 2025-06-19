@@ -76,11 +76,13 @@ const SidebarNavigation = () => {
             }`}
           >
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
-              <Mail className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
-                isActive("/dashboard/mail") 
-                  ? "scale-110 drop-shadow-sm" 
-                  : "group-hover:scale-105"
-              }`} />
+              <Mail
+                className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
+                  isActive("/dashboard/mail")
+                    ? "scale-110 drop-shadow-sm"
+                    : "group-hover:scale-105"
+                }`}
+              />
               <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
                 Boîte mail
               </span>
@@ -88,9 +90,13 @@ const SidebarNavigation = () => {
             {isActive("/dashboard/mail") && (
               <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
             )}
-            <div className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
-              isActive("/dashboard/mail") ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
-            }`} />
+            <div
+              className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
+                isActive("/dashboard/mail")
+                  ? "opacity-100 scale-y-100"
+                  : "opacity-0 scale-y-0"
+              }`}
+            />
           </SidebarMenuButton>
         </SidebarMenuItem>
       )}
@@ -107,11 +113,13 @@ const SidebarNavigation = () => {
           }`}
         >
           <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
-            <Folder className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
-              isActive("/dashboard/dossiers") 
-                ? "scale-110 drop-shadow-sm" 
-                : "group-hover:scale-105"
-            }`} />
+            <Folder
+              className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
+                isActive("/dashboard/dossiers")
+                  ? "scale-110 drop-shadow-sm"
+                  : "group-hover:scale-105"
+              }`}
+            />
             <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
               Dossiers
             </span>
@@ -119,9 +127,13 @@ const SidebarNavigation = () => {
           {isActive("/dashboard/dossiers") && (
             <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
           )}
-          <div className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
-            isActive("/dashboard/dossiers") ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
-          }`} />
+          <div
+            className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
+              isActive("/dashboard/dossiers")
+                ? "opacity-100 scale-y-100"
+                : "opacity-0 scale-y-0"
+            }`}
+          />
         </SidebarMenuButton>
       </SidebarMenuItem>
 
@@ -138,11 +150,13 @@ const SidebarNavigation = () => {
             }`}
           >
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
-              <Settings className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
-                isActive("/dashboard") 
-                  ? "scale-110 drop-shadow-sm" 
-                  : "group-hover:scale-105"
-              }`} />
+              <Settings
+                className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
+                  isActive("/dashboard")
+                    ? "scale-110 drop-shadow-sm"
+                    : "group-hover:scale-105"
+                }`}
+              />
               <span className="font-medium group-data-[collapsible=icon]:hidden transition-all duration-300">
                 Paramètres
               </span>
@@ -150,9 +164,13 @@ const SidebarNavigation = () => {
             {isActive("/dashboard") && (
               <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
             )}
-            <div className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
-              isActive("/dashboard") ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"
-            }`} />
+            <div
+              className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
+                isActive("/dashboard")
+                  ? "opacity-100 scale-y-100"
+                  : "opacity-0 scale-y-0"
+              }`}
+            />
           </SidebarMenuButton>
         </SidebarMenuItem>
       )}
@@ -205,7 +223,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               onClick={logout}
               className="flex w-full items-center justify-start gap-3 px-3 py-2.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group-data-[collapsible=icon]:justify-center hover:shadow-md"
             >
-              <LogOut size={18} className="flex-shrink-0 transition-transform duration-300 hover:scale-110" />
+              <LogOut
+                size={18}
+                className="flex-shrink-0 transition-transform duration-300 hover:scale-110"
+              />
               <span className="group-data-[collapsible=icon]:hidden font-medium">
                 Déconnexion
               </span>

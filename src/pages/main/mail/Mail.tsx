@@ -125,11 +125,11 @@ const Mail = () => {
 
     switch (activeTab) {
       case "boite-mail":
-        return inboxData?.data.find((mail) => mail._id === selectedMail);
+        return inboxData?.data?.find((mail) => mail._id === selectedMail);
       case "archives":
-        return archivedData?.data.find((mail) => mail._id === selectedMail);
+        return archivedData?.data?.find((mail) => mail._id === selectedMail);
       case "envoye":
-        return sentData?.data.find((mail) => mail._id === selectedMail);
+        return sentData?.data?.find((mail) => mail._id === selectedMail);
       default:
         return null;
     }
@@ -168,14 +168,14 @@ const Mail = () => {
   // Handle archiving an email
   const handleArchive = async () => {
     if (selectedMailData) {
-      await archiveMutation.mutateAsync(selectedMailData._id);
+      await archiveMutation.mutateAsync(selectedMailData._id as string);
     }
   };
 
   // Handle unarchiving an email
   const handleUnarchive = async () => {
     if (selectedMailData) {
-      await archiveMutation.mutateAsync(selectedMailData._id);
+      await archiveMutation.mutateAsync(selectedMailData._id as string);
     }
   };
 

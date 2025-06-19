@@ -18,23 +18,32 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Plus, X } from "lucide-react";
-
-interface DataItem {
-  id: string;
-  name: string;
-  legalForms: string[];
-  arborescence: string;
-  modifiable: boolean;
-  responseType: string;
-}
+import { SubmitHandler, useForm } from "react-hook-form";
+import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
+import { ControlledCheckboxGroup } from "@/components/ui/controlled/controlled-checkbox-group/controlled-checkbox-group";
+import { ControlledRadioGroup } from "@/components/ui/controlled/controlled-radio-group/controlled-radio-group";
+import { Form } from "@/components/ui/form";
+import { ControlledSelect } from "@/components/ui/controlled/controlled-select/controlled-select";
+import { useMutation } from "@tanstack/react-query";
+import {
+  CreateDataDto,
+  DataDto,
+  DataService,
+  PaginatedDataDto,
+  PaginatedTreeDto,
+  TreeDto,
+} from "@/api-swagger";
+import { toast } from "sonner";
 
 interface QuoteFormProps {
   isOpen: boolean;
   onClose: () => void;
-  editingData: DataItem | null;
-  dataItems: DataItem[];
+  editingData: DataDto | null;
+  dataItems: PaginatedDataDto | undefined;
   onSave: (formData: any) => void;
+  trees: PaginatedTreeDto | undefined;
 }
+type QuoteFormValues = CreateDataDto;
 
 export const QuoteForm: React.FC<QuoteFormProps> = ({
   isOpen,
@@ -42,53 +51,50 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   editingData,
   dataItems,
   onSave,
+  trees,
 }) => {
-  const [formData, setFormData] = useState({
-    dataNumber: "",
-    legalForm: "",
-    documents: [{ type: "ComboBox", script: "" }],
-    responseType: "multiple",
-    listValue: "",
-    treeStructure: ["", "", ""],
-    dependency: "",
-    dependencyValue: "",
-    selectedValues: [],
+  const methods = useForm<QuoteFormValues>({
+    defaultValues: {
+      fieldName: undefined,
+      type: undefined,
+      legalForm: undefined,
+      documents: [{ documentId: "", script: "" }],
+      isControlField: undefined,
+      isModifiable: undefined,
+      isMultiItem: undefined,
+      treeId: undefined,
+      dependsOnId: undefined,
+      listId: undefined,
+    },
   });
 
   useEffect(() => {
     if (editingData) {
-      setFormData({
-        ...formData,
-        dataNumber: editingData.name,
-        responseType: editingData.responseType,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        dataNumber: "",
-        responseType: "multiple",
+      methods.reset({
+        ...editingData,
       });
     }
   }, [editingData]);
 
   const addDocument = () => {
-    setFormData({
-      ...formData,
-      documents: [...formData.documents, { type: "ComboBox", script: "" }],
-    });
+    console.log("addDocument");
+    methods.setValue("documents", [
+      ...methods.getValues("documents"),
+      { documentId: "", script: "" },
+    ]);
   };
 
   const removeDocument = (index: number) => {
-    const updatedDocuments = [...formData.documents];
+    const updatedDocuments = [...methods.getValues("documents")];
     updatedDocuments.splice(index, 1);
-    setFormData({
-      ...formData,
-      documents: updatedDocuments,
-    });
+    methods.setValue("documents", updatedDocuments);
   };
 
   const handleSave = () => {
-    onSave(formData);
+    onSave(methods.getValues());
+  };
+  const onSubmit: SubmitHandler<QuoteFormValues> = (data) => {
+    console.log(data);
   };
 
   return (
@@ -102,241 +108,239 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             {editingData ? "Modifier la donnée" : "Nouvelle donnée"}
           </SheetTitle>
         </SheetHeader>
-
-        <div className="space-y-6 mt-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">
-              {editingData
-                ? `Donnée N°${editingData.id}`
-                : `Donnée N°${dataItems.length + 1}`}
-            </label>
-            <Input
-              value={formData.dataNumber}
-              onChange={(e) =>
-                setFormData({ ...formData, dataNumber: e.target.value })
-              }
-              className="border-gray-300 max-w-full"
-              placeholder="Texte"
+        <Form methods={methods} onSubmit={onSubmit}>
+          <div className="space-y-6 mt-6">
+            <ControlledInput
+              name="fieldName"
+              label="Donnée N°"
+              placeholder="Donnée N°"
+              required
             />
-          </div>
+            <ControlledCheckboxGroup
+              name="legalForm"
+              label="Forme juridique"
+              direction="row"
+              checkboxClassName="text-formality-primary focus:ring-formality-primary/20 h-4 w-4"
+              options={[
+                { label: "SCI", value: "SCI" },
+                { label: "EURL / SARL", value: "EURL / SARL" },
+                { label: "SASU / SAS", value: "SASU / SAS" },
+              ]}
+            />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">
-              Forme juridique
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {["SCI", "EURL / SARL", "SASU / SAS"].map((option) => (
-                <div
-                  key={option}
-                  className="rounded-full px-3 py-1 text-sm border bg-white border-gray-200"
-                >
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <Checkbox
-                      id={`legalForm-${option}`}
-                      className="text-formality-primary focus:ring-formality-primary/20 h-4 w-4"
-                    />
-                    <span className="text-gray-800">{option}</span>
-                  </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">
+                Chat GPT
+              </label>
+              {methods.watch("documents").map((doc, index) => (
+                <div key={index} className="mb-4">
+                  {/* Labels row */}
+                  <div className="grid grid-cols-12 gap-3 mb-1">
+                    <div className="col-span-5 text-sm text-gray-600">
+                      Document
+                    </div>
+                    <div className="col-span-6 text-sm text-gray-600">
+                      Script
+                    </div>
+                    <div className="col-span-1"></div>
+                  </div>
+
+                  {/* Inputs row */}
+                  <div className="grid grid-cols-12 gap-3">
+                    <div className="col-span-5">
+                      <ControlledSelect
+                        name="documents.documentId"
+                        label="Document"
+                        placeholder="Document"
+                        data={
+                          dataItems?.data?.map((item) => ({
+                            label: item.fieldName,
+                            value: item._id!,
+                          })) ?? []
+                        }
+                        getOptionValue={(option) => option?.value}
+                        getOptionLabel={(option) => option.label}
+                      />
+                    </div>
+                    <div className="col-span-6">
+                      <ControlledInput
+                        name="documents.script"
+                        label="Script"
+                        placeholder="Script"
+                      />
+                    </div>
+                    <div className="col-span-1 flex justify-end">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full"
+                        onClick={() => removeDocument(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               ))}
+              <Button
+                variant="ghost"
+                type="button"
+                size="sm"
+                className="w-8 h-8 rounded-full flex items-center justify-center border border-gray-200"
+                onClick={addDocument}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">
-              Chat GPT
-            </label>
-            {formData.documents.map((doc, index) => (
-              <div key={index} className="mb-4">
-                {/* Labels row */}
-                <div className="grid grid-cols-12 gap-3 mb-1">
-                  <div className="col-span-5 text-sm text-gray-600">
-                    Document
-                  </div>
-                  <div className="col-span-6 text-sm text-gray-600">
-                    Script
-                  </div>
-                  <div className="col-span-1"></div>
+            <div>
+              <ControlledRadioGroup
+                name="type"
+                label="Réponse"
+                options={[
+                  { label: "Texte libre", value: "STRING" },
+                  { label: "Date", value: "DATE" },
+                  { label: "Nombre", value: "NUMBER" },
+                  { label: "Choix unique", value: "BOOLEAN" },
+                  { label: "Choix multiple", value: "MULTIPLE_CHOICE" },
+                ]}
+                className="flex flex-wrap gap-4 mb-3"
+                direction="row"
+                required
+              />
+              <div className="grid grid-cols-12 gap-3 items-center">
+                <div className="col-span-2">
+                  <ControlledSelect
+                    name="listId"
+                    placeholder="Liste"
+                    data={[
+                      { label: "Liste1", value: "list1" },
+                      { label: "Liste2", value: "list2" },
+                    ]}
+                    getOptionValue={(option) => option.value}
+                    getOptionLabel={(option) => option.label}
+                  />
                 </div>
-
-                {/* Inputs row */}
-                <div className="grid grid-cols-12 gap-3">
-                  <div className="col-span-5">
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="ComboBox" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="combobox">ComboBox</SelectItem>
-                        <SelectItem value="option1">Option 1</SelectItem>
-                        <SelectItem value="option2">Option 2</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-6">
-                    <Input />
-                  </div>
-                  <div className="col-span-1 flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-full"
-                      onClick={() => removeDocument(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                <div className="col-span-10">
+                  <ControlledInput
+                    name="listValue"
+                    placeholder="Valeur N°1, Valeur N°2, Valeur N°3"
+                  />
                 </div>
               </div>
-            ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-8 h-8 rounded-full flex items-center justify-center border border-gray-200"
-              onClick={addDocument}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-3">
-              Réponse
-            </label>
-            <RadioGroup
-              value={formData.responseType}
-              onValueChange={(value) =>
-                setFormData({ ...formData, responseType: value })
-              }
-              className="flex flex-wrap gap-4 mb-3"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="text" id="text" />
-                <Label htmlFor="text">Texte libre</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="date" id="date" />
-                <Label htmlFor="date">Date</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="number" id="number" />
-                <Label htmlFor="number">Nombre</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="unique" id="unique" />
-                <Label htmlFor="unique">Choix unique</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="multiple" id="multiple" />
-                <Label htmlFor="multiple">Choix multiple</Label>
-              </div>
-            </RadioGroup>
-            <div className="grid grid-cols-12 gap-3 items-center">
-              <div className="col-span-2">
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Liste" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="list">Liste</SelectItem>
-                    <SelectItem value="option1">Option 1</SelectItem>
-                    <SelectItem value="option2">Option 2</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-10">
-                <Input placeholder="Valeur N°1, Valeur N°2, Valeur N°3" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-3">
+                Arborescence
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <ControlledSelect
+                  name="treeStructure.rubrique"
+                  label="Rubrique"
+                  placeholder="Rubrique"
+                  data={
+                    trees?.data
+                      ?.filter((item) => item.type === TreeDto.type.SECTION)
+                      .map((item) => ({
+                        label: item.fieldName,
+                        value: item._id!,
+                      })) ?? []
+                  }
+                  getOptionValue={(option) => option.value}
+                  getOptionLabel={(option) => option.label}
+                />
+                <ControlledSelect
+                  name="treeStructure.famille"
+                  label="Famille"
+                  placeholder="Famille"
+                  data={
+                    trees?.data
+                      ?.filter((item) => item.type === TreeDto.type.TITLE)
+                      .map((item) => ({
+                        label: item.fieldName,
+                        value: item._id!,
+                      })) ?? []
+                  }
+                  getOptionValue={(option) => option.value}
+                  getOptionLabel={(option) => option.label}
+                />
+
+                <ControlledSelect
+                  name="treeStructure.sousFamille"
+                  label="Sous-famille"
+                  placeholder="Sous-famille"
+                  data={
+                    trees?.data
+                      ?.filter((item) => item.type === TreeDto.type.SUB_TITLE)
+                      .map((item) => ({
+                        label: item.fieldName,
+                        value: item._id!,
+                      })) ?? []
+                  }
+                  getOptionValue={(option) => option.value}
+                  getOptionLabel={(option) => option.label}
+                />
               </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-3">
-              Arborescence
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="ComboBox" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="combobox">ComboBox</SelectItem>
-                  <SelectItem value="option1">Option 1</SelectItem>
-                  <SelectItem value="option2">Option 2</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="ComboBox" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="combobox">ComboBox</SelectItem>
-                  <SelectItem value="option1">Option 1</SelectItem>
-                  <SelectItem value="option2">Option 2</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="ComboBox" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="combobox">ComboBox</SelectItem>
-                  <SelectItem value="option1">Option 1</SelectItem>
-                  <SelectItem value="option2">Option 2</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-3">
-              Dépendance
-            </label>
-            <div className="grid grid-cols-12 gap-3">
-              <div className="col-span-4">
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Donnée N°X" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="data1">Donnée N°X</SelectItem>
-                    <SelectItem value="option1">Option 1</SelectItem>
-                    <SelectItem value="option2">Option 2</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-8">
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Valeur de la donnée N°X" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="value1">Valeur N°1</SelectItem>
-                    <SelectItem value="value2">Valeur N°2</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="value1" />
-                    <Label htmlFor="value1">Valeur N°1</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="value2" />
-                    <Label htmlFor="value2">Valeur N°2</Label>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-3">
+                Dépendance
+              </label>
+              <div className="grid grid-cols-12 gap-3">
+                <div className="col-span-4">
+                  <ControlledSelect
+                    name="dependsOnId"
+                    label="Donnée N°X"
+                    placeholder="Donnée N°X"
+                    data={
+                      dataItems?.data?.map((item) => ({
+                        label: item.fieldName,
+                        value: item._id!,
+                      })) ?? []
+                    }
+                    getOptionValue={(option) => option.value}
+                    getOptionLabel={(option) => option.label}
+                  />
+                </div>
+                <div className="col-span-8">
+                  <ControlledSelect
+                    name="dependsOnValueId"
+                    label="Valeur de la donnée N°X"
+                    placeholder="Valeur de la donnée N°X"
+                    data={
+                      dataItems?.data?.map((item) => ({
+                        label: item.fieldName,
+                        value: item._id!,
+                      })) ?? []
+                    }
+                    getOptionValue={(option) => option.value}
+                    getOptionLabel={(option) => option.label}
+                  />
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="value1" />
+                      <Label htmlFor="value1">Valeur N°1</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="value2" />
+                      <Label htmlFor="value2">Valeur N°2</Label>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-end">
-            <Button
-              className="bg-formality-primary hover:bg-formality-primary/90 text-white"
-              onClick={handleSave}
-            >
-              Enregistrer
-            </Button>
+            <div className="flex justify-end">
+              <Button
+                className="bg-formality-primary hover:bg-formality-primary/90 text-white"
+                type="submit"
+              >
+                Enregistrer
+              </Button>
+            </div>
           </div>
-        </div>
+        </Form>
       </SheetContent>
     </Sheet>
   );

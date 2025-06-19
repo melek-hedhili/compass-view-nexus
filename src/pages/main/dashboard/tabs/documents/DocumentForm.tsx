@@ -1,8 +1,5 @@
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -10,19 +7,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   CreateDocumentDto,
   DocumentService,
   UpdateDocumentDto,
 } from "@/api-swagger";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Form } from "@/components/ui/form";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
+import { ControlledSelect } from "@/components/ui/controlled/controlled-select/controlled-select";
 
 const legalFormOptions = Object.values(CreateDocumentDto.legalForm);
 const benefitOptions = Object.values(CreateDocumentDto.benefit);
@@ -48,7 +42,10 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
   editingId,
 }) => {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<CreateDocumentDto>(initialForm);
+
+  const methods = useForm<CreateDocumentDto>({
+    defaultValues: initialForm,
+  });
 
   // Fetch single document for editing
   const { data: selectedDocument } = useQuery({
@@ -63,7 +60,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
   // Populate form when selectedDocument changes
   useEffect(() => {
     if (selectedDocument) {
-      setForm({
+      methods.reset({
         documentName: selectedDocument.documentName || "",
         shortName: selectedDocument.shortName || "",
         legalForm:
@@ -72,9 +69,9 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
         type: selectedDocument.type || CreateDocumentDto.type.INTERNAL,
       });
     } else {
-      setForm(initialForm);
+      methods.reset(initialForm);
     }
-  }, [selectedDocument]);
+  }, [selectedDocument, methods]);
 
   // Create document
   const createDocumentMutation = useMutation({
@@ -84,7 +81,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Document créé avec succès");
       onClose();
-      setForm(initialForm);
+      methods.reset(initialForm);
     },
     onError: (error) => {
       toast.error("Erreur lors de la création du document");
@@ -103,7 +100,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       toast.success("Document mis à jour avec succès");
       onClose();
-      setForm(initialForm);
+      methods.reset(initialForm);
     },
     onError: (error) => {
       toast.error("Erreur lors de la mise à jour du document");
@@ -111,14 +108,14 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
     },
   });
 
-  const handleSubmit = () => {
-    if (editingId && selectedDocument) {
+  const onSubmit: SubmitHandler<CreateDocumentDto> = (data) => {
+    if (editingId) {
       updateDocumentMutation.mutate({
         _id: editingId,
-        ...form,
+        ...data,
       });
     } else {
-      createDocumentMutation.mutate(form);
+      createDocumentMutation.mutate(data);
     }
   };
 
@@ -133,120 +130,63 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
             {editingId ? "Modifier le document" : "Nouveau document"}
           </SheetTitle>
         </SheetHeader>
-        <div className="space-y-6 mt-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="block text-sm font-medium text-gray-500 mb-1">
-                Nom du document
-              </Label>
-              <Input
-                value={form.documentName}
-                onChange={(e) =>
-                  setForm({ ...form, documentName: e.target.value })
-                }
-                className="border-gray-300"
-                placeholder="Statuts constitutifs"
+        <Form methods={methods} onSubmit={onSubmit}>
+          <div className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ControlledInput
+                name="shortName"
+                label="Raccourci"
+                placeholder="Raccourci"
+                required
+              />
+              <ControlledInput
+                name="documentName"
+                label="Nom du document"
+                placeholder="Nom du document"
+                required
               />
             </div>
-            <div>
-              <Label className="block text-sm font-medium text-gray-500 mb-1">
-                Raccourci
-              </Label>
-              <Input
-                value={form.shortName}
-                onChange={(e) =>
-                  setForm({ ...form, shortName: e.target.value })
-                }
-                className="border-gray-300"
-                placeholder="Statut"
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <ControlledSelect
+                name="benefit"
+                label="Prestation"
+                placeholder="Prestation"
+                required
+                data={benefitOptions}
+                getOptionValue={(option) => option}
+                getOptionLabel={(option) => option}
+              />
+              <ControlledSelect
+                name="legalForm"
+                label="Forme juridique"
+                placeholder="Forme juridique"
+                required
+                data={legalFormOptions}
+                getOptionValue={(option) => option}
+                getOptionLabel={(option) => option}
+              />
+              <ControlledSelect
+                name="type"
+                label="Utilisation"
+                placeholder="Utilisation"
+                required
+                data={typeOptions}
+                getOptionValue={(option) => option}
+                getOptionLabel={(option) => option}
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div>
-              <Label className="block text-sm font-medium text-gray-500 mb-1">
-                Forme juridique
-              </Label>
-              <Select
-                value={form.legalForm || ""}
-                onValueChange={(val) =>
-                  setForm({
-                    ...form,
-                    legalForm: val as CreateDocumentDto.legalForm,
-                  })
-                }
+            <div className="flex justify-end">
+              <Button
+                className="bg-formality-primary hover:bg-formality-primary/90 text-white"
+                type="submit"
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Forme juridique" />
-                </SelectTrigger>
-                <SelectContent>
-                  {legalFormOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="block text-sm font-medium text-gray-500 mb-1">
-                Prestation
-              </Label>
-              <Select
-                value={form.benefit || ""}
-                onValueChange={(val) =>
-                  setForm({
-                    ...form,
-                    benefit: val as CreateDocumentDto.benefit,
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Prestation" />
-                </SelectTrigger>
-                <SelectContent>
-                  {benefitOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="block text-sm font-medium text-gray-500 mb-1">
-                Utilisation
-              </Label>
-              <Select
-                value={form.type || ""}
-                onValueChange={(val) =>
-                  setForm({ ...form, type: val as CreateDocumentDto.type })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Utilisation" />
-                </SelectTrigger>
-                <SelectContent>
-                  {typeOptions.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                Enregistrer
+              </Button>
             </div>
           </div>
-
-          <div className="flex justify-end">
-            <Button
-              className="bg-formality-primary hover:bg-formality-primary/90 text-white"
-              onClick={handleSubmit}
-            >
-              Enregistrer
-            </Button>
-          </div>
-        </div>
+        </Form>
       </SheetContent>
     </Sheet>
   );

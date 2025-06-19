@@ -1,20 +1,11 @@
-
 import React from "react";
 import { QuoteCard } from "./QuoteCard";
-
-interface DataItem {
-  id: string;
-  name: string;
-  legalForms: string[];
-  arborescence: string;
-  modifiable: boolean;
-  responseType: string;
-}
+import { DataDto, PaginatedDataDto } from "@/api-swagger";
 
 interface QuotesGridProps {
-  dataItems: DataItem[];
+  dataItems: PaginatedDataDto | undefined;
   viewingArchived: boolean;
-  onEdit: (data: DataItem) => void;
+  onEdit: (data: DataDto) => void;
   onArchive: (id: string) => void;
   onRestore: (id: string) => void;
 }
@@ -28,9 +19,9 @@ export const QuotesGrid: React.FC<QuotesGridProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {dataItems.map((data) => (
+      {dataItems?.data?.map((data) => (
         <QuoteCard
-          key={data.id}
+          key={data._id!}
           data={data}
           viewingArchived={viewingArchived}
           onEdit={onEdit}

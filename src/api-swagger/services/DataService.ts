@@ -2,19 +2,19 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CreateTreeDto } from '../models/CreateTreeDto';
-import type { PaginatedTreeDto } from '../models/PaginatedTreeDto';
-import type { TreeDto } from '../models/TreeDto';
-import type { UpdateTreeDto } from '../models/UpdateTreeDto';
+import type { CreateDataDto } from '../models/CreateDataDto';
+import type { DataDto } from '../models/DataDto';
+import type { PaginatedDataDto } from '../models/PaginatedDataDto';
+import type { UpdateDataDto } from '../models/UpdateDataDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class TreeService {
+export class DataService {
     /**
-     * @returns PaginatedTreeDto
+     * @returns PaginatedDataDto
      * @throws ApiError
      */
-    public static treeControllerFindAll({
+    public static dataControllerFindAll({
         page,
         perPage,
         searchValue,
@@ -28,10 +28,10 @@ export class TreeService {
         searchFields?: Array<string>,
         additionalFields?: Array<string>,
         filters?: string,
-    }): CancelablePromise<PaginatedTreeDto> {
+    }): CancelablePromise<PaginatedDataDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/tree',
+            url: '/data',
             query: {
                 'page': page,
                 'perPage': perPage,
@@ -43,52 +43,52 @@ export class TreeService {
         });
     }
     /**
-     * @returns TreeDto The record has been successfully created.
+     * @returns DataDto The record has been successfully created.
      * @throws ApiError
      */
-    public static treeControllerCreate({
+    public static dataControllerCreate({
         requestBody,
     }: {
-        requestBody: CreateTreeDto,
-    }): CancelablePromise<TreeDto> {
+        requestBody: CreateDataDto,
+    }): CancelablePromise<DataDto> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/tree',
+            url: '/data',
             body: requestBody,
             mediaType: 'application/json',
         });
     }
     /**
-     * @returns TreeDto
+     * @returns DataDto
      * @throws ApiError
      */
-    public static treeControllerFindOne({
+    public static dataControllerFindOne({
         id,
     }: {
         id: string,
-    }): CancelablePromise<TreeDto> {
+    }): CancelablePromise<DataDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/tree/{id}',
+            url: '/data/{id}',
             path: {
                 'id': id,
             },
         });
     }
     /**
-     * @returns TreeDto
+     * @returns DataDto
      * @throws ApiError
      */
-    public static treeControllerUpdate({
+    public static dataControllerUpdate({
         id,
         requestBody,
     }: {
         id: string,
-        requestBody: UpdateTreeDto,
-    }): CancelablePromise<TreeDto> {
+        requestBody: UpdateDataDto,
+    }): CancelablePromise<DataDto> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/tree/{id}',
+            url: '/data/{id}',
             path: {
                 'id': id,
             },
@@ -97,17 +97,17 @@ export class TreeService {
         });
     }
     /**
-     * @returns TreeDto
+     * @returns DataDto
      * @throws ApiError
      */
-    public static treeControllerRemove({
+    public static dataControllerRemove({
         id,
     }: {
         id: string,
-    }): CancelablePromise<TreeDto> {
+    }): CancelablePromise<DataDto> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/tree/{id}',
+            url: '/data/{id}',
             path: {
                 'id': id,
             },

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GripVertical, Plus, Edit3, Check } from "lucide-react";
+import { GripVertical, Plus, Edit3, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,7 +29,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const ArborescenceTreePreview: React.FC<{
   initialTree?: RubriqueData;
-}> = ({ initialTree }) => {
+  onDelete?: () => void;
+}> = ({ initialTree, onDelete }) => {
   const [tree, setTree] = useState<RubriqueData>(
     initialTree || {
       id: "",
@@ -394,6 +395,16 @@ export const ArborescenceTreePreview: React.FC<{
     }));
   };
 
+  const handleDeleteRubrique = async () => {
+    try {
+      await TreeService.treeControllerRemove({ id: tree.id });
+      onDelete?.();
+    } catch (error) {
+      console.error("Error deleting rubrique:", error);
+      toast.error("Erreur lors de la suppression de la rubrique");
+    }
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -431,15 +442,25 @@ export const ArborescenceTreePreview: React.FC<{
                     </div>
                   )}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-formality-primary/10 text-formality-primary border-formality-primary/20 flex-shrink-0"
-                  onClick={handleEditRubrique}
-                >
-                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Rubrique</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-formality-primary/10 text-formality-primary border-formality-primary/20 flex-shrink-0"
+                    onClick={handleEditRubrique}
+                  >
+                    <Edit3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Rubrique</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100 flex-shrink-0"
+                    onClick={handleDeleteRubrique}
+                  >
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 

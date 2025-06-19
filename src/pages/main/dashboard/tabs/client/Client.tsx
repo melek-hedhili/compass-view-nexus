@@ -149,24 +149,35 @@ const Client = () => {
               header: "Nom",
               sortable: true,
               align: "left",
+              render: (value: string) => (value ? value : "-"),
             },
             {
               key: "firstName",
               header: "Prénom",
               sortable: true,
               align: "left",
+              render: (value: string) => (value ? value : "-"),
+            },
+            {
+              key: "clientName",
+              header: "Cient",
+              sortable: true,
+              align: "left",
+              render: (value: string) => (value ? value : "-"),
             },
             {
               key: "email",
               header: "Email",
               sortable: true,
               align: "left",
+              render: (value: string) => (value ? value : "-"),
             },
             {
               key: "phone",
               header: "Téléphone",
               sortable: true,
               align: "left",
+              render: (value: string) => (value ? value : "-"),
             },
             {
               key: "isArchived",
@@ -181,6 +192,7 @@ const Client = () => {
               header: "Tarif",
               sortable: true,
               align: "left",
+              render: (value: string) => (value ? value : "-"),
             },
           ]}
           loading={isLoading}

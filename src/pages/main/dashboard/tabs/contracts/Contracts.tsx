@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, Check } from "lucide-react";
 import ArborescenceTreePreview from "./ArborescenceTreePreview";
 import { ArborescenceList } from "./ArborescenceList";
 import { ArborescenceData } from "./ArborescenceCard";
 import { CreateTreeDto, TreeService } from "@/api-swagger";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TreeDto } from "@/api-swagger/models/TreeDto";
 import { RubriqueData, Famille, SousFamille } from "./types";
+import { Input } from "@/components/ui/input";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
@@ -86,12 +87,104 @@ function buildAllRubriquesFromFlat(flat: TreeDto[]): RubriqueData[] {
   return sections.map(convertSection);
 }
 
+function AddRubriqueInput({
+  onAddRubrique,
+  rubriques,
+}: {
+  onAddRubrique: (name: string) => void;
+  rubriques: RubriqueData[];
+}) {
+  const [showInput, setShowInput] = useState(false);
+  const [name, setName] = useState("");
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: async (name: string) => {
+      return TreeService.treeControllerCreate({
+        requestBody: {
+          fieldName: name,
+          type: CreateTreeDto.type.SECTION,
+          index: rubriques.length,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tree"] });
+      setShowInput(false);
+      setName("");
+    },
+  });
+
+  const handleCreate = () => {
+    if (!name.trim()) return;
+    mutation.mutate(name.trim());
+  };
+
+  return showInput ? (
+    <div className="flex items-center gap-2 p-4">
+      <Input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="text-xs sm:text-sm transition-all duration-150"
+        autoFocus
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleCreate();
+          if (e.key === "Escape") setShowInput(false);
+        }}
+        disabled={mutation.status === "pending"}
+      />
+      <button
+        className="ml-2 text-green-600 hover:text-green-800 disabled:opacity-50"
+        onClick={handleCreate}
+        disabled={!name.trim() || mutation.status === "pending"}
+      >
+        <Check className="h-4 w-4" />
+      </button>
+    </div>
+  ) : (
+    <div
+      className="flex items-center gap-2 sm:gap-3 p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group/add-rubrique"
+      onClick={() => setShowInput(true)}
+    >
+      <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover/add-rubrique:text-blue-500 transition-colors" />
+      <span className="text-sm sm:text-base text-gray-500 group-hover/add-rubrique:text-blue-600 transition-colors font-medium">
+        Ajouter une rubrique
+      </span>
+    </div>
+  );
+}
+
 const Contracts = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedArborescence, setSelectedArborescence] =
     useState<ArborescenceData | null>(null);
-  const [editTrees, setEditTrees] = useState<RubriqueData[]>([]);
-  const [editLoading, setEditLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Replace useEffect with useQuery
+  const { data: editTrees = [], isLoading: editLoading } = useQuery({
+    queryKey: ["tree"],
+    queryFn: async () => {
+      const res = await TreeService.treeControllerFindAll({
+        page: "1",
+        perPage: "100",
+      });
+      const flat = res.data || [];
+      return buildAllRubriquesFromFlat(flat);
+    },
+    enabled: viewMode === "edit" || viewMode === "create",
+  });
+
+  const deleteRubriqueMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return TreeService.treeControllerRemove({ id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tree"] });
+      toast.success("Rubrique supprimée avec succès");
+    },
+    onError: () => {
+      toast.error("Erreur lors de la suppression de la rubrique");
+    },
+  });
 
   const handleSelectArborescence = (arborescence: ArborescenceData) => {
     setSelectedArborescence(arborescence);
@@ -110,22 +203,7 @@ const Contracts = () => {
   const handleBackToList = () => {
     setViewMode("list");
     setSelectedArborescence(null);
-    setEditTrees([]);
   };
-
-  // Fetch all rubriques and their children for edit mode
-  useEffect(() => {
-    if (viewMode === "edit") {
-      setEditLoading(true);
-      TreeService.treeControllerFindAll({ page: "1", perPage: "100" })
-        .then((res) => {
-          const flat = res.data || [];
-          const rubriques = buildAllRubriquesFromFlat(flat);
-          setEditTrees(rubriques);
-        })
-        .finally(() => setEditLoading(false));
-    }
-  }, [viewMode]);
 
   const createArborescenceMutation = useMutation({
     mutationFn: (arborescence: CreateTreeDto) => {
@@ -140,6 +218,32 @@ const Contracts = () => {
       toast.error("Erreur lors de la création de l'arborescence");
     },
   });
+
+  const createRubriqueMutation = useMutation({
+    mutationFn: (name: string) => {
+      return TreeService.treeControllerCreate({
+        requestBody: {
+          fieldName: name,
+          type: CreateTreeDto.type.SECTION,
+          index: editTrees.length,
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Rubrique créée avec succès");
+      queryClient.invalidateQueries({ queryKey: ["tree"] });
+    },
+    onError: () => {
+      toast.error("Erreur lors de la création de la rubrique");
+    },
+  });
+
+  const handleCreateRubrique = () => {
+    const name = prompt("Nom de la nouvelle rubrique:");
+    if (name?.trim()) {
+      createRubriqueMutation.mutate(name.trim());
+    }
+  };
 
   const renderContent = () => {
     switch (viewMode) {
@@ -168,7 +272,65 @@ const Contracts = () => {
                 Création d'une nouvelle arborescence
               </h2>
             </div>
-            <ArborescenceTreePreview />
+            {editTrees.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <AddRubriqueInput
+                  onAddRubrique={(name) => {
+                    TreeService.treeControllerCreate({
+                      requestBody: {
+                        fieldName: name,
+                        type: CreateTreeDto.type.SECTION,
+                        index: editTrees.length,
+                      },
+                    })
+                      .then(() => {
+                        toast.success("Rubrique créée avec succès");
+                        queryClient.invalidateQueries({ queryKey: ["tree"] });
+                      })
+                      .catch(() => {
+                        toast.error(
+                          "Erreur lors de la création de la rubrique"
+                        );
+                      });
+                  }}
+                  rubriques={editTrees}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {editTrees
+                  .slice()
+                  .sort((a, b) => a.index - b.index)
+                  .map((tree) => (
+                    <ArborescenceTreePreview
+                      key={tree.id}
+                      initialTree={tree}
+                      onDelete={() => deleteRubriqueMutation.mutate(tree.id)}
+                    />
+                  ))}
+                <AddRubriqueInput
+                  onAddRubrique={(name) => {
+                    TreeService.treeControllerCreate({
+                      requestBody: {
+                        fieldName: name,
+                        type: CreateTreeDto.type.SECTION,
+                        index: editTrees.length,
+                      },
+                    })
+                      .then(() => {
+                        toast.success("Rubrique créée avec succès");
+                        queryClient.invalidateQueries({ queryKey: ["tree"] });
+                      })
+                      .catch(() => {
+                        toast.error(
+                          "Erreur lors de la création de la rubrique"
+                        );
+                      });
+                  }}
+                  rubriques={editTrees}
+                />
+              </div>
+            )}
             <div className="text-center text-gray-500 mt-8">
               <span>
                 Créez votre arborescence en ajoutant des rubriques, familles et
@@ -199,10 +361,64 @@ const Contracts = () => {
               <div className="text-center py-8 text-gray-500">
                 Chargement...
               </div>
+            ) : editTrees.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <AddRubriqueInput
+                  onAddRubrique={(name) => {
+                    TreeService.treeControllerCreate({
+                      requestBody: {
+                        fieldName: name,
+                        type: CreateTreeDto.type.SECTION,
+                        index: editTrees.length,
+                      },
+                    })
+                      .then(() => {
+                        toast.success("Rubrique créée avec succès");
+                        queryClient.invalidateQueries({ queryKey: ["tree"] });
+                      })
+                      .catch(() => {
+                        toast.error(
+                          "Erreur lors de la création de la rubrique"
+                        );
+                      });
+                  }}
+                  rubriques={editTrees}
+                />
+              </div>
             ) : (
-              editTrees.map((tree) => (
-                <ArborescenceTreePreview key={tree.id} initialTree={tree} />
-              ))
+              <div className="space-y-4">
+                {editTrees
+                  .slice()
+                  .sort((a, b) => a.index - b.index)
+                  .map((tree) => (
+                    <ArborescenceTreePreview
+                      key={tree.id}
+                      initialTree={tree}
+                      onDelete={() => deleteRubriqueMutation.mutate(tree.id)}
+                    />
+                  ))}
+                <AddRubriqueInput
+                  onAddRubrique={(name) => {
+                    TreeService.treeControllerCreate({
+                      requestBody: {
+                        fieldName: name,
+                        type: CreateTreeDto.type.SECTION,
+                        index: editTrees.length,
+                      },
+                    })
+                      .then(() => {
+                        toast.success("Rubrique créée avec succès");
+                        queryClient.invalidateQueries({ queryKey: ["tree"] });
+                      })
+                      .catch(() => {
+                        toast.error(
+                          "Erreur lors de la création de la rubrique"
+                        );
+                      });
+                  }}
+                  rubriques={editTrees}
+                />
+              </div>
             )}
             <div className="text-center text-gray-500 mt-8">
               <span>

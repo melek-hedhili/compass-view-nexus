@@ -12,6 +12,7 @@ export type UpdateClientDto = {
     lastName?: string;
     phone?: string;
     jounals?: UpdateClientDto.jounals;
+    accounts?: Array<string>;
     creationPrice?: number;
     modificationPrice?: number;
     submissionPrice?: number;
