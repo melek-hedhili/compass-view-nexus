@@ -1,3 +1,4 @@
+
 import { ReactNode, useState } from "react";
 import { ClientForm } from "@/components/dashboard/ClientForm";
 import { toast } from "sonner";
@@ -149,35 +150,35 @@ const Client = () => {
               header: "Nom",
               sortable: true,
               align: "left",
-              render: (value: string) => (value ? value : "-"),
+              render: (value: string | number | boolean | string[]) => (value ? String(value) : "-"),
             },
             {
               key: "firstName",
               header: "Prénom",
               sortable: true,
               align: "left",
-              render: (value: string) => (value ? value : "-"),
+              render: (value: string | number | boolean | string[]) => (value ? String(value) : "-"),
             },
             {
               key: "clientName",
-              header: "Cient",
+              header: "Client",
               sortable: true,
               align: "left",
-              render: (value: string) => (value ? value : "-"),
+              render: (value: string | number | boolean | string[]) => (value ? String(value) : "-"),
             },
             {
               key: "email",
               header: "Email",
               sortable: true,
               align: "left",
-              render: (value: string) => (value ? value : "-"),
+              render: (value: string | number | boolean | string[]) => (value ? String(value) : "-"),
             },
             {
               key: "phone",
               header: "Téléphone",
               sortable: true,
               align: "left",
-              render: (value: string) => (value ? value : "-"),
+              render: (value: string | number | boolean | string[]) => (value ? String(value) : "-"),
             },
             {
               key: "isArchived",
@@ -192,7 +193,7 @@ const Client = () => {
               header: "Tarif",
               sortable: true,
               align: "left",
-              render: (value: string) => (value ? value : "-"),
+              render: (value: string | number | boolean | string[]) => (value ? String(value) : "-"),
             },
           ]}
           loading={isLoading}

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,7 +110,7 @@ const Quotes = () => {
     if (itemToArchive) {
       updateDataItems.mutate({
         ...itemToArchive,
-        isArchived: true,
+        _id: itemToArchive._id!,
       });
     }
   };
@@ -123,7 +124,7 @@ const Quotes = () => {
     if (itemToRestore) {
       updateDataItems.mutate({
         ...itemToRestore,
-        isArchived: false,
+        _id: itemToRestore._id!,
       });
     }
   };
