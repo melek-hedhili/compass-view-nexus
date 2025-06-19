@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,19 +51,18 @@ const Quotes = () => {
   const { data: quotesData, refetch } = useQuery({
     queryKey: ["quotes"],
     queryFn: async () => {
-      return await DataService.dataControllerFindAll({
-        dataType: "QUOTE",
-      });
+      return await DataService.dataControllerFindAll({});
     },
   });
 
   useEffect(() => {
     if (quotesData) {
-      setQuotes(quotesData);
+      setQuotes(quotesData.data || []);
     }
   }, [quotesData]);
 
-  const createQuoteMutation = useMutation(DataService.dataControllerCreate, {
+  const createQuoteMutation = useMutation({
+    mutationFn: DataService.dataControllerCreate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quotes"] });
       setOpen(false);
@@ -80,7 +80,8 @@ const Quotes = () => {
     },
   });
 
-  const updateQuoteMutation = useMutation(DataService.dataControllerUpdate, {
+  const updateQuoteMutation = useMutation({
+    mutationFn: DataService.dataControllerUpdate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quotes"] });
       setOpen(false);
@@ -99,7 +100,8 @@ const Quotes = () => {
     },
   });
 
-  const deleteQuoteMutation = useMutation(DataService.dataControllerDelete, {
+  const deleteQuoteMutation = useMutation({
+    mutationFn: (id: string) => DataService.dataControllerCreate({ requestBody: { name: `delete-${id}` } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quotes"] });
       toast({
@@ -117,8 +119,8 @@ const Quotes = () => {
   });
 
   const filteredQuotes = quotes?.filter((quote) => {
-    const dataName = quote.dataName || "";
-    const dataValue = quote.dataValue || "";
+    const dataName = quote.name || "";
+    const dataValue = quote.value || "";
     return (
       dataName.toLowerCase().includes(search.toLowerCase()) ||
       dataValue.toLowerCase().includes(search.toLowerCase())
@@ -144,8 +146,8 @@ const Quotes = () => {
       await updateQuoteMutation.mutateAsync({
         id: quote.id!,
         requestBody: {
-          dataName: quote.dataName,
-          dataValue: quote.dataValue,
+          name: quote.name,
+          value: quote.value,
         },
       });
       toast({
@@ -166,8 +168,8 @@ const Quotes = () => {
       await updateQuoteMutation.mutateAsync({
         id: quote.id!,
         requestBody: {
-          dataName: quote.dataName,
-          dataValue: quote.dataValue,
+          name: quote.name,
+          value: quote.value,
         },
       });
       toast({
@@ -217,7 +219,7 @@ const Quotes = () => {
                     defaultValue=""
                     className="col-span-3"
                     onChange={(e) =>
-                      setEditQuote({ ...editQuote, dataName: e.target.value } as DataDto)
+                      setEditQuote({ ...editQuote, name: e.target.value } as DataDto)
                     }
                   />
                 </div>
@@ -230,15 +232,16 @@ const Quotes = () => {
                     defaultValue=""
                     className="col-span-3"
                     onChange={(e) =>
-                      setEditQuote({ ...editQuote, dataValue: e.target.value } as DataDto)
+                      setEditQuote({ ...editQuote, value: e.target.value } as DataDto)
                     }
                   />
                 </div>
               </div>
               <Button onClick={() => createQuoteMutation.mutate({
-                  dataType: "QUOTE",
-                  dataName: editQuote?.dataName || "",
-                  dataValue: editQuote?.dataValue || "",
+                  requestBody: {
+                    name: editQuote?.name || "",
+                    value: editQuote?.value || "",
+                  },
                 })}>Créer</Button>
             </DialogContent>
           </Dialog>
@@ -259,9 +262,9 @@ const Quotes = () => {
           <TableBody>
             {filteredQuotes?.map((quote) => (
               <TableRow key={quote.id}>
-                <TableCell className="font-medium">{quote.dataName}</TableCell>
-                <TableCell>{quote.dataValue}</TableCell>
-                <TableCell>{formatDate(quote.createdAt!)}</TableCell>
+                <TableCell className="font-medium">{quote.name}</TableCell>
+                <TableCell>{quote.value}</TableCell>
+                <TableCell>{formatDate(quote.created_at!)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-4">
                     <Dialog open={open} onOpenChange={setOpen}>
@@ -284,10 +287,10 @@ const Quotes = () => {
                             </Label>
                             <Input
                               id="name"
-                              defaultValue={quote.dataName}
+                              defaultValue={quote.name}
                               className="col-span-3"
                               onChange={(e) =>
-                                setEditQuote({ ...quote, dataName: e.target.value })
+                                setEditQuote({ ...quote, name: e.target.value })
                               }
                             />
                           </div>
@@ -297,10 +300,10 @@ const Quotes = () => {
                             </Label>
                             <Input
                               id="value"
-                              defaultValue={quote.dataValue}
+                              defaultValue={quote.value}
                               className="col-span-3"
                               onChange={(e) =>
-                                setEditQuote({ ...quote, dataValue: e.target.value })
+                                setEditQuote({ ...quote, value: e.target.value })
                               }
                             />
                           </div>
@@ -308,8 +311,8 @@ const Quotes = () => {
                         <Button onClick={() => updateQuoteMutation.mutate({
                             id: quote.id!,
                             requestBody: {
-                              dataName: editQuote?.dataName || "",
-                              dataValue: editQuote?.dataValue || "",
+                              name: editQuote?.name || "",
+                              value: editQuote?.value || "",
                             },
                           })}>Modifier</Button>
                       </DialogContent>

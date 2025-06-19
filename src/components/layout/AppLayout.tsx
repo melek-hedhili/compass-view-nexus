@@ -197,9 +197,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Sidebar
           variant="sidebar"
           collapsible={isMobile ? "offcanvas" : "icon"}
-          className="border-r border-gray-200 bg-white"
+          className="border-r border-gray-200 bg-white relative"
         >
-          <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
+          <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500 relative">
             <div className="flex items-center justify-between px-4 py-4">
               <Link to="/dashboard" className="flex items-center">
                 <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
@@ -217,6 +217,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </div>
               )}
             </div>
+            
+            {/* Desktop Sidebar Toggle Button - positioned at the right edge of header */}
+            {!isMobile && <DesktopSidebarToggle />}
           </SidebarHeader>
 
           <SidebarContent className="px-3 py-4 bg-white">
@@ -238,9 +241,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </span>
             </Button>
           </SidebarFooter>
-
-          {/* Desktop Arrow Toggle Button */}
-          {!isMobile && <DesktopSidebarToggle />}
         </Sidebar>
 
         {/* Main content area */}
@@ -277,13 +277,13 @@ const DesktopSidebarToggle = () => {
   return (
     <button
       onClick={toggleSidebar}
-      className="absolute -right-4 top-20 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md hover:bg-gray-50 transition-all duration-200 hover:shadow-lg"
+      className="absolute -right-3 top-1/2 -translate-y-1/2 z-30 flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white shadow-md hover:bg-gray-50 transition-all duration-200 hover:shadow-lg"
       aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
     >
       {isCollapsed ? (
-        <ChevronRight className="h-4 w-4 text-gray-600" />
+        <ChevronRight className="h-3 w-3 text-gray-600" />
       ) : (
-        <ChevronLeft className="h-4 w-4 text-gray-600" />
+        <ChevronLeft className="h-3 w-3 text-gray-600" />
       )}
     </button>
   );
