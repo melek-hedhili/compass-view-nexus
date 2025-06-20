@@ -74,9 +74,8 @@ const RootRoute = () => {
     return <Navigate to="/auth/login" replace />;
   }
 
-  // If authenticated and on root path, redirect to dashboard
-  // Otherwise, let them stay on their current route
-  return <Navigate to="/dashboard" replace />;
+  // Otherwise, stay on current path
+  return null;
 };
 
 const App = () => (
