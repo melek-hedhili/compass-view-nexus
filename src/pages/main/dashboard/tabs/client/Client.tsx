@@ -160,7 +160,7 @@ const Client = () => {
             },
             {
               key: "clientName",
-              header: "Cient",
+              header: "Client",
               sortable: true,
               align: "left",
               render: (value) => (value ? value : "-"),
