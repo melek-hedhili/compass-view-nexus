@@ -144,7 +144,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                     <div className="col-span-6 text-sm text-gray-600">
                       Script
                     </div>
-                    <div className="col-span-1"></div>
+                    <div className="col-span-1" />
                   </div>
 
                   {/* Inputs row */}

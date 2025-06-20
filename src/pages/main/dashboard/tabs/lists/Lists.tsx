@@ -105,7 +105,7 @@ const Lists = () => {
   return (
     <div className="w-full animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div className="flex items-center mb-4 md:mb-0"></div>
+        <div className="flex items-center mb-4 md:mb-0" />
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-between">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -140,7 +140,7 @@ const Lists = () => {
         isOpen={isCreateDrawerOpen}
         onClose={() => setIsCreateDrawerOpen(false)}
         title="Nouvelle liste"
-        isNew={true}
+        isNew
         formData={formData}
         setFormData={setFormData}
       />

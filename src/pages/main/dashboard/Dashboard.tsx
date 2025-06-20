@@ -8,20 +8,18 @@ import Controls from "./tabs/controls/Controls";
 import Quotes from "./tabs/quotes/Quotes";
 import Client from "./tabs/client/Client";
 
-const Dashboard = () => {
-  return (
-    <DashboardLayout>
-      <Routes>
-        <Route path="/" element={<Client />} />
-        <Route path="/quotes" element={<Quotes />} />
-        <Route path="/controls" element={<Controls />} />
-        <Route path="/contracts" element={<Contracts />} />
-        <Route path="/documents" element={<Documents />} />
-        <Route path="/lists" element={<Lists />} />
-        <Route path="/users" element={<Users />} />
-      </Routes>
-    </DashboardLayout>
-  );
-};
+const Dashboard = () => (
+  <DashboardLayout>
+    <Routes>
+      <Route path="/" element={<Client />} />
+      <Route path="/quotes" element={<Quotes />} />
+      <Route path="/controls" element={<Controls />} />
+      <Route path="/contracts" element={<Contracts />} />
+      <Route path="/documents" element={<Documents />} />
+      <Route path="/lists" element={<Lists />} />
+      <Route path="/users" element={<Users />} />
+    </Routes>
+  </DashboardLayout>
+);
 
 export default Dashboard;

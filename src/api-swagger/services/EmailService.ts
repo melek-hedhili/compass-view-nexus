@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateEmailDto } from '../models/CreateEmailDto';
+import type { EmailCountsDto } from '../models/EmailCountsDto';
 import type { EmailDto } from '../models/EmailDto';
 import type { LinkToFileDto } from '../models/LinkToFileDto';
 import type { PaginatedEmailDto } from '../models/PaginatedEmailDto';
@@ -58,6 +59,16 @@ export class EmailService {
             path: {
                 'id': id,
             },
+        });
+    }
+    /**
+     * @returns EmailCountsDto
+     * @throws ApiError
+     */
+    public static emailControllerGetEmailCount(): CancelablePromise<EmailCountsDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/email/count',
         });
     }
     /**

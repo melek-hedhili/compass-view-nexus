@@ -26,7 +26,7 @@ const Index = () => {
         <div
           className="h-full bg-formality-primary rounded-full animate-pulse"
           style={{ width: "60%" }}
-        ></div>
+        />
       </div>
     </div>
   );

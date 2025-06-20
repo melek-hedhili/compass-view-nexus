@@ -295,7 +295,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         isOpen={isConfirmationModalOpen}
         onClose={() => setIsConfirmationModalOpen(false)}
         onPressConfirm={handleDelete}
-        title={"Supprimer le client"}
+        title="Supprimer le client"
         description={`Êtes-vous sûr de vouloir supprimer le client ${client?.clientName} ?`}
       />
     </Form>

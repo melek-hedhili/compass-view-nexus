@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import {
@@ -10,26 +9,34 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { Home } from "lucide-react";
-
+const breadcrumbMap: Record<string, string> = {
+  dashboard: "Tableau de bord",
+  mail: "Boîte mail",
+  dossiers: "Dossiers",
+  quotes: "Données",
+  controls: "Contrôles",
+  documents: "Documents",
+  lists: "Listes",
+  users: "Utilisateurs",
+  contracts: "Arborescences",
+  inbox: "Boîte de réception",
+  sent: "Envoyés",
+  archived: "Archivés",
+};
+const nonClickablePaths = [
+  "mail",
+  "dossiers",
+  "quotes",
+  "controls",
+  "documents",
+  "lists",
+  "users",
+  "contracts",
+];
+const getBreadcrumbName = (path: string) => breadcrumbMap[path] || path;
 const AppBreadcrumbs = () => {
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x);
-
-  const breadcrumbMap: Record<string, string> = {
-    dashboard: "Tableau de bord",
-    mail: "Boîte mail",
-    dossiers: "Dossiers",
-    quotes: "Données",
-    controls: "Contrôles",
-    documents: "Documents",
-    lists: "Listes",
-    users: "Utilisateurs",
-    contracts: "Arborescences",
-  };
-
-  const getBreadcrumbName = (path: string) => {
-    return breadcrumbMap[path] || path;
-  };
 
   if (pathnames.length === 0) {
     return null;
@@ -46,17 +53,19 @@ const AppBreadcrumbs = () => {
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
-          
+
           {pathnames.map((name, index) => {
             const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
             const isLast = index === pathnames.length - 1;
+            const isNonClickablePath = nonClickablePaths.includes(name);
+            const shouldBeNonClickable = isLast || isNonClickablePath;
             const displayName = getBreadcrumbName(name);
 
             return (
               <React.Fragment key={name}>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  {isLast ? (
+                  {shouldBeNonClickable ? (
                     <BreadcrumbPage>{displayName}</BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>

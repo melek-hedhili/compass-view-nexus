@@ -4,7 +4,7 @@ import { FormProvider, SubmitHandler, UseFormReturn } from "react-hook-form";
 
 interface FormWrapperProps<TFormValues> {
   methods: UseFormReturn<any, undefined>;
-  onSubmit: SubmitHandler<TFormValues>;
+  onSubmit?: SubmitHandler<TFormValues>;
   children: React.ReactNode;
   scrollToErroredInputs?: boolean;
   orderedFields?: string[];
@@ -46,8 +46,7 @@ export function Form<TFormValues>({
       }
       return;
     }
-
-    methods.handleSubmit(onSubmit)(e);
+    if (onSubmit) methods.handleSubmit(onSubmit)(e);
   };
 
   return (

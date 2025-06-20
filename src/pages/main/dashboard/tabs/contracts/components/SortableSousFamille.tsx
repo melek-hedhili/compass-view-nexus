@@ -88,7 +88,7 @@ function SortableSousFamille({
           )}
         />
       </div>
-      <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
+      <div className="w-0.5 sm:w-1 h-4 sm:h-6 bg-green-500 rounded-full flex-shrink-0 transition-all duration-150" />
       <div className="flex-1 min-w-0 flex items-center gap-2">
         {sousFamille.isEditing ? (
           <Input

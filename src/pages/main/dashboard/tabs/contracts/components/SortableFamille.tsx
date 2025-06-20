@@ -43,17 +43,16 @@ function AddSousFamilleInput({
       name: string;
       parentId: string;
       index: number;
-    }) => {
-      return TreeService.treeControllerCreate({
+    }) =>
+      TreeService.treeControllerCreate({
         requestBody: {
           fieldName: name,
           type: CreateTreeDto.type.SUB_TITLE,
           parentId,
           index,
         },
-      });
-    },
-    onSuccess: (res, variables) => {
+      }),
+    onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["tree"] });
       setFamilles((prevFamilles) =>
         prevFamilles.map((f, idx) =>
@@ -219,7 +218,7 @@ function SortableFamille({
                   )}
                 />
               </div>
-              <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0 transition-all duration-150"></div>
+              <div className="w-1 sm:w-1.5 h-6 sm:h-8 bg-blue-500 rounded-full flex-shrink-0 transition-all duration-150" />
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 {famille.isEditing ? (
                   <Input

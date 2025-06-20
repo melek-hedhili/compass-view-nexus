@@ -16,19 +16,17 @@ export const QuotesGrid: React.FC<QuotesGridProps> = ({
   onEdit,
   onArchive,
   onRestore,
-}) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {dataItems?.data?.map((data) => (
-        <QuoteCard
-          key={data._id!}
-          data={data}
-          viewingArchived={viewingArchived}
-          onEdit={onEdit}
-          onArchive={onArchive}
-          onRestore={onRestore}
-        />
-      ))}
-    </div>
-  );
-};
+}) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {dataItems?.data?.map((data) => (
+      <QuoteCard
+        key={data._id!}
+        data={data}
+        viewingArchived={viewingArchived}
+        onEdit={onEdit}
+        onArchive={onArchive}
+        onRestore={onRestore}
+      />
+    ))}
+  </div>
+);

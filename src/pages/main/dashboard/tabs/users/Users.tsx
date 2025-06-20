@@ -142,7 +142,7 @@ const Users = () => {
       <div className="w-full animate-fade-in">
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary" />
             <p className="text-gray-600">Chargement...</p>
           </div>
         </div>
@@ -179,7 +179,7 @@ const Users = () => {
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div className="flex items-center mb-4 md:mb-0"></div>
+            <div className="flex items-center mb-4 md:mb-0" />
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

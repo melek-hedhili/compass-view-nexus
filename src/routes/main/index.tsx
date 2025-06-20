@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import Dossiers from "@/pages/main/dossier/Dossiers";
@@ -25,14 +25,33 @@ export const MainRoutes = () => (
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/dashboard/mail"
-        element={
-          <ProtectedRoute>
-            <Mail />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/dashboard/mail">
+        <Route index element={<Navigate to="inbox" replace />} />
+        <Route
+          path="inbox"
+          element={
+            <ProtectedRoute>
+              <Mail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="archived"
+          element={
+            <ProtectedRoute>
+              <Mail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="sent"
+          element={
+            <ProtectedRoute>
+              <Mail />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
   </AppLayout>

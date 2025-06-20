@@ -5,13 +5,11 @@ interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  return (
-    <div className="w-full animate-fade-in">
-      <NavTabs />
-      {children}
-    </div>
-  );
-};
+const DashboardLayout = ({ children }: DashboardLayoutProps) => (
+  <div className="w-full animate-fade-in">
+    <NavTabs />
+    {children}
+  </div>
+);
 
 export default DashboardLayout;

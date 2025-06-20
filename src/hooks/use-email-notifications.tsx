@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useSocketContext } from "@/context/SocketContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,13 +16,9 @@ export const useEmailNotifications = ({
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!isAuthenticated || !socket) return;
-
-    const handleNewEmail = (emailData: any) => {
+  const handleNewEmail = useCallback(
+    async (emailData: any) => {
       console.log("New email received:", emailData);
-      queryClient.invalidateQueries({ queryKey: ["emails"] });
 
       const isOnMailRoute = location.pathname.includes("/dashboard/mail");
 
@@ -50,14 +46,35 @@ export const useEmailNotifications = ({
           duration: 5000,
         });
       }
-    };
+      //data base doesnt sync immediately so we need to wait for 1 second
+      setTimeout(async () => {
+        await queryClient.invalidateQueries({
+          queryKey: ["emails", "counts"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["emails", "inbox"],
+        });
+      }, 1000);
+    },
+    [queryClient, location.pathname, navigate]
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated || !socket) return;
 
     socket.on("newEmail", handleNewEmail);
 
     return () => {
       socket.off("newEmail", handleNewEmail);
     };
-  }, [isAuthenticated, socket, location.pathname, navigate, queryClient]);
+  }, [
+    isAuthenticated,
+    socket,
+    location.pathname,
+    navigate,
+    queryClient,
+    handleNewEmail,
+  ]);
 
   return socket;
 };

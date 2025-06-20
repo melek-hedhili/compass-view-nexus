@@ -1,9 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Paperclip, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { EmailService } from "@/api-swagger/services/EmailService";
 import {
   Sheet,
@@ -12,6 +10,14 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateEmailDto } from "@/api-swagger";
+import { toast } from "sonner";
+import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
+import { ControlledTextarea } from "@/components/ui/controlled/controlled-textarea/controlled-textarea";
+import { EmailFormProps } from "./mail.types";
 
 interface NewMessageModalProps {
   isOpen: boolean;
@@ -19,50 +25,38 @@ interface NewMessageModalProps {
 }
 
 function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
-  const [emailData, setEmailData] = useState({
-    to: "",
-    subject: "",
-    message: "",
+  const queryClient = useQueryClient();
+  const methods = useForm<EmailFormProps>({
+    defaultValues: {
+      to: undefined,
+      subject: undefined,
+      textBody: undefined,
+      htmlBody: undefined,
+    },
   });
-  const [isSending, setIsSending] = useState(false);
-  const { toast } = useToast();
-
-  const handleSend = async () => {
-    if (!emailData.to || !emailData.subject || !emailData.message) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: CreateEmailDto) =>
+      EmailService.emailControllerSendEmail({
+        requestBody: data,
+      }),
+    onSuccess: async () => {
+      toast.success("Email envoyé avec succès");
+      await queryClient.invalidateQueries({
+        queryKey: ["emails", "counts"],
       });
-      return;
-    }
-    setIsSending(true);
-    try {
-      await EmailService.emailControllerSendEmail({
-        requestBody: {
-          to: emailData.to,
-          subject: emailData.subject,
-          textBody: emailData.message,
-          htmlBody: emailData.message,
-        },
+      await queryClient.invalidateQueries({
+        queryKey: ["emails", "sent"],
       });
-      toast({
-        title: "Succès",
-        description: "Email envoyé avec succès",
-      });
-      setEmailData({ to: "", subject: "", message: "" });
       onClose();
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description:
-          "Erreur lors de l'envoi de l'email. Veuillez vérifier la console pour plus de détails.",
-        variant: "destructive",
-      });
-      console.error("Error sending email:", error);
-    } finally {
-      setIsSending(false);
-    }
+      methods.reset();
+    },
+    onError: (error) => {
+      const errorMessage = (error as any).response?.data?.message;
+      toast.error(errorMessage ?? "Erreur lors de l'envoi de l'email");
+    },
+  });
+  const onSubmit: SubmitHandler<EmailFormProps> = async (data) => {
+    mutate(data);
   };
 
   return (
@@ -76,83 +70,72 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
             Rédigez votre message ci-dessous.
           </SheetDescription>
         </SheetHeader>
+        <Form methods={methods} onSubmit={onSubmit}>
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  À
+                </label>
+                <ControlledInput
+                  name="to"
+                  required
+                  placeholder="Adresse email du destinataire"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Objet
+                </label>
+                <ControlledInput
+                  name="subject"
+                  required
+                  placeholder="Objet du message"
+                />
+              </div>
+            </div>
 
-        <div className="space-y-6">
-          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                À
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Message
               </label>
-              <Input
-                placeholder="Adresse email du destinataire"
-                className="border-gray-200"
-                value={emailData.to}
-                onChange={(e) =>
-                  setEmailData((prev) => ({ ...prev, to: e.target.value }))
-                }
+              <ControlledTextarea
+                name="textBody"
+                required
+                placeholder="Rédigez votre message ici..."
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Objet
-              </label>
-              <Input
-                placeholder="Objet du message"
-                className="border-gray-200"
-                value={emailData.subject}
-                onChange={(e) =>
-                  setEmailData((prev) => ({
-                    ...prev,
-                    subject: e.target.value,
-                  }))
-                }
-              />
+              <h3 className="text-sm font-medium mb-2 text-gray-700">
+                Pièces jointes
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex gap-1.5 items-center"
+                disabled
+              >
+                <Paperclip className="h-4 w-4" />
+                Ajouter une pièce jointe
+              </Button>
+              <span className="text-xs text-gray-400 ml-2">
+                (Bientôt disponible)
+              </span>
+            </div>
+
+            <div className="flex justify-end pt-6 border-t border-gray-100">
+              <Button
+                className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-1.5"
+                size="sm"
+                type="submit"
+                loading={isPending}
+              >
+                Envoyer
+              </Button>
             </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Message
-            </label>
-            <textarea
-              className="w-full min-h-[180px] border border-gray-200 rounded-md p-3 resize-none"
-              placeholder="Rédigez votre message ici..."
-              value={emailData.message}
-              onChange={(e) =>
-                setEmailData((prev) => ({ ...prev, message: e.target.value }))
-              }
-            />
-          </div>
-          
-          <div>
-            <h3 className="text-sm font-medium mb-2 text-gray-700">
-              Pièces jointes
-            </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex gap-1.5 items-center"
-              disabled
-            >
-              <Paperclip className="h-4 w-4" />
-              Ajouter une pièce jointe
-            </Button>
-            <span className="text-xs text-gray-400 ml-2">
-              (Bientôt disponible)
-            </span>
-          </div>
-          
-          <div className="flex justify-end pt-6 border-t border-gray-100">
-            <Button
-              className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-1.5"
-              size="sm"
-              onClick={handleSend}
-              disabled={isSending}
-            >
-              {isSending ? "Envoi..." : "Envoyer"}
-            </Button>
-          </div>
-        </div>
+        </Form>
       </SheetContent>
     </Sheet>
   );

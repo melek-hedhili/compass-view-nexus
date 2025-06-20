@@ -98,15 +98,14 @@ function AddRubriqueInput({
   const [name, setName] = useState("");
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async (name: string) => {
-      return TreeService.treeControllerCreate({
+    mutationFn: (name: string) =>
+      TreeService.treeControllerCreate({
         requestBody: {
           fieldName: name,
           type: CreateTreeDto.type.SECTION,
           index: rubriques.length,
         },
-      });
-    },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tree"] });
       setShowInput(false);
@@ -174,9 +173,7 @@ const Contracts = () => {
   });
 
   const deleteRubriqueMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return TreeService.treeControllerRemove({ id });
-    },
+    mutationFn: (id: string) => TreeService.treeControllerRemove({ id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tree"] });
       toast.success("Rubrique supprimée avec succès");
@@ -205,30 +202,15 @@ const Contracts = () => {
     setSelectedArborescence(null);
   };
 
-  const createArborescenceMutation = useMutation({
-    mutationFn: (arborescence: CreateTreeDto) => {
-      return TreeService.treeControllerCreate({
-        requestBody: arborescence,
-      });
-    },
-    onSuccess: () => {
-      toast.success("Arborescence créée avec succès");
-    },
-    onError: () => {
-      toast.error("Erreur lors de la création de l'arborescence");
-    },
-  });
-
   const createRubriqueMutation = useMutation({
-    mutationFn: (name: string) => {
-      return TreeService.treeControllerCreate({
+    mutationFn: (name: string) =>
+      TreeService.treeControllerCreate({
         requestBody: {
           fieldName: name,
           type: CreateTreeDto.type.SECTION,
           index: editTrees.length,
         },
-      });
-    },
+      }),
     onSuccess: () => {
       toast.success("Rubrique créée avec succès");
       queryClient.invalidateQueries({ queryKey: ["tree"] });

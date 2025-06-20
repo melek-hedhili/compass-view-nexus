@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateTreeDto } from '../models/CreateTreeDto';
-import type { PaginatedTreeDto } from '../models/PaginatedTreeDto';
+import type { GetSectionsResponseDto } from '../models/GetSectionsResponseDto';
 import type { TreeDto } from '../models/TreeDto';
 import type { UpdateTreeDto } from '../models/UpdateTreeDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -11,35 +11,13 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class TreeService {
     /**
-     * @returns PaginatedTreeDto
+     * @returns GetSectionsResponseDto
      * @throws ApiError
      */
-    public static treeControllerFindAll({
-        page,
-        perPage,
-        searchValue,
-        searchFields,
-        additionalFields,
-        filters,
-    }: {
-        page?: string,
-        perPage?: string,
-        searchValue?: string,
-        searchFields?: Array<string>,
-        additionalFields?: Array<string>,
-        filters?: string,
-    }): CancelablePromise<PaginatedTreeDto> {
+    public static treeControllerFindAll(): CancelablePromise<GetSectionsResponseDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/tree',
-            query: {
-                'page': page,
-                'perPage': perPage,
-                'searchValue': searchValue,
-                'searchFields': searchFields,
-                'additionalFields': additionalFields,
-                'filters': filters,
-            },
         });
     }
     /**

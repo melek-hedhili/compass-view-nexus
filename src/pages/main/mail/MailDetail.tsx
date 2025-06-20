@@ -1,9 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Archive, Reply, X } from "lucide-react";
+import { Archive, Reply } from "lucide-react";
 import { EmailDto } from "@/api-swagger/models/EmailDto";
+import { TabKey } from "./mail.types";
 
 function MailDetail({
   mail,
@@ -13,13 +13,13 @@ function MailDetail({
   isArchiving,
   activeTab,
 }: {
-  mail: EmailDto | null | undefined;
+  mail: EmailDto | null;
   onClose: () => void;
   onReply: () => void;
   onArchive: () => void;
   onUnarchive: () => void;
   isArchiving: boolean;
-  activeTab: string;
+  activeTab: TabKey;
 }) {
   if (!mail) return null;
 
@@ -77,9 +77,9 @@ function MailDetail({
       </div>
       <div className="flex justify-between border-t border-gray-100 pt-4">
         <div className="flex gap-2">
-          {activeTab !== "envoye" && (
+          {activeTab !== "sent" && (
             <>
-              {activeTab === "archives" ? (
+              {activeTab === "archived" ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -88,7 +88,7 @@ function MailDetail({
                   disabled={isArchiving}
                 >
                   {isArchiving ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600" />
                   ) : (
                     <Archive className="h-4 w-4" />
                   )}
@@ -103,7 +103,7 @@ function MailDetail({
                   disabled={isArchiving}
                 >
                   {isArchiving ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600" />
                   ) : (
                     <Archive className="h-4 w-4" />
                   )}

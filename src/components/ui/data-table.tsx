@@ -25,12 +25,19 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-type ColumnKey<T> = keyof T;
+// Utility type to flatten nested object properties
+type FlattenKeys<T> = {
+  [K in keyof T]: T[K] extends object
+    ? `${string & K}.${string & keyof T[K]}` | (string & K)
+    : string & K;
+}[keyof T];
+
+type ColumnKey<T> = FlattenKeys<T>; // Allow both flattened keys and any string
 
 export interface Column<T> {
-  key: ColumnKey<T>;
+  key?: ColumnKey<T>; // Make key optional
   header: string;
-  render?: (value: T[ColumnKey<T>], row: T) => React.ReactNode;
+  render?: (value: any, row?: T) => React.ReactNode;
   className?: string;
   sortable?: boolean;
   sortKey?: string;
@@ -105,11 +112,22 @@ export function DataTable<T extends Record<string, unknown>>({
     onSort(field, newOrder);
   };
 
+  // Helper function to get nested property values
+  const getNestedValue = (obj: any, path: string): any =>
+    path
+      .split(".")
+      .reduce(
+        (current, key) =>
+          current && current[key] !== undefined ? current[key] : undefined,
+        obj
+      );
+
   const renderCellValue = (column: Column<T>, row: T): React.ReactNode => {
     if (column.render) {
-      return column.render(row[column.key], row);
+      const value = getNestedValue(row, column.key || "");
+      return column.render(value, row);
     }
-    const value = row[column.key];
+    const value = getNestedValue(row, column.key || "");
     return typeof value === "object" ? JSON.stringify(value) : String(value);
   };
 
@@ -141,7 +159,7 @@ export function DataTable<T extends Record<string, unknown>>({
               {showIndex && (
                 <TableHead className="w-[50px] text-center">#</TableHead>
               )}
-              {columns.map((column, index) => (
+              {columns?.map((column, index) => (
                 <TableHead
                   key={index}
                   className={cn(
@@ -206,7 +224,7 @@ export function DataTable<T extends Record<string, unknown>>({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
           <div className="flex items-center space-x-2">
             <p className="text-sm text-muted-foreground whitespace-nowrap">
-              Rows per page:
+              Lignes par page:
             </p>
             <Select
               value={perPage.toString()}
@@ -227,7 +245,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
           <div className="flex items-center justify-center text-sm text-muted-foreground">
             <span className="whitespace-nowrap">
-              {startIndex + 1}-{endIndex} of {totalItems}
+              {startIndex + 1}-{endIndex} sur {totalItems}
             </span>
           </div>
 

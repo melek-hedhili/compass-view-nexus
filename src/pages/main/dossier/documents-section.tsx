@@ -253,7 +253,7 @@ export default function DocumentsSection({ dossierId }: DocumentsSectionProps) {
                           <Check className="h-3 w-3" />
                         </div>
                       ) : (
-                        <div className="mx-auto h-5 w-5 rounded-full border border-gray-300"></div>
+                        <div className="mx-auto h-5 w-5 rounded-full border border-gray-300" />
                       )}
                     </TableCell>
                     <TableCell className="text-center">
@@ -262,7 +262,7 @@ export default function DocumentsSection({ dossierId }: DocumentsSectionProps) {
                           <Check className="h-3 w-3" />
                         </div>
                       ) : (
-                        <div className="mx-auto h-5 w-5 rounded-full border border-gray-300"></div>
+                        <div className="mx-auto h-5 w-5 rounded-full border border-gray-300" />
                       )}
                     </TableCell>
                   </TableRow>
@@ -312,7 +312,7 @@ export default function DocumentsSection({ dossierId }: DocumentsSectionProps) {
                           <Check className="h-3 w-3" />
                         </div>
                       ) : (
-                        <div className="mx-auto h-5 w-5 rounded-full border border-gray-300"></div>
+                        <div className="mx-auto h-5 w-5 rounded-full border border-gray-300" />
                       )}
                     </TableCell>
                   </TableRow>

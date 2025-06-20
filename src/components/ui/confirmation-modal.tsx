@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   AlertDialog,
@@ -25,19 +24,19 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onPressConfirm,
   title = "Confirmation",
   description = "Êtes-vous sûr de vouloir confirmer cette action ?",
-}) => {
-  return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={onPressConfirm}>Confirmer</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
+}) => (
+  <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{title}</AlertDialogTitle>
+        <AlertDialogDescription>{description}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel onClick={onClose}>Annuler</AlertDialogCancel>
+        <AlertDialogAction onClick={onPressConfirm}>
+          Confirmer
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);

@@ -1,4 +1,3 @@
-"use client";
 import type React from "react";
 import type { ReactElement } from "react";
 import { useState, useEffect, useMemo } from "react";
@@ -424,24 +423,22 @@ const Dossiers = (): ReactElement => {
     if (!emailsData) return [];
     if (!searchTerm) return emailsData;
 
-    return emailsData.filter((email) => {
-      return (
+    return emailsData.filter(
+      (email) =>
         email.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
         email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
         email.clientName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    });
+    );
   }, [emailsData, searchTerm]);
 
   const filteredDossiers = useMemo(() => {
     if (!searchTerm) return mockDossiers;
 
-    return mockDossiers.filter((dossier) => {
-      return (
+    return mockDossiers.filter(
+      (dossier) =>
         dossier.dossier.toLowerCase().includes(searchTerm.toLowerCase()) ||
         dossier.clientNom.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    });
+    );
   }, [searchTerm]);
 
   // Pagination calculations
@@ -547,7 +544,7 @@ const Dossiers = (): ReactElement => {
       case "tous":
         return (
           <TableRow>
-            <TableHead className="w-1 p-0"></TableHead>
+            <TableHead className="w-1 p-0" />
             <TableHead className="text-left font-medium">
               Nom du client
             </TableHead>
@@ -566,7 +563,7 @@ const Dossiers = (): ReactElement => {
       case "bloque":
         return (
           <TableRow>
-            <TableHead className="w-1 p-0"></TableHead>
+            <TableHead className="w-1 p-0" />
             <TableHead className="text-left font-medium">Dossier</TableHead>
             <TableHead className="text-left font-medium">Intervenant</TableHead>
             <TableHead className="text-left font-medium">Délai</TableHead>
@@ -578,7 +575,7 @@ const Dossiers = (): ReactElement => {
       case "en-attente":
         return (
           <TableRow>
-            <TableHead className="w-1 p-0"></TableHead>
+            <TableHead className="w-1 p-0" />
             <TableHead className="text-left font-medium">Client</TableHead>
             <TableHead className="text-left font-medium">Dossier</TableHead>
             <TableHead className="text-left font-medium">Délai</TableHead>
@@ -591,7 +588,7 @@ const Dossiers = (): ReactElement => {
       case "a-payer":
         return (
           <TableRow>
-            <TableHead className="w-1 p-0"></TableHead>
+            <TableHead className="w-1 p-0" />
             <TableHead className="text-left font-medium">Client</TableHead>
             <TableHead className="text-left font-medium">Prestation</TableHead>
             <TableHead className="text-left font-medium">Dossier</TableHead>
@@ -603,7 +600,7 @@ const Dossiers = (): ReactElement => {
       case "refus":
         return (
           <TableRow>
-            <TableHead className="w-1 p-0"></TableHead>
+            <TableHead className="w-1 p-0" />
             <TableHead className="text-left font-medium">Client</TableHead>
             <TableHead className="text-left font-medium">Dossier</TableHead>
             <TableHead className="text-left font-medium">Intervenant</TableHead>
@@ -614,7 +611,7 @@ const Dossiers = (): ReactElement => {
       case "termine":
         return (
           <TableRow>
-            <TableHead className="w-1 p-0"></TableHead>
+            <TableHead className="w-1 p-0" />
             <TableHead className="text-left font-medium">
               Nom du client
             </TableHead>
@@ -627,6 +624,8 @@ const Dossiers = (): ReactElement => {
             <TableHead className="text-left font-medium">Refus</TableHead>
           </TableRow>
         );
+      default:
+        return null;
     }
   };
 
@@ -705,6 +704,8 @@ const Dossiers = (): ReactElement => {
             <TableCell>{dossier.motifRefus}</TableCell>
           </>
         );
+      default:
+        return null;
     }
   };
 
@@ -865,7 +866,7 @@ const Dossiers = (): ReactElement => {
                 </div>
 
                 {/* Additional Email Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" />
 
                 {/* Attachments Section (if any) */}
                 <div className="mt-4">
@@ -988,7 +989,7 @@ const Dossiers = (): ReactElement => {
                 >
                   {createFileMutation.isPending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2" />
                       Création en cours...
                     </>
                   ) : (
@@ -1067,7 +1068,7 @@ const Dossiers = (): ReactElement => {
               >
                 {linkToFileMutation.isPending ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2" />
                     Association en cours...
                   </>
                 ) : (
@@ -1163,7 +1164,7 @@ const Dossiers = (): ReactElement => {
       <div className="w-full animate-fade-in">
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-formality-primary" />
             <p className="text-gray-600">Chargement...</p>
           </div>
         </div>
@@ -1295,7 +1296,7 @@ const Dossiers = (): ReactElement => {
                         <div className="divide-y max-h-96 overflow-y-auto">
                           {isEmailsLoading ? (
                             <div className="p-4 text-center text-gray-500">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-formality-primary mx-auto mb-2"></div>
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-formality-primary mx-auto mb-2" />
                               Chargement...
                             </div>
                           ) : paginatedEmails.length === 0 ? (
@@ -1509,7 +1510,7 @@ const Dossiers = (): ReactElement => {
                           >
                             {createFileMutation.isPending ? (
                               <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                                 Création en cours...
                               </>
                             ) : (
@@ -1594,7 +1595,7 @@ const Dossiers = (): ReactElement => {
                           >
                             {linkToFileMutation.isPending ? (
                               <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2" />
                                 Association en cours...
                               </>
                             ) : (
@@ -1643,7 +1644,7 @@ const Dossiers = (): ReactElement => {
                                           ? "bg-orange-500"
                                           : "bg-blue-500"
                                       }`}
-                                    ></div>
+                                    />
                                   </TableCell>
                                   {renderTableCells(dossier)}
                                 </TableRow>

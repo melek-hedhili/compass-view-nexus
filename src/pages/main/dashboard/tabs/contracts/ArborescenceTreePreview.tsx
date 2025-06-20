@@ -419,7 +419,7 @@ export const ArborescenceTreePreview: React.FC<{
             {/* Rubrique Header */}
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-2">
-                <div className="w-2 h-8 sm:h-12 bg-formality-primary rounded-full flex-shrink-0"></div>
+                <div className="w-2 h-8 sm:h-12 bg-formality-primary rounded-full flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   {tree.isEditingRubrique ? (
                     <Input
@@ -523,7 +523,7 @@ export const ArborescenceTreePreview: React.FC<{
                         ? "bg-blue-500"
                         : "bg-green-500"
                     )}
-                  ></div>
+                  />
                   <span className="font-medium text-gray-800">
                     {draggedItem.item.name}
                   </span>
@@ -558,16 +558,15 @@ function AddFamilleInput({
       name: string;
       parentId: string;
       index: number;
-    }) => {
-      return TreeService.treeControllerCreate({
+    }) =>
+      TreeService.treeControllerCreate({
         requestBody: {
           fieldName: name,
           type: CreateTreeDto.type.TITLE,
           parentId,
           index,
         },
-      });
-    },
+      }),
     onSuccess: (res, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tree"] });
       setFamilles((prevFamilles) => [

@@ -1,14 +1,21 @@
-
-import { Check } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DonneesAnalyseSectionProps {
-  dossierId?: string
+  dossierId?: string;
 }
 
-export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSectionProps) {
+export default function DonneesAnalyseSection({
+  dossierId,
+}: DonneesAnalyseSectionProps) {
   return (
     <div className="flex gap-6">
       <div className="w-1/2">
@@ -69,14 +76,21 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
             </div>
 
             <div className="flex items-center">
-              <div className="w-40 text-sm">Filiale ou une sous filiale d'une entreprise agricole</div>
+              <div className="w-40 text-sm">
+                Filiale ou une sous filiale d'une entreprise agricole
+              </div>
               <div className="flex-1 flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <input type="radio" id="filiale-non" name="filiale" />
                   <label htmlFor="filiale-non">-</label>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="radio" id="filiale-oui" name="filiale" defaultChecked />
+                  <input
+                    type="radio"
+                    id="filiale-oui"
+                    name="filiale"
+                    defaultChecked
+                  />
                   <label htmlFor="filiale-oui">Oui</label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -96,7 +110,12 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
               <div className="w-40 text-sm">Entreprise agricole</div>
               <div className="flex-1 flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <input type="radio" id="agricole-non" name="agricole" defaultChecked />
+                  <input
+                    type="radio"
+                    id="agricole-non"
+                    name="agricole"
+                    defaultChecked
+                  />
                   <label htmlFor="agricole-non">-</label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -124,7 +143,7 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
                   className="max-w-xs"
                 />
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200">
-                  <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                  <div className="h-3 w-3 rounded-full bg-gray-400" />
                 </div>
                 <a href="#" className="text-blue-600 hover:underline text-sm">
                   Statut
@@ -149,7 +168,9 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
 
         {/* Liste des bénéficiaires effectifs */}
         <div>
-          <h3 className="font-medium mb-4">Liste des bénéficiaires effectifs</h3>
+          <h3 className="font-medium mb-4">
+            Liste des bénéficiaires effectifs
+          </h3>
 
           <div className="space-y-4">
             <div className="flex items-center">
@@ -173,9 +194,12 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
                   <div className="flex-1 flex items-center gap-2">
                     <Input className="max-w-xs" />
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200">
-                      <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                      <div className="h-3 w-3 rounded-full bg-gray-400" />
                     </div>
-                    <a href="#" className="text-blue-600 hover:underline text-sm">
+                    <a
+                      href="#"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
                       LBE
                     </a>
                   </div>
@@ -185,9 +209,12 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
                   <div className="flex-1 flex items-center gap-2">
                     <Input className="max-w-xs" />
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200">
-                      <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                      <div className="h-3 w-3 rounded-full bg-gray-400" />
                     </div>
-                    <a href="#" className="text-blue-600 hover:underline text-sm">
+                    <a
+                      href="#"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
                       LBE
                     </a>
                   </div>
@@ -203,9 +230,12 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
                   <div className="flex-1 flex items-center gap-2">
                     <Input className="max-w-xs" />
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200">
-                      <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                      <div className="h-3 w-3 rounded-full bg-gray-400" />
                     </div>
-                    <a href="#" className="text-blue-600 hover:underline text-sm">
+                    <a
+                      href="#"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
                       LBE
                     </a>
                   </div>
@@ -215,9 +245,12 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
                   <div className="flex-1 flex items-center gap-2">
                     <Input className="max-w-xs" />
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200">
-                      <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                      <div className="h-3 w-3 rounded-full bg-gray-400" />
                     </div>
-                    <a href="#" className="text-blue-600 hover:underline text-sm">
+                    <a
+                      href="#"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
                       LBE
                     </a>
                   </div>
@@ -239,7 +272,9 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
             <SelectContent>
               <SelectItem value="liste">Liste des documents</SelectItem>
               <SelectItem value="statuts">Statuts</SelectItem>
-              <SelectItem value="beneficiaires">Liste des bénéficiaires</SelectItem>
+              <SelectItem value="beneficiaires">
+                Liste des bénéficiaires
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -253,5 +288,5 @@ export default function DonneesAnalyseSection({ dossierId }: DonneesAnalyseSecti
         </Card>
       </div>
     </div>
-  )
+  );
 }
