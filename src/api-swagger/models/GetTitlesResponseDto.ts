@@ -11,6 +11,7 @@ export type GetTitlesResponseDto = {
     parent?: TreeDto;
     index: number;
     type: GetTitlesResponseDto.type;
+    isArchived: boolean;
     subtitles: Array<TreeDto>;
 };
 export namespace GetTitlesResponseDto {

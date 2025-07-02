@@ -11,6 +11,7 @@ export type UpdateDocumentDto = {
     legalForm?: UpdateDocumentDto.legalForm;
     benefit?: UpdateDocumentDto.benefit;
     type?: UpdateDocumentDto.type;
+    isArchived?: boolean;
 };
 export namespace UpdateDocumentDto {
     export enum legalForm {

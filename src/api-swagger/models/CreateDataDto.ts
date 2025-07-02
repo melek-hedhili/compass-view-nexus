@@ -8,6 +8,7 @@ export type CreateDataDto = {
     created_at?: string;
     updated_at?: string;
     fieldName: string;
+    dependenceValue?: string;
     dependsOnId?: string;
     treeId?: string;
     type: CreateDataDto.type;

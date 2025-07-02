@@ -16,6 +16,8 @@ interface ConfirmationModalProps {
   onPressConfirm: () => void;
   title?: string;
   description?: string;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -24,6 +26,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onPressConfirm,
   title = "Confirmation",
   description = "Êtes-vous sûr de vouloir confirmer cette action ?",
+  confirmButtonText = "Confirmer",
+  cancelButtonText = "Annuler",
 }) => (
   <AlertDialog open={isOpen} onOpenChange={onClose}>
     <AlertDialogContent>
@@ -32,9 +36,11 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <AlertDialogDescription>{description}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel onClick={onClose}>Annuler</AlertDialogCancel>
+        <AlertDialogCancel onClick={onClose}>
+          {cancelButtonText}
+        </AlertDialogCancel>
         <AlertDialogAction onClick={onPressConfirm}>
-          Confirmer
+          {confirmButtonText}
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>

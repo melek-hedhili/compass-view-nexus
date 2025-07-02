@@ -8,6 +8,7 @@ export type UpdateDataDto = {
     created_at?: string;
     updated_at?: string;
     fieldName?: string;
+    dependenceValue?: string;
     dependsOnId?: string;
     treeId?: string;
     type?: UpdateDataDto.type;
@@ -17,6 +18,7 @@ export type UpdateDataDto = {
     isModifiable?: boolean;
     isControlField?: boolean;
     isMultiItem?: boolean;
+    isArchived?: boolean;
 };
 export namespace UpdateDataDto {
     export enum type {

@@ -12,6 +12,7 @@ export type GetSectionsResponseDto = {
     parent?: TreeDto;
     index: number;
     type: GetSectionsResponseDto.type;
+    isArchived: boolean;
     titles: Array<GetTitlesResponseDto>;
 };
 export namespace GetSectionsResponseDto {

@@ -1,8 +1,7 @@
-import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, Mail, Folder, Settings, Menu } from "lucide-react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link, useNavigate, Outlet } from "react-router-dom";
 import Logo from "../Logo";
 import AppBreadcrumbs from "../AppBreadcrumbs";
 import {
@@ -19,10 +18,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEmailNotifications } from "@/hooks/use-email-notifications";
-
-interface AppLayoutProps {
-  children: React.ReactNode;
-}
 
 const SidebarNavigation = () => {
   const { user } = useAuth();
@@ -141,10 +136,10 @@ const SidebarNavigation = () => {
       {(user?.role === "ADMIN" || user?.role === "JURIST") && (
         <SidebarMenuItem>
           <SidebarMenuButton
-            onClick={() => handleNavigation("/dashboard")}
-            isActive={isActive("/dashboard")}
+            onClick={() => handleNavigation("/dashboard/settings")}
+            isActive={isActive("/dashboard/settings")}
             className={`group relative overflow-hidden rounded-lg transition-all duration-300 ease-out ${
-              isActive("/dashboard")
+              isActive("/dashboard/settings")
                 ? "bg-gradient-to-r from-formality-primary/15 to-formality-primary/5 text-formality-primary shadow-lg shadow-formality-primary/10 transform scale-[1.02]"
                 : "text-gray-700 hover:bg-formality-primary/5 hover:text-formality-primary"
             }`}
@@ -152,7 +147,7 @@ const SidebarNavigation = () => {
             <div className="flex items-center gap-3 px-3 py-3 w-full relative z-10">
               <Settings
                 className={`h-5 w-5 flex-shrink-0 transition-all duration-300 ease-out ${
-                  isActive("/dashboard")
+                  isActive("/dashboard/settings")
                     ? "scale-110 drop-shadow-sm"
                     : "group-hover:scale-105"
                 }`}
@@ -161,12 +156,12 @@ const SidebarNavigation = () => {
                 Paramètres
               </span>
             </div>
-            {isActive("/dashboard") && (
+            {isActive("/dashboard/settings") && (
               <div className="absolute inset-0 bg-gradient-to-r from-formality-primary/10 to-transparent opacity-60 animate-pulse" />
             )}
             <div
               className={`absolute left-0 top-0 h-full w-1 bg-formality-primary transition-all duration-500 ease-out ${
-                isActive("/dashboard")
+                isActive("/dashboard/settings")
                   ? "opacity-100 scale-y-100"
                   : "opacity-0 scale-y-0"
               }`}
@@ -178,7 +173,7 @@ const SidebarNavigation = () => {
   );
 };
 
-const AppLayout = ({ children }: AppLayoutProps) => {
+const AppLayout = () => {
   const { logout, user, isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
 
@@ -195,7 +190,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         >
           <SidebarHeader className="border-b border-gray-100 bg-gradient-to-r from-formality-primary to-amber-500">
             <div className="flex items-center justify-between px-4 py-4">
-              <Link to="/dashboard" className="flex items-center">
+              <Link to="/dashboard/settings" className="flex items-center">
                 <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center shadow-sm">
                   <span className="text-formality-primary font-bold text-lg">
                     X
@@ -241,7 +236,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <SidebarTrigger className="rounded-md border border-gray-200 bg-white p-2 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-formality-primary transition-all duration-200">
               <Menu className="h-5 w-5 text-gray-700" />
             </SidebarTrigger>
-            <Link to="/dashboard" className="flex items-center">
+            <Link to="/dashboard/settings" className="flex items-center">
               <Logo />
             </Link>
             {user && (
@@ -253,7 +248,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
           <div className="p-6 w-full">
             <AppBreadcrumbs />
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

@@ -14,10 +14,10 @@ import { MainRoutes } from "./routes/main";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { OpenAPI } from "./api-swagger";
 import { URL_API } from "./utils/constants";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 import { toast } from "sonner";
 import { SocketProvider } from "./context/SocketContext";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 OpenAPI.BASE = URL_API;
 
@@ -60,13 +60,10 @@ const renderReactQueryDevtools = () =>
 // Root route component that handles redirection
 const RootRoute = () => {
   const { isAuthenticated, loading } = useAuth();
+  console.log("isAuthenticated root route", isAuthenticated);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-gray-300 border-t-formality-primary" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // Only redirect to login if not authenticated
@@ -75,7 +72,7 @@ const RootRoute = () => {
   }
 
   // Otherwise, stay on current path
-  return null;
+  return <Navigate to="/dashboard/settings" replace />;
 };
 
 const App = () => (
@@ -88,14 +85,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<RootRoute />} />
               <Route path="/auth/*" element={<AuthRoutes />} />
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <MainRoutes />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/*" element={<MainRoutes />} />
             </Routes>
             {renderReactQueryDevtools()}
           </SocketProvider>

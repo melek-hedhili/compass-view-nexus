@@ -19,6 +19,8 @@ export type DataDto = {
     isModifiable: boolean;
     isControlField: boolean;
     isMultiItem: boolean;
+    isArchived: boolean;
+    dependenceValue?: string;
 };
 export namespace DataDto {
     export enum type {

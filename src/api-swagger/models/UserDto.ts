@@ -9,6 +9,7 @@ export type UserDto = {
     email: string;
     username: string;
     role: UserDto.role;
+    isArchived?: boolean;
 };
 export namespace UserDto {
     export enum role {

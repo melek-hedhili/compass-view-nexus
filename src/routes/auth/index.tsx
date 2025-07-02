@@ -1,25 +1,21 @@
-import { Route, Routes } from "react-router-dom";
-import { PublicRoute } from "@/components/ProtectedRoute";
-import Index from "@/pages/Index";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "@/pages/auth/Login";
+import { useAuth } from "@/context/AuthContext";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
-export const AuthRoutes = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={
-        <PublicRoute>
-          <Index />
-        </PublicRoute>
-      }
-    />
-    <Route
-      path="/login"
-      element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      }
-    />
-  </Routes>
-);
+export const AuthRoutes = () => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) {
+    return <LoadingSpinner />;
+  } else {
+    if (isAuthenticated) {
+      return <Navigate to="/dashboard/settings" replace />;
+    }
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+    </Routes>
+  );
+};

@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils";
 import * as React from "react";
-import { FormProvider, SubmitHandler, UseFormReturn } from "react-hook-form";
+import {
+  FormProvider,
+  FieldErrors,
+  type SubmitHandler,
+  type UseFormReturn,
+} from "react-hook-form";
 
 interface FormWrapperProps<TFormValues> {
   methods: UseFormReturn<any, undefined>;
@@ -9,6 +14,7 @@ interface FormWrapperProps<TFormValues> {
   scrollToErroredInputs?: boolean;
   orderedFields?: string[];
   className?: string;
+  onError?: (error: FieldErrors<TFormValues>) => void;
 }
 
 export function Form<TFormValues>({
@@ -18,6 +24,7 @@ export function Form<TFormValues>({
   className,
   scrollToErroredInputs = false,
   orderedFields = [],
+  onError,
 }: FormWrapperProps<TFormValues>) {
   // submit handler with error scrolling
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +53,7 @@ export function Form<TFormValues>({
       }
       return;
     }
+    if (onError) onError(methods.formState.errors);
     if (onSubmit) methods.handleSubmit(onSubmit)(e);
   };
 

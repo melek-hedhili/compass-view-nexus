@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { EmailService } from "@/api-swagger/services/EmailService";
-import { EmailDto } from "@/api-swagger/models/EmailDto";
-import { DataTable, Column } from "@/components/ui/data-table";
+import { type EmailDto } from "@/api-swagger/models/EmailDto";
+import { DataTable, type Column } from "@/components/ui/data-table";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ReactNode } from "react";
 import { searchFields } from "./mail.utils";
-import { FindOptionsQuery } from "@/api-swagger";
+import { type FindOptionsQuery } from "@/api-swagger";
 import { Search } from "lucide-react";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
 import { Form } from "@/components/ui/form";
@@ -21,7 +20,7 @@ const ArchivedMail = ({
 }) => {
   const [pagination, setPagination] = useState<FindOptionsQuery>({
     page: "1",
-    perPage: "10",
+    perPage: "5",
     searchValue: "",
     searchFields,
   });

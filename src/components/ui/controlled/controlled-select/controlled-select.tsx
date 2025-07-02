@@ -1,4 +1,3 @@
-import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Controller, useFormContext } from "react-hook-form";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
@@ -11,6 +10,7 @@ type ControlledSelectProps<T> = {
   required?: boolean;
   disabled?: boolean;
   placeholder?: string;
+  hideError?: boolean;
   data: T[];
   getOptionValue: (option: T) => string;
   getOptionLabel: (option: T) => string;
@@ -28,6 +28,7 @@ function ControlledSelect<T>({
   required,
   disabled,
   placeholder,
+  hideError,
   data,
   getOptionValue,
   getOptionLabel,
@@ -114,7 +115,9 @@ function ControlledSelect<T>({
                             </SelectPrimitive.ItemIndicator>
                           </span>
                           <SelectPrimitive.ItemText>
-                            {optionLabel}
+                            {optionLabel.length > 50
+                              ? optionLabel.slice(0, 50) + "..."
+                              : optionLabel}
                           </SelectPrimitive.ItemText>
                         </SelectPrimitive.Item>
                       );
@@ -127,7 +130,7 @@ function ControlledSelect<T>({
                 </SelectPrimitive.Content>
               </SelectPrimitive.Portal>
             </SelectPrimitive.Root>
-            {error && (
+            {!hideError && error && (
               <p className="text-red-600 text-xs mt-1" role="alert">
                 {error.message}
               </p>

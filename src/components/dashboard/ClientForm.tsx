@@ -1,19 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ClientDto, CreateClientDto, UpdateClientDto } from "@/api-swagger";
+import {
+  ClientDto,
+  type CreateClientDto,
+  type UpdateClientDto,
+} from "@/api-swagger";
 import { ClientService } from "@/api-swagger/services/ClientService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ConfirmationModal } from "../ui/confirmation-modal";
 import { Form } from "@/components/ui/form";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
 import { ControlledSelect } from "@/components/ui/controlled/controlled-select/controlled-select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 interface ClientFormProps {
-  client?: ClientDto | null;
-  onCancel: () => void;
-  onDelete?: (id: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  client: ClientDto | null;
 }
 
 const journalOptions = [
@@ -36,12 +46,11 @@ const initialForm: Partial<CreateClientDto> = {
 };
 
 export const ClientForm: React.FC<ClientFormProps> = ({
+  isOpen,
+  onClose,
   client,
-  onCancel,
-  onDelete,
 }) => {
   const queryClient = useQueryClient();
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [delegation, setDelegation] = useState(false);
 
   const methods = useForm<Partial<CreateClientDto>>({
@@ -77,11 +86,15 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     onSuccess: () => {
       toast.success("Client créé avec succès");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      onCancel();
+      onClose();
     },
     onError: (error) => {
-      toast.error("Erreur lors de la création du client");
-      console.error("Error creating client:", error);
+      const errorMsg = (error as any).body.message;
+      if (errorMsg.includes("client is already registered")) {
+        toast.error("Le client est déjà enregistré");
+      } else {
+        toast.error("Erreur lors de la création du client");
+      }
     },
   });
 
@@ -92,59 +105,11 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     onSuccess: () => {
       toast.success("Client mis à jour avec succès");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      onCancel();
+      onClose();
     },
     onError: (error) => {
       toast.error("Erreur lors de la mise à jour du client");
       console.error("Error updating client:", error);
-    },
-  });
-  //Archive client mutation
-  const archiveClientMutation = useMutation({
-    mutationFn: ({
-      id,
-      data,
-      action,
-    }: {
-      id: string;
-      data: UpdateClientDto;
-      action: "archive" | "unarchive";
-    }) =>
-      ClientService.clientControllerUpdate({
-        id,
-        requestBody: {
-          ...data,
-          isArchived: action === "archive" ? true : false,
-        },
-      }),
-    onSuccess: (_, variables) => {
-      toast.success(
-        `Client ${
-          variables.action === "archive" ? "archivé" : "désarchivé"
-        } avec succès`
-      );
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      onCancel();
-    },
-    onError: (error) => {
-      toast.error("Erreur lors de l'archivage du client");
-      console.error("Error archiving client:", error);
-    },
-  });
-  // Delete client mutation
-  const deleteClientMutation = useMutation({
-    mutationFn: (id: string) => ClientService.clientControllerRemove({ id }),
-    onSuccess: () => {
-      toast.success("Client supprimé avec succès");
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      if (onDelete && client?._id) {
-        onDelete(client._id);
-      }
-      onCancel();
-    },
-    onError: (error) => {
-      toast.error("Erreur lors de la suppression du client");
-      console.error("Error deleting client:", error);
     },
   });
 
@@ -175,129 +140,92 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (!client?._id) return;
-    await deleteClientMutation.mutateAsync(client._id);
-  };
-  const handleArchive = async () => {
-    if (!client?._id) return;
-    const updatePayload: UpdateClientDto = {
-      clientName: methods.getValues("clientName"),
-      email: methods.getValues("email"),
-      firstName: methods.getValues("firstName"),
-      lastName: methods.getValues("lastName"),
-      phone: methods.getValues("phone"),
-      jounals: methods.getValues("jounals"),
-      creationPrice: methods.getValues("creationPrice"),
-      modificationPrice: methods.getValues("modificationPrice"),
-      submissionPrice: methods.getValues("submissionPrice"),
-      delegatePayment: methods.getValues("delegatePayment"),
-    };
-    await archiveClientMutation.mutateAsync({
-      id: client._id,
-      data: updatePayload,
-      action: client.isArchived ? "unarchive" : "archive",
-    });
-  };
-
   return (
-    <Form methods={methods} onSubmit={onSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ControlledInput name="clientName" label="Nom du client" required />
-        <ControlledInput name="email" label="Email" type="email" required />
-        <ControlledInput name="firstName" label="Prénom" />
-        <ControlledInput name="lastName" label="Nom" />
-        <ControlledInput name="phone" label="Téléphone" />
-        <ControlledSelect
-          name="jounals"
-          label="Journal officiel"
-          placeholder="Sélectionner un journal"
-          data={journalOptions}
-          getOptionValue={(option) => option.value}
-          getOptionLabel={(option) => option.label}
-          className="w-full"
-        />
-        <ControlledInput
-          name="creationPrice"
-          label="Tarif création"
-          type="number"
-        />
-        <ControlledInput
-          name="modificationPrice"
-          label="Tarif modification"
-          type="number"
-        />
-        <ControlledInput
-          name="submissionPrice"
-          label="Tarif dépôt"
-          type="number"
-        />
-        <div className="space-y-2 col-span-2">
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="delegation"
-              checked={delegation}
-              onChange={(e) => setDelegation(e.target.checked)}
-              className="rounded border-gray-300"
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+          <SheetTitle className="text-2xl font-bold text-formality-accent">
+            {client?._id ? "Modifier le client" : "Nouveau client"}
+          </SheetTitle>
+          <SheetDescription className="text-gray-600">
+            {client?._id
+              ? "Modifiez les informations du client ci-dessous."
+              : "Remplissez les informations du client ci-dessous."}
+          </SheetDescription>
+        </SheetHeader>
+        <Form methods={methods} onSubmit={onSubmit} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ControlledInput name="clientName" label="Nom du client" required />
+            <ControlledInput name="email" label="Email" type="email" required />
+            <ControlledInput name="firstName" label="Prénom" />
+            <ControlledInput name="lastName" label="Nom" />
+            <ControlledInput name="phone" label="Téléphone" />
+            <ControlledSelect
+              name="jounals"
+              label="Journal officiel"
+              placeholder="Sélectionner un journal"
+              data={journalOptions}
+              getOptionValue={(option) => option.value}
+              getOptionLabel={(option) => option.label}
+              className="w-full"
             />
-            <label htmlFor="delegation">Délégation de paiement</label>
-          </div>
-          {delegation && (
             <ControlledInput
-              placeholder="Email pour la délégation"
-              name="delegatePayment"
+              name="creationPrice"
+              label="Tarif création"
+              type="number"
             />
-          )}
-        </div>
-      </div>
-      <div className="flex justify-end space-x-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          loading={
-            createClientMutation.isPending || updateClientMutation.isPending
-          }
-        >
-          Annuler
-        </Button>
-        {client?._id && (
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setIsConfirmationModalOpen(true)}
-            loading={deleteClientMutation.isPending}
-          >
-            Supprimer
-          </Button>
-        )}
-        {client?._id && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleArchive}
-            loading={archiveClientMutation.isPending}
-          >
-            {client.isArchived ? "Désarchiver" : "Archiver"}
-          </Button>
-        )}
-        <Button
-          type="submit"
-          loading={
-            createClientMutation.isPending || updateClientMutation.isPending
-          }
-        >
-          Enregistrer
-        </Button>
-      </div>
-      <ConfirmationModal
-        isOpen={isConfirmationModalOpen}
-        onClose={() => setIsConfirmationModalOpen(false)}
-        onPressConfirm={handleDelete}
-        title="Supprimer le client"
-        description={`Êtes-vous sûr de vouloir supprimer le client ${client?.clientName} ?`}
-      />
-    </Form>
+            <ControlledInput
+              name="modificationPrice"
+              label="Tarif modification"
+              type="number"
+            />
+            <ControlledInput
+              name="submissionPrice"
+              label="Tarif dépôt"
+              type="number"
+            />
+            <div className="space-y-2 col-span-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="delegation"
+                  checked={delegation}
+                  onChange={(e) => setDelegation(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="delegation">Délégation de paiement</label>
+              </div>
+              {delegation && (
+                <ControlledInput
+                  placeholder="Email pour la délégation"
+                  name="delegatePayment"
+                />
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              loading={
+                createClientMutation.isPending || updateClientMutation.isPending
+              }
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              loading={
+                createClientMutation.isPending || updateClientMutation.isPending
+              }
+              className="bg-formality-primary hover:bg-formality-primary/90 text-white"
+            >
+              Enregistrer
+            </Button>
+          </div>
+        </Form>
+      </SheetContent>
+    </Sheet>
   );
 };

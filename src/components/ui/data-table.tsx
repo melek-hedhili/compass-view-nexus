@@ -21,9 +21,20 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+
+// Helper to get nested value
+const getNestedValue = (obj: any, path: string): any =>
+  path
+    .split(".")
+    .reduce(
+      (current, key) =>
+        current && current[key] !== undefined ? current[key] : undefined,
+      obj
+    );
 
 // Utility type to flatten nested object properties
 type FlattenKeys<T> = {
@@ -51,260 +62,16 @@ interface DataTableProps<T extends Record<string, unknown>> {
   className?: string;
   onRowClick?: (row: T) => void;
   count?: number;
-  index?: string; // For prefixing query parameters
+
   showIndex?: boolean; // For showing row numbers
   renderListEmpty?: () => React.ReactNode;
   page?: number;
   perPage?: number;
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
-  sortField?: string;
-  sortOrder?: "asc" | "desc";
-  onSort?: (field: string, order: "asc" | "desc") => void;
 }
 
-export function DataTable<T extends Record<string, unknown>>({
-  data,
-  columns,
-  loading = false,
-  className,
-  onRowClick,
-  count,
-  index,
-  showIndex = false,
-  renderListEmpty,
-  page = 1,
-  perPage = 10,
-  onPageChange,
-  onPerPageChange,
-  sortField,
-  sortOrder,
-  onSort,
-}: DataTableProps<T>) {
-  // Calculate pagination values
-  const totalItems = count ?? data?.length ?? 0;
-  const totalPages = Math.ceil(totalItems / perPage);
-  const startIndex = (page - 1) * perPage;
-  const endIndex = Math.min(startIndex + perPage, totalItems);
-
-  // Handlers
-  const handlePageChange = (newPage: number) => {
-    if (onPageChange) {
-      onPageChange(newPage);
-    }
-  };
-
-  const handleItemsPerPageChange = (value: string) => {
-    if (onPerPageChange) {
-      onPerPageChange(Number(value));
-    }
-  };
-
-  const handleRequestSort = (
-    property: keyof T | undefined,
-    sortKey?: string
-  ) => {
-    if (!onSort || !property) return;
-
-    const field = sortKey || String(property);
-    const newOrder =
-      sortField === field && sortOrder === "asc" ? "desc" : "asc";
-    onSort(field, newOrder);
-  };
-
-  // Helper function to get nested property values
-  const getNestedValue = (obj: any, path: string): any =>
-    path
-      .split(".")
-      .reduce(
-        (current, key) =>
-          current && current[key] !== undefined ? current[key] : undefined,
-        obj
-      );
-
-  const renderCellValue = (column: Column<T>, row: T): React.ReactNode => {
-    if (column.render) {
-      const value = getNestedValue(row, column.key || "");
-      return column.render(value, row);
-    }
-    const value = getNestedValue(row, column.key || "");
-    return typeof value === "object" ? JSON.stringify(value) : String(value);
-  };
-
-  const renderNoData = () => {
-    if (data?.length === 0 && !loading) {
-      if (renderListEmpty) {
-        return renderListEmpty();
-      }
-      return (
-        <TableRow>
-          <TableCell
-            colSpan={columns.length + (showIndex ? 1 : 0)}
-            className="h-24 text-center text-muted-foreground"
-          >
-            No data available
-          </TableCell>
-        </TableRow>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className={cn("space-y-4", className)}>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {showIndex && (
-                <TableHead className="w-[50px] text-center">#</TableHead>
-              )}
-              {columns?.map((column, index) => (
-                <TableHead
-                  key={index}
-                  className={cn(
-                    column.className,
-                    column.sortable && "cursor-pointer",
-                    column.align && `text-${column.align}`
-                  )}
-                  onClick={() =>
-                    column.sortable &&
-                    handleRequestSort(column.key, column.sortKey)
-                  }
-                >
-                  <div className="flex items-center gap-2">
-                    {column.header}
-                    {column.sortable && (
-                      <span className="text-muted-foreground">
-                        {sortField === (column.sortKey || column.key) &&
-                          (sortOrder === "asc" ? "↑" : "↓")}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <DataTableSkeleton columns={columns} showIndex={showIndex} />
-            ) : data?.length > 0 ? (
-              data.map((row, index) => (
-                <TableRow
-                  key={index}
-                  className={onRowClick ? "cursor-pointer" : ""}
-                  onClick={() => onRowClick?.(row)}
-                >
-                  {showIndex && (
-                    <TableCell className="text-center">
-                      {startIndex + index + 1}
-                    </TableCell>
-                  )}
-                  {columns.map((column, colIndex) => (
-                    <TableCell
-                      key={colIndex}
-                      className={cn(
-                        column.className,
-                        column.align && `text-${column.align}`
-                      )}
-                    >
-                      {renderCellValue(column, row)}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              renderNoData()
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {totalItems > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm text-muted-foreground whitespace-nowrap">
-              Lignes par page:
-            </p>
-            <Select
-              value={perPage.toString()}
-              onValueChange={handleItemsPerPageChange}
-            >
-              <SelectTrigger className="h-8 w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent side="top">
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="15">15</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            <span className="whitespace-nowrap">
-              {startIndex + 1}-{endIndex} sur {totalItems}
-            </span>
-          </div>
-
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => handlePageChange(Math.max(1, page - 1))}
-                  className={cn(
-                    page === 1 && "pointer-events-none opacity-50",
-                    "cursor-pointer"
-                  )}
-                />
-              </PaginationItem>
-
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNumber;
-                if (totalPages <= 5) {
-                  pageNumber = i + 1;
-                } else if (page <= 3) {
-                  pageNumber = i + 1;
-                } else if (page >= totalPages - 2) {
-                  pageNumber = totalPages - 4 + i;
-                } else {
-                  pageNumber = page - 2 + i;
-                }
-
-                return (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink
-                      onClick={() => handlePageChange(pageNumber)}
-                      isActive={page === pageNumber}
-                      className="cursor-pointer"
-                    >
-                      {pageNumber}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    handlePageChange(Math.min(totalPages, page + 1))
-                  }
-                  className={cn(
-                    page === totalPages && "pointer-events-none opacity-50",
-                    "cursor-pointer"
-                  )}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-    </div>
-  );
-}
-
+// Skeleton (not changed)
 function DataTableSkeleton<T extends Record<string, unknown>>({
   columns,
   showIndex,
@@ -329,5 +96,374 @@ function DataTableSkeleton<T extends Record<string, unknown>>({
         </TableRow>
       ))}
     </>
+  );
+}
+
+// Table rendering section
+function DataTableTable<T extends Record<string, unknown>>({
+  data,
+  columns,
+  loading,
+  onRowClick,
+  showIndex,
+  renderListEmpty,
+  startIndex,
+  renderCellValue,
+  renderNoData,
+}: {
+  data: T[];
+  columns: Column<T>[];
+  loading: boolean;
+  onRowClick?: (row: T) => void;
+  showIndex: boolean;
+  renderListEmpty?: () => React.ReactNode;
+  startIndex: number;
+  renderCellValue: (column: Column<T>, row: T) => React.ReactNode;
+  renderNoData: () => React.ReactNode;
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {showIndex && (
+            <TableHead className="w-[50px] text-center">#</TableHead>
+          )}
+          {columns?.map((column, index) => (
+            <TableHead
+              key={index}
+              className={cn(
+                column.className,
+                column.sortable && "cursor-pointer",
+                column.align && `text-${column.align}`
+              )}
+            >
+              <div className="flex items-center gap-2">{column.header}</div>
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {loading ? (
+          <DataTableSkeleton columns={columns} showIndex={showIndex} />
+        ) : data?.length > 0 ? (
+          data.map((row, index) => (
+            <TableRow
+              key={index}
+              className={onRowClick ? "cursor-pointer" : ""}
+              onClick={() => onRowClick?.(row)}
+            >
+              {showIndex && (
+                <TableCell className="text-center">
+                  {startIndex + index + 1}
+                </TableCell>
+              )}
+              {columns.map((column, colIndex) => (
+                <TableCell
+                  key={colIndex}
+                  className={cn(
+                    column.className,
+                    column.align && `text-${column.align}`
+                  )}
+                >
+                  {renderCellValue(column, row)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        ) : (
+          renderNoData()
+        )}
+      </TableBody>
+    </Table>
+  );
+}
+
+// Pagination and controls section
+function DataTablePaginationControls({
+  totalItems,
+  perPage,
+  handleItemsPerPageChange,
+  startIndex,
+  dataLength,
+  page,
+  totalPages,
+  handlePageChange,
+}: {
+  totalItems: number;
+  perPage: number;
+  handleItemsPerPageChange: (value: string) => void;
+  startIndex: number;
+  dataLength: number;
+  page: number;
+  totalPages: number;
+  handlePageChange: (page: number) => void;
+}) {
+  return (
+    <div
+      className="
+        w-full px-2
+        flex flex-wrap items-center gap-y-2 gap-x-4
+        justify-center sm:justify-between
+      "
+    >
+      <div className="flex items-center space-x-2">
+        <p className="text-sm text-muted-foreground whitespace-nowrap">
+          Lignes par page:
+        </p>
+
+        <Select
+          value={perPage.toString()}
+          onValueChange={handleItemsPerPageChange}
+        >
+          <SelectTrigger className="h-8 w-16">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent side="top">
+            <SelectItem value="5">5</SelectItem>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="15">15</SelectItem>
+            <SelectItem value="20">20</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {totalItems === 0 ? 0 : startIndex + 1}-{startIndex + dataLength} sur{" "}
+          {totalItems}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-center w-full sm:w-auto sm:ml-auto">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(Math.max(1, page - 1))}
+                className={cn(
+                  page === 1 && "pointer-events-none opacity-50",
+                  "cursor-pointer"
+                )}
+              />
+            </PaginationItem>
+
+            {(() => {
+              const items = [];
+              if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) {
+                  items.push(
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(i)}
+                        {...(page === i ? { isActive: true } : ({} as any))}
+                        className="cursor-pointer"
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+              } else {
+                items.push(
+                  <PaginationItem key={1}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(1)}
+                      {...(page === 1 ? { isActive: true } : ({} as any))}
+                      className="cursor-pointer"
+                    >
+                      1
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+                if (page > 4) {
+                  items.push(
+                    <PaginationItem key="start-ellipsis">
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                for (let i = Math.max(2, page - 2); i < page; i++) {
+                  items.push(
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(i)}
+                        {...(page === i ? { isActive: true } : ({} as any))}
+                        className="cursor-pointer"
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                if (page !== 1 && page !== totalPages) {
+                  items.push(
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(page)}
+                        isActive
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                for (
+                  let i = page + 1;
+                  i <= Math.min(totalPages - 1, page + 2);
+                  i++
+                ) {
+                  items.push(
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        onClick={() => handlePageChange(i)}
+                        {...(page === i ? { isActive: true } : ({} as any))}
+                        className="cursor-pointer"
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                if (page < totalPages - 3) {
+                  items.push(
+                    <PaginationItem key="end-ellipsis">
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                items.push(
+                  <PaginationItem key={totalPages}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(totalPages)}
+                      {...(page === totalPages
+                        ? { isActive: true }
+                        : ({} as any))}
+                      className="cursor-pointer"
+                    >
+                      {totalPages}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              }
+              return items;
+            })()}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
+                className={cn(
+                  page === totalPages && "pointer-events-none opacity-50",
+                  "cursor-pointer"
+                )}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    </div>
+  );
+}
+
+export function DataTable<T extends Record<string, unknown>>({
+  data,
+  columns,
+  loading = false,
+  className,
+  onRowClick,
+  count,
+
+  showIndex = false,
+  renderListEmpty,
+  page = 1,
+  perPage = 10,
+  onPageChange,
+  onPerPageChange,
+}: DataTableProps<T>) {
+  // Memoized derived values
+  const totalItems = count ?? data?.length ?? 0;
+  const totalPages = React.useMemo(
+    () => Math.ceil(totalItems / perPage),
+    [totalItems, perPage]
+  );
+  const startIndex = React.useMemo(() => (page - 1) * perPage, [page, perPage]);
+
+  // Handlers
+  const handlePageChange = React.useCallback(
+    (newPage: number) => {
+      onPageChange?.(newPage);
+    },
+    [onPageChange]
+  );
+
+  const handleItemsPerPageChange = React.useCallback(
+    (value: string) => {
+      onPerPageChange?.(Number(value));
+    },
+    [onPerPageChange]
+  );
+
+  // Render helpers
+  const renderCellValue = React.useCallback(
+    (column: Column<T>, row: T): React.ReactNode => {
+      if (column.render) {
+        const value = getNestedValue(row, column.key || "");
+        return column.render(value, row);
+      }
+      const value = getNestedValue(row, column.key || "");
+      if (typeof value === "string") {
+        return value.length > 20 ? value.slice(0, 20) + "..." : value;
+      }
+      return typeof value === "object" ? JSON.stringify(value) : String(value);
+    },
+    []
+  );
+
+  const renderNoData = React.useCallback(() => {
+    if (data?.length === 0 && !loading) {
+      if (renderListEmpty) {
+        return renderListEmpty();
+      }
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={columns.length + (showIndex ? 1 : 0)}
+            className="h-24 text-center text-muted-foreground"
+          >
+            No data available
+          </TableCell>
+        </TableRow>
+      );
+    }
+    return null;
+  }, [data, loading, renderListEmpty, columns.length, showIndex]);
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      <div className="rounded-md border">
+        <DataTableTable
+          data={data}
+          columns={columns}
+          loading={loading}
+          onRowClick={onRowClick}
+          showIndex={showIndex}
+          renderListEmpty={renderListEmpty}
+          startIndex={startIndex}
+          renderCellValue={renderCellValue}
+          renderNoData={renderNoData}
+        />
+      </div>
+      {totalItems > 0 && (
+        <DataTablePaginationControls
+          totalItems={totalItems}
+          perPage={perPage}
+          handleItemsPerPageChange={handleItemsPerPageChange}
+          startIndex={startIndex}
+          dataLength={data.length}
+          page={page}
+          totalPages={totalPages}
+          handlePageChange={handlePageChange}
+        />
+      )}
+    </div>
   );
 }

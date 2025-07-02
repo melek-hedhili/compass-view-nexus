@@ -109,7 +109,7 @@ export function CreatableAutoComplete({
           onClick={addValue}
         >
           <div className="px-4 py-2 text-destructive/90 hover:bg-destructive/10">
-            Add "{inputValue.trim()}"
+            Ajouter "{inputValue.trim()}"
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 type ControlledInputProps = {
   label?: string;
@@ -18,7 +19,9 @@ type ControlledInputProps = {
   min?: number;
   max?: number;
   autoFocus?: boolean;
-  startAdornment?: React.ReactNode; // 👈 NEW
+  startAdornment?: React.ReactNode;
+  removeAsterisk?: boolean;
+  hideError?: boolean;
 };
 
 function ControlledInput({
@@ -38,9 +41,12 @@ function ControlledInput({
   max,
   autoFocus,
   startAdornment, // 👈 NEW
+  removeAsterisk,
+  hideError,
 }: ControlledInputProps) {
   const { control } = useFormContext();
-
+  const [showPassword, setShowPassword] = React.useState(false);
+  const isPassword = type === "password";
   return (
     <Controller
       control={control}
@@ -79,6 +85,7 @@ function ControlledInput({
                 className={cn(
                   "text-sm font-medium",
                   required &&
+                    !removeAsterisk &&
                     "after:ml-0.5 after:text-red-500 after:content-['*']"
                 )}
               >
@@ -94,7 +101,7 @@ function ControlledInput({
               )}
               <input
                 id={id || name}
-                type={type}
+                type={isPassword && showPassword ? "text" : type}
                 disabled={disabled}
                 placeholder={placeholder}
                 className={cn(
@@ -117,9 +124,23 @@ function ControlledInput({
                 max={max}
                 autoFocus={autoFocus}
               />
+              {isPassword && (
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              )}
             </div>
 
-            {error && (
+            {!hideError && error && (
               <p className="text-red-600 text-xs mt-1" role="alert">
                 {error.message}
               </p>

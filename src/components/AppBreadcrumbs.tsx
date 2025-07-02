@@ -13,25 +13,29 @@ const breadcrumbMap: Record<string, string> = {
   dashboard: "Tableau de bord",
   mail: "Boîte mail",
   dossiers: "Dossiers",
+  clients: "Clients",
   quotes: "Données",
   controls: "Contrôles",
   documents: "Documents",
   lists: "Listes",
   users: "Utilisateurs",
-  contracts: "Arborescences",
+  arboresence: "Arborescences",
   inbox: "Boîte de réception",
   sent: "Envoyés",
   archived: "Archivés",
+  settings: "Paramètres",
 };
 const nonClickablePaths = [
   "mail",
   "dossiers",
+  "clients",
   "quotes",
   "controls",
   "documents",
   "lists",
   "users",
-  "contracts",
+  "arboresence",
+  "settings",
 ];
 const getBreadcrumbName = (path: string) => breadcrumbMap[path] || path;
 const AppBreadcrumbs = () => {
@@ -48,7 +52,7 @@ const AppBreadcrumbs = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/dashboard" className="flex items-center">
+              <Link to="/dashboard/settings" className="flex items-center">
                 <Home className="h-4 w-4" />
               </Link>
             </BreadcrumbLink>

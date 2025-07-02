@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Paperclip } from "lucide-react";
 import { EmailService } from "@/api-swagger/services/EmailService";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { EmailDto } from "@/api-swagger/models/EmailDto";
+import { type EmailDto } from "@/api-swagger/models/EmailDto";
 import {
   Sheet,
   SheetContent,
@@ -14,9 +12,9 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { type SubmitHandler, useForm } from "react-hook-form";
-import { EmailFormProps } from "./mail.types";
+import { type EmailFormProps } from "./mail.types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateEmailDto } from "@/api-swagger";
+import { type CreateEmailDto } from "@/api-swagger";
 import { toast } from "sonner";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
 import { ControlledTextarea } from "@/components/ui/controlled/controlled-textarea/controlled-textarea";

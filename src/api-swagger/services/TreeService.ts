@@ -5,6 +5,7 @@
 import type { CreateTreeDto } from '../models/CreateTreeDto';
 import type { GetSectionsResponseDto } from '../models/GetSectionsResponseDto';
 import type { TreeDto } from '../models/TreeDto';
+import type { UpdateOrderDto } from '../models/UpdateOrderDto';
 import type { UpdateTreeDto } from '../models/UpdateTreeDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -14,7 +15,7 @@ export class TreeService {
      * @returns GetSectionsResponseDto
      * @throws ApiError
      */
-    public static treeControllerFindAll(): CancelablePromise<GetSectionsResponseDto> {
+    public static treeControllerFindAll(): CancelablePromise<Array<GetSectionsResponseDto>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/tree',
@@ -89,6 +90,22 @@ export class TreeService {
             path: {
                 'id': id,
             },
+        });
+    }
+    /**
+     * @returns TreeDto
+     * @throws ApiError
+     */
+    public static treeControllerUpdateOrder({
+        requestBody,
+    }: {
+        requestBody: UpdateOrderDto,
+    }): CancelablePromise<TreeDto> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/tree/order',
+            body: requestBody,
+            mediaType: 'application/json',
         });
     }
 }

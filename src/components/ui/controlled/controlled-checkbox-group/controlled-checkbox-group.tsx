@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
@@ -19,6 +18,8 @@ type ControlledCheckboxGroupProps = {
   checkboxClassName?: string;
   labelClassName?: string;
   direction?: "row" | "column";
+  /** Allow only one selection (defaults to false = multi‑select) */
+  singleSelection?: boolean;
 };
 
 export function ControlledCheckboxGroup({
@@ -31,6 +32,7 @@ export function ControlledCheckboxGroup({
   checkboxClassName,
   labelClassName,
   direction = "column",
+  singleSelection = false,
 }: ControlledCheckboxGroupProps) {
   const { control } = useFormContext();
 
@@ -43,18 +45,30 @@ export function ControlledCheckboxGroup({
         ...rules,
       }}
       render={({ field, fieldState }) => {
-        const { value = [], onChange } = field;
+        const { value = [], onChange } = field; // value stays an array
         const { error } = fieldState;
+
         const handleCheckboxChange = (
           checked: boolean,
           optionValue: string
         ) => {
-          if (checked) {
-            onChange([...(value || []), optionValue]);
+          if (singleSelection) {
+            // keep at most one value
+            if (checked) {
+              onChange([optionValue]);
+            } else {
+              onChange([]);
+            }
           } else {
-            onChange((value || []).filter((v: string) => v !== optionValue));
+            // regular multi‑select logic
+            if (checked) {
+              onChange([...(value || []), optionValue]);
+            } else {
+              onChange((value || []).filter((v: string) => v !== optionValue));
+            }
           }
         };
+
         return (
           <div className={cn("flex flex-col gap-1", className)}>
             {label && (

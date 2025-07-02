@@ -15,6 +15,7 @@ export type FileDto = {
     provision: FileDto.provision;
     status: FileDto.status;
     isUrgent: boolean;
+    isArchived: boolean;
 };
 export namespace FileDto {
     export enum legalForm {

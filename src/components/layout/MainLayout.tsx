@@ -2,7 +2,7 @@ import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Settings, LogOut } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Logo from "../Logo";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -12,7 +12,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <header className="bg-white shadow-sm py-4 px-4 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link to="/dashboard">
+          <Link to="/dashboard/settings">
             <Logo />
           </Link>
           <div className="flex items-center gap-3">

@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Archive, Reply } from "lucide-react";
-import { EmailDto } from "@/api-swagger/models/EmailDto";
-import { TabKey } from "./mail.types";
+import { type EmailDto } from "@/api-swagger/models/EmailDto";
+import { type TabKey } from "./mail.types";
 
 function MailDetail({
   mail,
@@ -32,7 +32,7 @@ function MailDetail({
       return format(date, "dd MMMM yyyy HH:mm", {
         locale: fr,
       });
-    } catch (error) {
+    } catch {
       return "Date invalide";
     }
   };

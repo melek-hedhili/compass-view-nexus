@@ -1,8 +1,5 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,8 +11,8 @@ import {
   Pie,
   Cell,
   AreaChart,
-  Area
-} from "recharts"
+  Area,
+} from "recharts";
 
 const revenueData = [
   { month: "Jan", revenue: 4000, users: 240 },
@@ -24,13 +21,13 @@ const revenueData = [
   { month: "Apr", revenue: 4500, users: 520 },
   { month: "May", revenue: 6000, users: 650 },
   { month: "Jun", revenue: 5500, users: 720 },
-]
+];
 
 const categoryData = [
   { name: "Desktop", value: 45, color: "#3b82f6" },
   { name: "Mobile", value: 35, color: "#10b981" },
   { name: "Tablet", value: 20, color: "#f59e0b" },
-]
+];
 
 export function RevenueChart() {
   return (
@@ -43,8 +40,8 @@ export function RevenueChart() {
           <AreaChart data={revenueData}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -63,7 +60,7 @@ export function RevenueChart() {
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function UserGrowthChart() {
@@ -84,7 +81,7 @@ export function UserGrowthChart() {
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function TrafficSourceChart() {
@@ -125,5 +122,5 @@ export function TrafficSourceChart() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

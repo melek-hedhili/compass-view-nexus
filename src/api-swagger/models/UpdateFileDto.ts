@@ -13,6 +13,7 @@ export type UpdateFileDto = {
     provision?: UpdateFileDto.provision;
     isUrgent?: boolean;
     status?: UpdateFileDto.status;
+    isArchived?: boolean;
 };
 export namespace UpdateFileDto {
     export enum legalForm {

@@ -8,5 +8,6 @@ export type UpdateListDto = {
     updated_at?: string;
     values?: Array<string>;
     fieldName?: string;
+    isArchived?: boolean;
 };
 

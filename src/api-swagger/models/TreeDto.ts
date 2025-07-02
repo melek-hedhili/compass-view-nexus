@@ -10,6 +10,7 @@ export type TreeDto = {
     parent?: TreeDto;
     index: number;
     type: TreeDto.type;
+    isArchived: boolean;
 };
 export namespace TreeDto {
     export enum type {

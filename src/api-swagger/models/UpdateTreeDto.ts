@@ -10,6 +10,7 @@ export type UpdateTreeDto = {
     fieldName?: string;
     index?: number;
     type?: UpdateTreeDto.type;
+    isArchived?: boolean;
 };
 export namespace UpdateTreeDto {
     export enum type {

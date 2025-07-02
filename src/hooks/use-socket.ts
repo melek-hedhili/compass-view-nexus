@@ -1,8 +1,7 @@
-
 import { useEffect, useRef } from "react";
 import { URL_API } from "@/utils/constants";
 import type { ManagerOptions, SocketOptions } from "socket.io-client";
-import { io, Socket as IOSocket } from "socket.io-client";
+import { io, type Socket as IOSocket } from "socket.io-client";
 
 export const useSocket = (
   options?: Partial<ManagerOptions & SocketOptions>

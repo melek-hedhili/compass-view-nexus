@@ -7,6 +7,7 @@ export type UpdateUserDto = {
     username?: string;
     password?: string;
     role?: UpdateUserDto.role;
+    isArchived?: boolean;
 };
 export namespace UpdateUserDto {
     export enum role {
