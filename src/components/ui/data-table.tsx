@@ -69,6 +69,7 @@ interface DataTableProps<T extends Record<string, unknown>> {
   perPage?: number;
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
+  onSort?: (field: string, order: "asc" | "desc") => void;
 }
 
 // Skeleton (not changed)
