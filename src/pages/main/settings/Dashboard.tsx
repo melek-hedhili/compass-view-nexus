@@ -104,7 +104,11 @@ const DashboardSettingsLayout = () => {
       >
         <TabsList
           ref={tabsListRef}
-          className="flex gap-1 rounded-lg bg-muted p-1 w-full overflow-x-auto overflow-y-hidden flex-nowrap h-12 scrollbar-thin scrollbar-thumb-muted-foreground/60 scrollbar-thumb-rounded snap-x snap-mandatory scroll-smooth"
+          className="flex gap-1 rounded-lg bg-muted p-1 w-full h-12 
+                     md:w-auto md:justify-center md:overflow-visible 
+                     overflow-x-auto overflow-y-hidden flex-nowrap 
+                     scrollbar-thin scrollbar-thumb-muted-foreground/60 scrollbar-thumb-rounded 
+                     snap-x snap-mandatory scroll-smooth"
         >
           {tabs.map((tab, idx) => (
             <TabsTrigger
