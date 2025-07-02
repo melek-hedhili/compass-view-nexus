@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import checker from "vite-plugin-checker";
+import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -11,6 +12,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    mode === 'development' && componentTagger(),
     checker({
       typescript: true,
       eslint: {
@@ -23,7 +25,7 @@ export default defineConfig(({ mode }) => ({
         initialIsOpen: false,
       },
     }),
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
