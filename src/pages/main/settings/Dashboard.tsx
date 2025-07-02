@@ -115,10 +115,11 @@ const DashboardSettingsLayout = () => {
               key={tab.value}
               value={tab.value}
               ref={(el) => (tabRefs.current[idx] = el)}
-              className="flex items-center gap-2 px-4 py-2 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg font-semibold transition-colors min-w-max h-10 snap-center"
+              className="flex items-center gap-2 px-4 py-2 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg font-semibold transition-colors min-w-max h-10 snap-center
+                         sm:flex-col sm:gap-1 sm:px-2 sm:py-1 sm:h-12 sm:min-w-[60px] sm:text-xs"
             >
-              <tab.icon className="h-4 w-4" />
-              {tab.name}
+              <tab.icon className="h-4 w-4 sm:h-3 sm:w-3" />
+              <span className="sm:text-[10px] sm:leading-tight sm:text-center">{tab.name}</span>
             </TabsTrigger>
           ))}
         </TabsList>
