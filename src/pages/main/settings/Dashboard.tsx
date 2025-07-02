@@ -104,22 +104,17 @@ const DashboardSettingsLayout = () => {
       >
         <TabsList
           ref={tabsListRef}
-          className="flex gap-1 rounded-lg bg-muted p-1 w-full h-16 
-                     md:w-auto md:justify-center md:overflow-visible md:h-18
-                     overflow-x-auto overflow-y-hidden flex-nowrap 
-                     scrollbar-thin scrollbar-thumb-muted-foreground/60 scrollbar-thumb-rounded 
-                     snap-x snap-mandatory scroll-smooth"
+          className="flex gap-1 rounded-lg bg-muted p-1 w-full overflow-x-auto overflow-y-hidden flex-nowrap h-12 scrollbar-thin scrollbar-thumb-muted-foreground/60 scrollbar-thumb-rounded snap-x snap-mandatory scroll-smooth"
         >
           {tabs.map((tab, idx) => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
               ref={(el) => (tabRefs.current[idx] = el)}
-              className="flex flex-col items-center gap-1 px-3 py-2 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg font-semibold transition-colors min-w-max h-14 snap-center
-                         md:px-4 md:h-16 md:gap-2"
+              className="flex items-center gap-2 px-4 py-2 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg font-semibold transition-colors min-w-max h-10 snap-center"
             >
-              <tab.icon className="h-3 w-3 md:h-5 md:w-5" />
-              <span className="text-[10px] leading-tight text-center md:text-xs">{tab.name}</span>
+              <tab.icon className="h-4 w-4" />
+              {tab.name}
             </TabsTrigger>
           ))}
         </TabsList>
