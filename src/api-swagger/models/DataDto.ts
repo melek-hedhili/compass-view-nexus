@@ -13,28 +13,22 @@ export type DataDto = {
     dependsOn?: DataDto;
     tree?: TreeDto;
     type: DataDto.type;
-    legalForm: DataDto.legalForm;
+    legalForm: Array<'SARL' | 'SAS' | 'SCI' | 'EURL'>;
     list?: ListDto;
     documents: Array<DocumentScriptDto>;
     isModifiable: boolean;
     isControlField: boolean;
     isMultiItem: boolean;
     isArchived: boolean;
-    dependenceValue?: string;
+    dependenceValue?: Array<string>;
 };
 export namespace DataDto {
     export enum type {
         STRING = 'STRING',
         NUMBER = 'NUMBER',
-        BOOLEAN = 'BOOLEAN',
+        SINGLE_CHOICE = 'SINGLE_CHOICE',
         DATE = 'DATE',
         MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-    }
-    export enum legalForm {
-        SARL = 'SARL',
-        SAS = 'SAS',
-        SCI = 'SCI',
-        EURL = 'EURL',
     }
 }
 

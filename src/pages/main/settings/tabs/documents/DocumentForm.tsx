@@ -8,7 +8,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import {
-  CreateDocumentDto,
+  type CreateDocumentDto,
   DocumentService,
   type UpdateDocumentDto,
 } from "@/api-swagger";
@@ -17,12 +17,13 @@ import { toast } from "sonner";
 import { Form } from "@/components/ui/form";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
-import { ControlledSelect } from "@/components/ui/controlled/controlled-select/controlled-select";
 import {
   benefitOptions,
   legalFormOptions,
   typeOptions,
 } from "./documents.utils";
+import { ControlledCheckboxGroup } from "@/components/ui/controlled/controlled-checkbox-group/controlled-checkbox-group";
+import { ControlledMultiSelect } from "@/components/ui/controlled/controlled-multiselect/controlled-multiselect";
 
 const initialForm: CreateDocumentDto = {
   documentName: "",
@@ -51,12 +52,9 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
 
   // Fetch single document for editing
   const { data: selectedDocument } = useQuery({
-    queryKey: ["document", editingId],
-    queryFn: () =>
-      editingId
-        ? DocumentService.documentControllerFindOne({ id: editingId })
-        : null,
-    enabled: !!editingId,
+    queryKey: ["document", editingId, isOpen],
+    queryFn: () => DocumentService.documentControllerFindOne({ id: editingId }),
+    enabled: !!editingId && isOpen,
   });
 
   // Populate form when selectedDocument changes
@@ -65,10 +63,9 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
       methods.reset({
         documentName: selectedDocument.documentName || "",
         shortName: selectedDocument.shortName || "",
-        legalForm:
-          selectedDocument.legalForm || CreateDocumentDto.legalForm.SCI,
-        benefit: selectedDocument.benefit || CreateDocumentDto.benefit.CREATION,
-        type: selectedDocument.type || CreateDocumentDto.type.INTERNAL,
+        legalForm: selectedDocument.legalForm,
+        benefit: selectedDocument.benefit,
+        type: selectedDocument.type,
       });
     } else {
       methods.reset(initialForm);
@@ -133,7 +130,7 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+      <SheetContent>
         <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <SheetTitle className="text-2xl font-bold text-formality-accent">
             {editingId ? "Modifier le document" : "Nouveau document"}
@@ -160,16 +157,8 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ControlledSelect
-                name="benefit"
-                label="Prestation"
-                required
-                data={benefitOptions}
-                getOptionValue={(option) => option.value}
-                getOptionLabel={(option) => option.label}
-              />
-              <ControlledSelect
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ControlledMultiSelect
                 name="legalForm"
                 label="Forme juridique"
                 required
@@ -177,15 +166,21 @@ export const DocumentForm: React.FC<DocumentFormProps> = ({
                 getOptionValue={(option) => option.value}
                 getOptionLabel={(option) => option.label}
               />
-              <ControlledSelect
+              <ControlledMultiSelect
                 name="type"
                 label="Utilisation"
-                required
                 data={typeOptions}
                 getOptionValue={(option) => option.value}
                 getOptionLabel={(option) => option.label}
               />
             </div>
+            <ControlledCheckboxGroup
+              name="benefit"
+              label="Prestation"
+              required
+              options={benefitOptions}
+              direction="row"
+            />
 
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
               <Button type="button" variant="outline" onClick={onClose}>

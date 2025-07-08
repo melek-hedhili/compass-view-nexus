@@ -36,7 +36,6 @@ export const ListCard: React.FC<ListCardProps> = ({
     <div className="h-2 w-full bg-formality-primary" />
     <CardHeader className="pb-2">
       <div className="flex flex-col gap-1">
-        <span className="text-xs text-gray-400 font-mono">N°{list._id}</span>
         <CardTitle className="text-lg font-bold text-formality-accent truncate max-w-full">
           {list.fieldName}
         </CardTitle>
@@ -102,7 +101,7 @@ export const ListCard: React.FC<ListCardProps> = ({
         </Button>
 
         <Button
-          className="bg-orange-500 hover:bg-orange-600 text-white flex-1 min-w-[120px]"
+          className="bg-formality-primary hover:bg-formality-primary/80 text-white flex-1 min-w-[120px]"
           onClick={() => onEdit(list)}
         >
           <Edit2 className="h-4 w-4" />

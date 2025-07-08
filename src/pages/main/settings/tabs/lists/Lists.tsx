@@ -117,9 +117,6 @@ const Lists = () => {
   const getFormTitle = () =>
     isNewList ? "Nouvelle liste" : "Modifier la liste";
 
-  const getFilterButtonText = () =>
-    isArchived ? "Archivées" : "Non archivées";
-
   const renderListCard = (list: ListDto) => (
     <ListCard
       key={list._id}

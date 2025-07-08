@@ -35,7 +35,7 @@ const Client = () => {
   // Consolidated pagination state
   const [paginationParams, setPaginationParams] = useState({
     page: 1,
-    perPage: 5,
+    perPage: 10,
   });
   const searchValue = useSearchDebounce({
     control: methods.control,
@@ -76,7 +76,7 @@ const Client = () => {
   });
 
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [detailsClient, setDetailsClient] = useState<ClientDto | null>(null);
+  const [detailsClientId, setDetailsClientId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
@@ -140,7 +140,7 @@ const Client = () => {
     setIsConfirmModalOpen(true);
   };
   const handleRowClick = (client: ClientDto) => {
-    setDetailsClient(client);
+    setDetailsClientId(client._id);
     setIsDetailsOpen(true);
   };
 
@@ -194,7 +194,7 @@ const Client = () => {
             },
             {
               key: "clientName",
-              header: "Cient",
+              header: "Client",
               sortable: true,
               align: "left",
               render: (value) => (value ? value : "-"),
@@ -211,7 +211,8 @@ const Client = () => {
               header: "Téléphone",
               sortable: true,
               align: "left",
-              render: (value) => (value ? value : "-"),
+              render: (value) =>
+                value ? value.match(/.{1,2}/g)?.join(" ") : "-",
             },
 
             {
@@ -219,7 +220,24 @@ const Client = () => {
               header: "Tarif",
               sortable: true,
               align: "left",
-              render: (value) => (value ? value : "-"),
+
+              render: (value) => (value ? `€${value}` : "-"),
+            },
+            {
+              key: "modificationPrice",
+              header: "Tarif Modification",
+              sortable: true,
+              align: "center",
+              alignHeader: "center",
+              render: (value) => (value ? `€${value}` : "-"),
+            },
+            {
+              key: "submissionPrice",
+              header: "Tarif Soumission",
+              sortable: true,
+              align: "center",
+              alignHeader: "center",
+              render: (value) => (value ? `€${value}` : "-"),
             },
             {
               header: "Actions",
@@ -249,7 +267,7 @@ const Client = () => {
       <ClientDetailsSheet
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
-        client={detailsClient}
+        clientId={detailsClientId}
       />
 
       <ConfirmationModal

@@ -26,8 +26,7 @@ const Users = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [selectedUserDetails, setSelectedUserDetails] =
-    useState<UserDto | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
 
   const methods = useForm<{
@@ -49,7 +48,7 @@ const Users = () => {
   }, [searchValue]);
   const [paginationParams, setPaginationParams] = useState({
     page: 1,
-    perPage: 5,
+    perPage: 10,
   });
 
   const handlePageChange = (newPage: number) => {
@@ -126,7 +125,7 @@ const Users = () => {
   };
 
   const handleRowClick = (user: UserDto) => {
-    setSelectedUserDetails(user);
+    setSelectedUserId(user._id);
     setIsDetailsSheetOpen(true);
   };
 
@@ -227,9 +226,9 @@ const Users = () => {
         isOpen={isDetailsSheetOpen}
         onClose={() => {
           setIsDetailsSheetOpen(false);
-          setSelectedUserDetails(null);
+          setSelectedUserId(null);
         }}
-        user={selectedUserDetails}
+        userId={selectedUserId}
       />
 
       <UserForm

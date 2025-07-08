@@ -19,15 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useParams } from "react-router-dom";
 
-interface InformationsSectionProps {
-  dossierId?: string;
-}
-
-export default function InformationsSection({ dossierId: propDossierId }: InformationsSectionProps = {}) {
-  const { dossierId: paramDossierId } = useParams<{ dossierId: string }>();
-  const dossierId = propDossierId || paramDossierId;
+export default function InformationsSection() {
   const [isUrgent, setIsUrgent] = useState(false);
 
   // Documents requis avec leur statut

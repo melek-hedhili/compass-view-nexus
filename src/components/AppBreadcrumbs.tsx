@@ -47,9 +47,9 @@ const AppBreadcrumbs = () => {
   }
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 overflow-x-hidden">
       <Breadcrumb>
-        <BreadcrumbList>
+        <BreadcrumbList className="flex-nowrap flex items-center whitespace-nowrap">
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link to="/dashboard/settings" className="flex items-center">
@@ -70,10 +70,17 @@ const AppBreadcrumbs = () => {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   {shouldBeNonClickable ? (
-                    <BreadcrumbPage>{displayName}</BreadcrumbPage>
+                    <BreadcrumbPage className="truncate max-w-[80px] md:max-w-none md:truncate-none inline-block align-bottom">
+                      {displayName}
+                    </BreadcrumbPage>
                   ) : (
                     <BreadcrumbLink asChild>
-                      <Link to={routeTo}>{displayName}</Link>
+                      <Link
+                        className="truncate max-w-[80px] md:max-w-none md:truncate-none inline-block align-bottom"
+                        to={routeTo}
+                      >
+                        {displayName}
+                      </Link>
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>

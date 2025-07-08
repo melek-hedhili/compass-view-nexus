@@ -52,7 +52,7 @@ const Documents = () => {
   });
   const [paginationParams, setPaginationParams] = useState({
     page: 1,
-    perPage: 5,
+    perPage: 10,
   });
   const [isArchived, setIsArchived] = useState(false);
 
@@ -220,35 +220,62 @@ const Documents = () => {
             {
               header: "Forme juridique",
               key: "legalForm",
-              render: (value) => (
-                <Badge variant="outline">
-                  {
-                    legalFormOptions.find((option) => option.value === value)
-                      ?.label
-                  }
-                </Badge>
-              ),
+              render: (value) =>
+                Array.isArray(value) ? (
+                  <div className="flex flex-row flex-wrap gap-1">
+                    {value.map((v, idx) => (
+                      <Badge key={idx} variant="outline">
+                        {legalFormOptions.find((option) => option.value === v)
+                          ?.label || v}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <Badge variant="outline">
+                    {legalFormOptions.find((option) => option.value === value)
+                      ?.label || value}
+                  </Badge>
+                ),
             },
             {
               header: "Prestations",
               key: "benefit",
-              render: (value) => (
-                <Badge variant="outline">
-                  {
-                    benefitOptions.find((option) => option.value === value)
-                      ?.label
-                  }
-                </Badge>
-              ),
+              render: (value) =>
+                Array.isArray(value) ? (
+                  <div className="flex flex-row flex-wrap gap-1">
+                    {value.map((v, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {benefitOptions.find((option) => option.value === v)
+                          ?.label || v}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <Badge variant="outline" className="text-xs">
+                    {benefitOptions.find((option) => option.value === value)
+                      ?.label || value}
+                  </Badge>
+                ),
             },
             {
               header: "Utilisation",
               key: "type",
-              render: (value) => (
-                <Badge variant="outline">
-                  {typeOptions.find((option) => option.value === value)?.label}
-                </Badge>
-              ),
+              render: (value) =>
+                Array.isArray(value) ? (
+                  <div className="flex flex-row flex-wrap gap-1">
+                    {value.map((v, idx) => (
+                      <Badge key={idx} variant="outline">
+                        {typeOptions.find((option) => option.value === v)
+                          ?.label || v}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <Badge variant="outline">
+                    {typeOptions.find((option) => option.value === value)
+                      ?.label || value}
+                  </Badge>
+                ),
             },
             {
               header: "Actions",

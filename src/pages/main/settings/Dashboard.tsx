@@ -1,4 +1,3 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   FileText,
@@ -14,7 +13,7 @@ import Documents from "@/pages/main/settings/tabs/documents/Documents";
 import Lists from "@/pages/main/settings/tabs/lists/Lists";
 import Arboresence from "@/pages/main/settings/tabs/arboresence/Arboresence";
 import Users from "@/pages/main/settings/tabs/users/Users";
-import { useEffect, useRef } from "react";
+import SegmentedTabs from "@/components/ui/segmented-tabs";
 
 type TabKey =
   | "clients"
@@ -79,52 +78,17 @@ const DashboardSettingsLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const tabKey = (location.pathname.split("/").pop() ?? "clients") as TabKey;
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const tabsListRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const idx = tabs.findIndex((tab) => tab.value === tabKey);
-    if (idx !== -1 && tabRefs.current[idx]) {
-      tabRefs.current[idx]?.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
-  }, [tabKey]);
 
   return (
     <div className="w-full animate-fade-in">
       {/* <NavTabs />
     {children} */}
-      <Tabs
+      <SegmentedTabs
+        tabs={tabs}
         value={tabKey}
         onValueChange={(v) => navigate(`/dashboard/settings/${v}`)}
         className="mb-4"
-      >
-        <TabsList
-          ref={tabsListRef}
-          className="flex gap-1 rounded-lg bg-muted p-1 w-full overflow-x-auto overflow-y-hidden flex-nowrap h-12 scrollbar-thin scrollbar-thumb-muted-foreground/60 scrollbar-thumb-rounded snap-x snap-mandatory scroll-smooth"
-        >
-          {tabs.map((tab, idx) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              ref={(el) => (tabRefs.current[idx] = el)}
-              className="flex items-center gap-2 px-4 py-2 data-[state=active]:text-foreground data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg font-semibold transition-colors min-w-max h-10 snap-center"
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.name}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {tabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value}>
-            {tab.component}
-          </TabsContent>
-        ))}
-      </Tabs>
+      />
     </div>
   );
 };

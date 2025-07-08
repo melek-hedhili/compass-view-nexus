@@ -33,7 +33,7 @@ export const ArchiveFilterButton: React.FC<ArchiveFilterButtonProps> = ({
   >
     {icon}
     <span>
-      {featureName} {archived ? "désarchivés" : "archivés"}
+      {featureName} {archived ? "Actifs" : "Archivés"}
     </span>
   </Button>
 );

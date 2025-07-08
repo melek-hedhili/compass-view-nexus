@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import { Archive, Reply } from "lucide-react";
 import { type EmailDto } from "@/api-swagger/models/EmailDto";
 import { type TabKey } from "./mail.types";
+import parse from "html-react-parser";
 
 function MailDetail({
   mail,
@@ -63,11 +64,9 @@ function MailDetail({
         </div>
       </div>
       <div className="prose max-w-none mb-6 flex-grow overflow-auto">
-        {mail.htmlBody ? (
-          <div dangerouslySetInnerHTML={{ __html: mail.htmlBody }} />
-        ) : (
-          <p>{mail.textBody}</p>
-        )}
+        <div className="prose max-w-none mb-6 flex-grow overflow-auto">
+          {parse(mail.htmlBody || mail.textBody)}
+        </div>
       </div>
       <div className="py-4 bg-gray-50 border-y border-gray-100 mb-6 px-4 rounded-md">
         <h3 className="text-sm font-medium mb-3 text-gray-700">

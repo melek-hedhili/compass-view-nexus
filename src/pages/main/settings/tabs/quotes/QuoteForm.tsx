@@ -9,7 +9,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Plus, X } from "lucide-react";
-import { FieldErrors, type SubmitHandler, useForm } from "react-hook-form";
+import { type FieldErrors, type SubmitHandler, useForm } from "react-hook-form";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
 import { ControlledCheckboxGroup } from "@/components/ui/controlled/controlled-checkbox-group/controlled-checkbox-group";
 import { ControlledRadioGroup } from "@/components/ui/controlled/controlled-radio-group/controlled-radio-group";
@@ -32,6 +32,9 @@ import { toast } from "sonner";
 import type { GetSectionsResponseDto } from "@/api-swagger/models/GetSectionsResponseDto";
 import type { GetTitlesResponseDto } from "@/api-swagger/models/GetTitlesResponseDto";
 import { legalFormOptions } from "../documents/documents.utils";
+import { responseTypeOptions } from "./quotes.utils";
+import { ControlledMultiSelect } from "@/components/ui/controlled/controlled-multiselect/controlled-multiselect";
+import { ControlledTextarea } from "@/components/ui/controlled/controlled-textarea/controlled-textarea";
 
 interface QuoteFormProps {
   isOpen: boolean;
@@ -50,9 +53,11 @@ const quoteFormSchema = z
     type: z.nativeEnum(CreateDataDto.type, {
       required_error: "Le type de réponse est requis",
     }),
-    legalForm: z.nativeEnum(CreateDataDto.legalForm, {
-      required_error: "La forme juridique est requise",
-    }),
+    legalForm: z
+      .array(z.enum(["SARL", "SAS", "SCI", "EURL"]), {
+        required_error: "La forme juridique est requise",
+      })
+      .optional(),
     documents: z
       .array(
         z.object({
@@ -67,13 +72,13 @@ const quoteFormSchema = z
     isControlField: z.boolean().optional(),
     isModifiable: z.boolean().optional(),
     isMultiItem: z.boolean().optional(),
-    treeId: z.string().optional(),
-    familleId: z.string().optional(),
-    sousFamilleId: z.string().optional(),
+    treeId: z.string().min(1, "La rubrique est requise"),
+    familleId: z.string().min(1, "La famille est requise"),
+    sousFamilleId: z.string().min(1, "La sous-famille est requise"),
     dependsOnId: z.string().optional(),
     listId: z.string().optional(),
     advancedOptions: z.array(z.string()).optional(),
-    dependenceValue: z.string().optional().nullable(),
+    dependenceValue: z.array(z.string()).optional().nullable(),
   })
   .superRefine((data, ctx) => {
     if (
@@ -185,7 +190,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
       if (dependsOnItem) {
         const hasOptions =
-          dependsOnItem.type === CreateDataDto.type.BOOLEAN ||
+          dependsOnItem.type === CreateDataDto.type.SINGLE_CHOICE ||
           (dependsOnItem.type === CreateDataDto.type.MULTIPLE_CHOICE &&
             lists?.find((list) => list._id === dependsOnItem.list?._id)?.values
               .length > 0);
@@ -193,7 +198,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         console.log("formData.dependenceValue", formData.dependenceValue);
         if (
           hasOptions &&
-          (!formData.dependenceValue || formData.dependenceValue === "")
+          (!formData.dependenceValue || formData.dependenceValue.length === 0)
         ) {
           methods.setError("dependenceValue", {
             type: "manual",
@@ -203,10 +208,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         }
 
         // Additional validation: check if the current value is valid for the new dependency type
-        if (formData.dependenceValue && formData.dependenceValue !== "") {
-          if (dependsOnItem.type === CreateDataDto.type.BOOLEAN) {
+        if (formData.dependenceValue && formData.dependenceValue.length > 0) {
+          if (dependsOnItem.type === CreateDataDto.type.SINGLE_CHOICE) {
             // For BOOLEAN, value should be "true" or "false"
-            if (!["true", "false"].includes(formData.dependenceValue)) {
+            if (!["true", "false"].includes(formData.dependenceValue[0])) {
               methods.setError("dependenceValue", {
                 type: "manual",
                 message: "La valeur doit être 'Vrai' ou 'Faux'",
@@ -220,7 +225,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             const listValues =
               lists?.find((list) => list._id === dependsOnItem.list?._id)
                 ?.values || [];
-            if (!listValues.includes(formData.dependenceValue)) {
+            if (!listValues.includes(formData.dependenceValue[0])) {
               methods.setError("dependenceValue", {
                 type: "manual",
                 message:
@@ -241,10 +246,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
     const submission: CreateDataDto | UpdateDataDto = {
       ...formData,
       //send the last id of selected tree, famille and sousFamille
-      treeId: formData.sousFamilleId || formData.familleId || formData.treeId,
+      treeId: formData.sousFamilleId,
 
       type: formData.type as UpdateDataDto.type,
-      legalForm: formData.legalForm as UpdateDataDto.legalForm,
+      legalForm: formData.legalForm,
       documents: formData.documents.map((doc) => ({
         documentId: doc.docs.value,
         script: doc.scripts,
@@ -295,16 +300,16 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         const currentValue = methods.watch("dependenceValue");
 
         // Clear value if it's not valid for the new dependency type
-        if (dependsOnItem.type === CreateDataDto.type.BOOLEAN) {
-          if (currentValue && !["true", "false"].includes(currentValue)) {
-            methods.setValue("dependenceValue", "");
+        if (dependsOnItem.type === CreateDataDto.type.SINGLE_CHOICE) {
+          if (currentValue && !["true", "false"].includes(currentValue[0])) {
+            methods.setValue("dependenceValue", []);
           }
         } else if (dependsOnItem.type === CreateDataDto.type.MULTIPLE_CHOICE) {
           const listValues =
             lists?.find((list) => list._id === dependsOnItem.list?._id)
               ?.values || [];
-          if (currentValue && !listValues.includes(currentValue)) {
-            methods.setValue("dependenceValue", "");
+          if (currentValue && !listValues.includes(currentValue[0])) {
+            methods.setValue("dependenceValue", []);
           }
         }
       }
@@ -319,9 +324,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
         isModifiable: editingData.isModifiable,
         isMultiItem: editingData.isMultiItem,
         type: editingData.type,
-        legalForm: Array.isArray(editingData.legalForm)
-          ? editingData.legalForm[0]
-          : editingData.legalForm,
+        legalForm: editingData.legalForm,
         documents: editingData.documents?.map((doc) => ({
           docs: {
             label: doc.document?.shortName || "",
@@ -365,7 +368,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   }, [editingData, methods]);
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+      <SheetContent>
         <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <SheetTitle className="text-2xl font-bold text-formality-accent">
             {editingData ? "Modifier la donnée" : "Nouvelle donnée"}
@@ -388,33 +391,26 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                 placeholder="Nom de la donnée"
                 required
               />
-              <ControlledRadioGroup
+              <ControlledCheckboxGroup
                 name="legalForm"
                 label="Forme juridique"
                 required
                 options={legalFormOptions}
                 className="flex flex-wrap gap-4"
                 direction="row"
+                withSelectAllOption
               />
               <ControlledRadioGroup
                 name="type"
                 required
                 label="Type de réponse"
-                options={[
-                  { label: "Texte libre", value: CreateDataDto.type.STRING },
-                  { label: "Date", value: CreateDataDto.type.DATE },
-                  { label: "Nombre", value: CreateDataDto.type.NUMBER },
-                  { label: "Choix unique", value: CreateDataDto.type.BOOLEAN },
-                  {
-                    label: "Choix multiple",
-                    value: CreateDataDto.type.MULTIPLE_CHOICE,
-                  },
-                ]}
+                options={responseTypeOptions}
                 className="flex flex-wrap gap-4"
                 direction="row"
               />
               {/* Liste associée: only show if type === MULTIPLE_CHOICE */}
-              {ReponseType === CreateDataDto.type.MULTIPLE_CHOICE && (
+              {(ReponseType === CreateDataDto.type.MULTIPLE_CHOICE ||
+                ReponseType === CreateDataDto.type.SINGLE_CHOICE) && (
                 <ControlledSelect
                   name="listId"
                   label="Liste associée"
@@ -433,53 +429,50 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
             </div>
 
             {/* Documents & Scripts */}
-            <div className="space-y-2">
+            <div className="space-y-5">
               <h3 className="text-lg font-semibold mb-2">
                 Documents & Scripts
               </h3>
               {methods.watch("documents")?.map((doc, index) => (
-                <div key={index} className="mb-2 flex gap-2 items-end">
-                  <div className="flex-1">
-                    <ControlledSelect
-                      name={`documents.${index}.docs.value`}
-                      label={index === 0 ? "Document" : undefined}
-                      required
-                      placeholder="Sélectionner un document"
-                      data={
-                        documents?.map((doc) => ({
-                          label: doc.shortName,
-                          value: doc._id,
-                        })) ?? []
-                      }
-                      getOptionValue={(option) => option.value}
-                      getOptionLabel={(option) => option.label}
-                      hideError
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <ControlledInput
-                      name={`documents.${index}.scripts`}
-                      label={index === 0 ? "Script" : undefined}
-                      placeholder="Script"
-                      hideError
-                    />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-full mb-4"
-                    onClick={() => removeDocument(index)}
+                <div
+                  key={index}
+                  className="relative mb-4 p-4 rounded-lg border border-gray-200 bg-gray-50 flex flex-col gap-3"
+                >
+                  <button
                     type="button"
+                    onClick={() => removeDocument(index)}
+                    className="absolute -top-3 -right-3 bg-white shadow-md border border-gray-200 text-gray-400 hover:text-red-500 transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-red-200 z-10"
+                    aria-label="Supprimer le document"
                   >
                     <X className="h-4 w-4" />
-                  </Button>
+                  </button>
+                  <ControlledSelect
+                    name={`documents.${index}.docs.value`}
+                    label={index === 0 ? "Document" : undefined}
+                    required
+                    placeholder="Sélectionner un document"
+                    data={
+                      documents?.map((doc) => ({
+                        label: doc.shortName,
+                        value: doc._id,
+                      })) ?? []
+                    }
+                    getOptionValue={(option) => option.value}
+                    getOptionLabel={(option) => option.label}
+                    hideError
+                  />
+                  <ControlledTextarea
+                    name={`documents.${index}.scripts`}
+                    label={index === 0 ? "Script" : undefined}
+                    placeholder="Texte du script"
+                  />
                 </div>
               ))}
               <Button
                 variant="outline"
                 type="button"
                 size="sm"
-                className="mt-2"
+                className="mt-2 w-full border-dashed border-2 border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center gap-2 py-3"
                 onClick={addDocument}
               >
                 <Plus className="h-4 w-4 mr-1" /> Ajouter un document
@@ -544,48 +537,45 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                 <ControlledSelect
                   name="dependsOnId"
                   label="Dépend de la donnée"
+                  clear
                   placeholder="Donnée N°X"
                   data={
                     dataItems?.data?.map((item) => ({
                       label: item.fieldName,
                       value: item._id!,
-                      type: item.type,
+                      type: responseTypeOptions.find(
+                        (option) => option.value === item.type
+                      )?.label,
                     })) ?? []
                   }
                   disabled={dataItems?.data?.length === 0}
                   getOptionValue={(option) => option.value}
                   getOptionLabel={(option) => option.label}
+                  selectItemEndAdornment={(option) => (
+                    <span className="text-xs text-gray-500">{option.type}</span>
+                  )}
                 />
                 {dependsOnId &&
-                  (dependsOnId.type === CreateDataDto.type.BOOLEAN ||
-                    dependsOnId.type === CreateDataDto.type.MULTIPLE_CHOICE) &&
-                  (() => {
-                    const options =
-                      dependsOnId.type === CreateDataDto.type.BOOLEAN
-                        ? [
-                            { label: "Vrai", value: "true" },
-                            { label: "Faux", value: "false" },
-                          ]
-                        : lists
-                            ?.find((list) => list._id === dependsOnId.list?._id)
-                            ?.values.map((value) => ({
-                              label: value,
-                              value,
-                            })) || [];
-                    if (options.length === 0) return null; // Do not render select if no options
-                    return (
-                      <ControlledSelect
-                        name="dependenceValue"
-                        required
-                        hideError
-                        label="Valeur de la donnée N°X"
-                        placeholder="Veuillez sélectionner une valeur"
-                        data={options}
-                        getOptionValue={(option) => option.value}
-                        getOptionLabel={(option) => option.label}
-                      />
-                    );
-                  })()}
+                  (dependsOnId.type === CreateDataDto.type.SINGLE_CHOICE ||
+                    dependsOnId.type ===
+                      CreateDataDto.type.MULTIPLE_CHOICE) && (
+                    <ControlledMultiSelect
+                      name="dependenceValue"
+                      required
+                      label="Valeur de la donnée N°X"
+                      placeholder="Veuillez sélectionner une valeur"
+                      data={
+                        lists
+                          ?.find((list) => list._id === dependsOnId.list?._id)
+                          ?.values.map((value) => ({
+                            label: value,
+                            value,
+                          })) || []
+                      }
+                      getOptionValue={(option) => option.value}
+                      getOptionLabel={(option) => option.label}
+                    />
+                  )}
               </div>
             </div>
 

@@ -21,6 +21,7 @@ import AddInputCard from "./components/AddInputCard";
 import FamilleItem from "./components/FamilleItem";
 import SousFamilleItem from "./components/SousFamilleItem";
 import SectionItem from "./components/SectionItem";
+import { Button } from "@/components/ui/button";
 
 type ViewMode = "list" | "create" | "edit" | "details";
 
@@ -43,10 +44,25 @@ const Arboresence = () => {
     queryKey: ["tree"],
     queryFn: () => TreeService.treeControllerFindAll(),
   });
-  console.log("tree", tree);
+  const deleteTreeMutation = useMutation({
+    mutationFn: () => TreeService.treeControllerRemove({ id: tree?.[0]._id }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["tree"] });
+      setViewMode("list");
+    },
+    onError: () => {
+      toast.error("Erreur lors de la suppression de l'arborescence");
+    },
+  });
   const deleteRubriqueMutation = useMutation({
-    mutationFn: (id: string) => TreeService.treeControllerRemove({ id }),
-    onMutate: async (id) => {
+    mutationFn: ({
+      id,
+      type,
+    }: {
+      id: string;
+      type: "rubrique" | "famille" | "sous-famille";
+    }) => TreeService.treeControllerRemove({ id }),
+    onMutate: async ({ id, type }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["tree"] });
 
@@ -59,7 +75,7 @@ const Arboresence = () => {
 
         const removeItemRecursively = (items: any[]): any[] =>
           items.filter((item) => {
-            if (item._id === id) return false;
+            if (item._id === id && item.type === type) return false;
 
             if (item.titles) {
               item.titles = removeItemRecursively(item.titles);
@@ -76,12 +92,20 @@ const Arboresence = () => {
 
       return { previousTree };
     },
-    onError: (err, id, context) => {
+    onError: (err, { type, id }, context) => {
       // Rollback on error
       if (context?.previousTree) {
         queryClient.setQueryData(["tree"], context.previousTree);
       }
-      toast.error("Erreur lors de la suppression de la rubrique");
+      //get the name of the deleted item by id
+      const errorMessage = (err as any).body.response.message as string;
+      if (errorMessage.includes("can t delete this tree")) {
+        toast.error(
+          `Cette ${type} est liée à un document et ne peut être supprimée`
+        );
+      } else {
+        toast.error(`Erreur lors de la suppression de la ${type}`);
+      }
     },
     onSettled: () => {
       // Always refetch after error or success
@@ -448,8 +472,14 @@ const Arboresence = () => {
     setEditValue("");
   };
 
-  const handleDelete = (id: string) => {
-    deleteRubriqueMutation.mutate(id);
+  const handleDelete = (
+    id: string,
+    type: "rubrique" | "famille" | "sous-famille"
+  ) => {
+    deleteRubriqueMutation.mutateAsync({
+      id,
+      type,
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -584,7 +614,7 @@ const Arboresence = () => {
               setEditValue={setEditValue}
               handleEdit={handleEdit}
               handleSave={handleSave}
-              handleDelete={handleDelete}
+              handleDelete={(id) => handleDelete(id, "sous-famille")}
               handleKeyPress={handleKeyPress}
               DragHandle={<SortableList.DragHandle />}
               className="mb-1 border border-gray-200 rounded bg-white shadow-sm"
@@ -648,7 +678,7 @@ const Arboresence = () => {
                 setEditValue={setEditValue}
                 handleEdit={handleEdit}
                 handleSave={handleSave}
-                handleDelete={handleDelete}
+                handleDelete={(id) => handleDelete(id, "famille")}
                 handleKeyPress={handleKeyPress}
                 DragHandle={<SortableList.DragHandle />}
                 className="mb-1 shadow border border-gray-200 rounded bg-gray-50"
@@ -772,7 +802,7 @@ const Arboresence = () => {
                 setEditValue={setEditValue}
                 handleEdit={handleEdit}
                 handleSave={handleSave}
-                handleDelete={handleDelete}
+                handleDelete={(id) => handleDelete(id, "rubrique")}
                 handleKeyPress={handleKeyPress}
                 DragHandle={<SortableList.DragHandle />}
                 className="mb-2 shadow-sm border border-gray-200 rounded-lg bg-white"
@@ -871,21 +901,27 @@ const Arboresence = () => {
         <div className="flex items-center mb-4 md:mb-0" />
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto justify-between">
           {viewMode === "edit" ? (
-            <button
-              className="bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2 px-4 py-2 rounded shadow-md"
-              onClick={() => setViewMode("list")}
-            >
-              <Pencil className="h-4 w-4" />
-              <span>Terminer l'édition</span>
-            </button>
+            <>
+              {/* {tree?.[0]._id && (
+                <Button
+                  disabled={deleteTreeMutation.isPending}
+                  variant="destructive"
+                  onClick={() => deleteTreeMutation.mutateAsync()}
+                >
+                  <Trash className="h-4 w-4" />
+                  <span>Supprimer l'arborescence</span>
+                </Button>
+              )} */}
+              <Button variant="outline" onClick={() => setViewMode("list")}>
+                <Pencil className="h-4 w-4" />
+                <span>Terminer l'édition</span>
+              </Button>
+            </>
           ) : (
-            <button
-              className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2 px-4 py-2 rounded shadow-md"
-              onClick={() => setViewMode("edit")}
-            >
+            <Button onClick={() => setViewMode("edit")}>
               <Pencil className="h-4 w-4" />
               <span>Éditer l'arborescence</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>

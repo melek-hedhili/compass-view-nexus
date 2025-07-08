@@ -26,7 +26,7 @@ interface ClientFormProps {
   client: ClientDto | null;
 }
 
-const journalOptions = [
+export const journalOptions = [
   { label: "Local", value: ClientDto.jounals.LOCAL },
   { label: "National", value: ClientDto.jounals.NATIONAL },
   { label: "BODACC", value: ClientDto.jounals.BODACC },
@@ -83,9 +83,12 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   const createClientMutation = useMutation({
     mutationFn: (data: CreateClientDto) =>
       ClientService.clientControllerCreate({ requestBody: data }),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Client créé avec succès");
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["clients"],
+        exact: false,
+      });
       onClose();
     },
     onError: (error) => {
@@ -102,9 +105,12 @@ export const ClientForm: React.FC<ClientFormProps> = ({
   const updateClientMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateClientDto }) =>
       ClientService.clientControllerUpdate({ id, requestBody: data }),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Client mis à jour avec succès");
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["clients"],
+        exact: false,
+      });
       onClose();
     },
     onError: (error) => {
@@ -142,7 +148,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+      <SheetContent>
         <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <SheetTitle className="text-2xl font-bold text-formality-accent">
             {client?._id ? "Modifier le client" : "Nouveau client"}

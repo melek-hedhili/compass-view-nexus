@@ -17,8 +17,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type CreateEmailDto } from "@/api-swagger";
 import { toast } from "sonner";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
-import { ControlledTextarea } from "@/components/ui/controlled/controlled-textarea/controlled-textarea";
+import { RichTextEditor } from "@/components/ui/controlled/controlled-rich-text-editor/rich-text-editor";
 import { Form } from "@/components/ui/form";
+import parse from "html-react-parser";
 
 interface ReplyModalProps {
   isOpen: boolean;
@@ -35,11 +36,13 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
       subject: originalEmail.subject?.startsWith("Re: ")
         ? originalEmail.subject
         : `Re: ${originalEmail.subject}`,
-      textBody: `\n\n--- Message original ---\nDe: ${
+      htmlBody: `<br/><br/>--- Message original ---<br/>De: ${
         originalEmail.from
-      }\nDate: ${format(new Date(originalEmail.date), "dd MMMM yyyy HH:mm", {
+      }<br/>Date: ${format(new Date(originalEmail.date), "dd MMMM yyyy HH:mm", {
         locale: fr,
-      })}\nObjet: ${originalEmail.subject}\n\n${originalEmail.textBody || ""}`,
+      })}<br/>Objet: ${originalEmail.subject}<br/><br/>$${
+        originalEmail.htmlBody || originalEmail.textBody || ""
+      }`,
     },
   });
   const { mutate, isPending } = useMutation({
@@ -71,14 +74,14 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] overflow-y-auto">
-        <SheetHeader className="pb-6">
+      <SheetContent>
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <SheetTitle className="text-xl font-semibold">Répondre</SheetTitle>
           <SheetDescription className="text-gray-600">
             Rédigez votre réponse ci-dessous.
           </SheetDescription>
         </SheetHeader>
-        <Form methods={methods} onSubmit={onSubmit}>
+        <Form methods={methods} onSubmit={onSubmit} className="p-6 space-y-6">
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="grid grid-cols-[100px_1fr] items-center">
@@ -114,11 +117,22 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
               </div>
             </div>
 
-            <ControlledTextarea
+            <RichTextEditor
+              name="htmlBody"
+              rules={{
+                required: "Le message est requis",
+              }}
               placeholder="Rédigez votre réponse ici..."
-              name="textBody"
-              required
             />
+
+            <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
+              <h3 className="text-sm font-medium mb-3 text-gray-700">
+                Message original
+              </h3>
+              <div className="prose prose-sm max-w-none">
+                {parse(originalEmail.htmlBody || originalEmail.textBody)}
+              </div>
+            </div>
 
             <div className="p-4 bg-gray-50 rounded-md border border-gray-100">
               <h3 className="text-sm font-medium mb-3 text-gray-700">

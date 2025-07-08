@@ -20,6 +20,8 @@ type ControlledCheckboxGroupProps = {
   direction?: "row" | "column";
   /** Allow only one selection (defaults to false = multi‑select) */
   singleSelection?: boolean;
+  /** Add a "Tout" checkbox to select/deselect all options (only works in multi-select mode) */
+  withSelectAllOption?: boolean;
 };
 
 export function ControlledCheckboxGroup({
@@ -33,6 +35,7 @@ export function ControlledCheckboxGroup({
   labelClassName,
   direction = "column",
   singleSelection = false,
+  withSelectAllOption = false,
 }: ControlledCheckboxGroupProps) {
   const { control } = useFormContext();
 
@@ -45,8 +48,10 @@ export function ControlledCheckboxGroup({
         ...rules,
       }}
       render={({ field, fieldState }) => {
-        const { value = [], onChange } = field; // value stays an array
+        let { value } = field;
+        const { onChange } = field;
         const { error } = fieldState;
+        if (!Array.isArray(value)) value = value ? [value] : [];
 
         const handleCheckboxChange = (
           checked: boolean,
@@ -68,6 +73,28 @@ export function ControlledCheckboxGroup({
             }
           }
         };
+
+        const handleSelectAllChange = (checked: boolean) => {
+          if (checked) {
+            // Select all enabled options
+            const allValues = options
+              .filter((option) => !option.disabled)
+              .map((option) => option.value);
+            onChange(allValues);
+          } else {
+            // Deselect all
+            onChange([]);
+          }
+        };
+
+        // Check if all enabled options are selected
+        const enabledOptions = options.filter((option) => !option.disabled);
+        const selectedEnabledOptions = (value || []).filter((v) =>
+          enabledOptions.some((option) => option.value === v)
+        );
+        const isAllSelected =
+          enabledOptions.length > 0 &&
+          selectedEnabledOptions.length === enabledOptions.length;
 
         return (
           <div className={cn("flex flex-col gap-1", className)}>
@@ -105,6 +132,18 @@ export function ControlledCheckboxGroup({
                   <span>{option.label}</span>
                 </label>
               ))}
+              {withSelectAllOption && !singleSelection && (
+                <label className="inline-flex items-center gap-2">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={(checked) =>
+                      handleSelectAllChange(!!checked)
+                    }
+                    className={checkboxClassName}
+                  />
+                  <span>Tous</span>
+                </label>
+              )}
             </div>
             {error && (
               <p className="text-red-600 text-xs mt-1" role="alert">

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { cn } from "@/lib/utils";
+import { Textarea } from "../../textarea";
 
 type ControlledInputProps = {
   label?: string;
@@ -15,7 +16,8 @@ type ControlledInputProps = {
   rules?: Record<string, any>;
   minLength?: number;
   maxLength?: number;
-
+  minRows?: number;
+  maxRows?: number;
   autoFocus?: boolean;
   // Add other props as needed
 };
@@ -32,6 +34,8 @@ function ControlledTextarea({
   rules,
   minLength,
   maxLength,
+  minRows,
+  maxRows,
   className,
 }: ControlledInputProps) {
   const { control } = useFormContext();
@@ -74,7 +78,7 @@ function ControlledTextarea({
                 {label}
               </label>
             )}
-            <textarea
+            <Textarea
               id={id || name}
               disabled={disabled}
               placeholder={placeholder}
@@ -82,10 +86,9 @@ function ControlledTextarea({
                 className,
 
                 "w-full min-h-[180px] border border-gray-200 rounded-md p-3 resize-none",
-                error ? "border-red-500" : "border-input",
-                size === "small" && "h-8 text-xs",
-                size === "medium" && "h-10 text-sm",
-                size === "large" && "h-12 text-lg"
+                minRows && `min-h-[${minRows * 24}px]`,
+                maxRows && `max-h-[${maxRows * 24}px]`,
+                error ? "border-red-500" : "border-input"
               )}
               aria-invalid={!!error}
               aria-required={required}
@@ -93,6 +96,7 @@ function ControlledTextarea({
               onChange={onChange}
               onBlur={onBlur}
               ref={ref}
+              rows={minRows ?? 1}
               minLength={minLength}
               maxLength={maxLength}
             />

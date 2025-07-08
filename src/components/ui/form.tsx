@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import * as React from "react";
 import {
   FormProvider,
-  FieldErrors,
+  type FieldErrors,
   type SubmitHandler,
   type UseFormReturn,
 } from "react-hook-form";

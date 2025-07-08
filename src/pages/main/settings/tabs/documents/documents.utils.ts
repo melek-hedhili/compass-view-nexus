@@ -1,31 +1,29 @@
-import { CreateDocumentDto } from "@/api-swagger/models/CreateDocumentDto";
+const legalFormOptions: { label: string; value: string }[] = [
+  { label: "SCI", value: "SCI" },
+  { label: "SARL", value: "SARL" },
+  { label: "EURL", value: "EURL" },
 
-const legalFormOptions = [
-  { label: "SCI", value: CreateDocumentDto.legalForm.SCI },
-  { label: "SARL", value: CreateDocumentDto.legalForm.SARL },
-  { label: "EURL", value: CreateDocumentDto.legalForm.EURL },
-
-  { label: "SASU / SAS", value: CreateDocumentDto.legalForm.SAS },
+  { label: "SASU / SAS", value: "SAS" },
 ];
-const benefitOptions = [
-  { label: "Création", value: CreateDocumentDto.benefit.CREATION },
-  { label: "Modification", value: CreateDocumentDto.benefit.UPDATE },
-  { label: "Cessation", value: CreateDocumentDto.benefit.CESSATION },
+const benefitOptions: { label: string; value: string }[] = [
+  { label: "Création", value: "CREATION" },
+  { label: "Modification", value: "UPDATE" },
+  { label: "Cessation", value: "CESSATION" },
 ];
-const typeOptions = [
-  { label: "Document interne", value: CreateDocumentDto.type.INTERNAL },
+const typeOptions: { label: string; value: string }[] = [
+  { label: "Document interne", value: "INTERNAL" },
   {
     label: "Document à fournir au greffe",
-    value: CreateDocumentDto.type.GREFFE,
+    value: "GREFFE",
   },
-  { label: "Facture", value: CreateDocumentDto.type.INVOICE },
+  { label: "Facture", value: "INVOICE" },
   {
     label: "Document d'annonce légal",
-    value: CreateDocumentDto.type.LEGAL_ANNOUNCEMENT,
+    value: "LEGAL_ANNOUNCEMENT",
   },
   {
     label: "Document de validation du dossier",
-    value: CreateDocumentDto.type.VALIDATION,
+    value: "VALIDATION",
   },
 ];
 export { legalFormOptions, benefitOptions, typeOptions };

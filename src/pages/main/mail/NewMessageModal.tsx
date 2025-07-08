@@ -15,23 +15,29 @@ import { type CreateEmailDto } from "@/api-swagger";
 import { toast } from "sonner";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
 import { type EmailFormProps } from "./mail.types";
-import { ControlledTextarea } from "@/components/ui/controlled/controlled-textarea/controlled-textarea";
+import { RichTextEditor } from "@/components/ui/controlled/controlled-rich-text-editor/rich-text-editor";
+import { ControlledAutocomplete } from "@/components/ui/controlled/controlled-autocomplete/controlled-autocomplete";
 
 interface NewMessageModalProps {
   isOpen: boolean;
   onClose: () => void;
+  clientsEmails: string[];
 }
 
-function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
+function NewMessageModal({
+  isOpen,
+  onClose,
+  clientsEmails,
+}: NewMessageModalProps) {
   const queryClient = useQueryClient();
   const methods = useForm<EmailFormProps>({
     defaultValues: {
       to: undefined,
       subject: undefined,
-      textBody: undefined,
       htmlBody: undefined,
     },
   });
+  console.log("watch", methods.watch());
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateEmailDto) =>
       EmailService.emailControllerSendEmail({
@@ -59,8 +65,8 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] overflow-y-auto">
-        <SheetHeader className="pb-6">
+      <SheetContent>
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <SheetTitle className="text-xl font-semibold">
             Nouveau message
           </SheetTitle>
@@ -68,17 +74,21 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
             Rédigez votre message ci-dessous.
           </SheetDescription>
         </SheetHeader>
-        <Form methods={methods} onSubmit={onSubmit}>
+        <Form methods={methods} onSubmit={onSubmit} className="p-6 space-y-6">
           <div className="space-y-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   À
                 </label>
-                <ControlledInput
+                <ControlledAutocomplete
                   name="to"
-                  required
+                  rules={{
+                    required: "L'adresse email est requise",
+                  }}
+                  type="email"
                   placeholder="Adresse email du destinataire"
+                  data={clientsEmails}
                 />
               </div>
               <div>
@@ -87,7 +97,9 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
                 </label>
                 <ControlledInput
                   name="subject"
-                  required
+                  rules={{
+                    required: "L'objet est requis",
+                  }}
                   placeholder="Objet du message"
                 />
               </div>
@@ -97,9 +109,11 @@ function NewMessageModal({ isOpen, onClose }: NewMessageModalProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Message
               </label>
-              <ControlledTextarea
-                name="textBody"
-                required
+              <RichTextEditor
+                name="htmlBody"
+                rules={{
+                  required: "Le message est requis",
+                }}
                 placeholder="Rédigez votre message ici..."
               />
             </div>

@@ -74,7 +74,7 @@ export const ListForm: React.FC<ListFormProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <SheetContent className="w-[450px] sm:w-[900px] p-0 overflow-y-auto">
+      <SheetContent>
         <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <SheetTitle className="text-2xl font-bold text-formality-accent">
             {title}

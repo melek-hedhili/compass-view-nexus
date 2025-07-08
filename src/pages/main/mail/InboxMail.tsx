@@ -20,7 +20,7 @@ const InboxMail = ({
 }) => {
   const [pagination, setPagination] = useState<FindOptionsQuery>({
     page: "1",
-    perPage: "5",
+    perPage: "10",
     searchValue: "",
     searchFields,
   });
@@ -62,14 +62,6 @@ const InboxMail = ({
       ...prev,
       perPage: String(newPerPage),
       page: "1",
-    }));
-  };
-
-  const handleSort = (field: string, order: "asc" | "desc") => {
-    setPagination((prev) => ({
-      ...prev,
-      sortField: field,
-      sortOrder: order,
     }));
   };
 
@@ -137,7 +129,6 @@ const InboxMail = ({
           perPage={+pagination.perPage}
           onPageChange={handlePageChange}
           onPerPageChange={handlePerPageChange}
-          onSort={handleSort}
           onRowClick={onRowClick}
           renderListEmpty={() => (
             <div className="h-24 text-center text-gray-500 flex items-center justify-center">

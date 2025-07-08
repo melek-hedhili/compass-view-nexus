@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
+import { Archive, Inbox, Plus, Send } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { type TabKey } from "./mail.types";
@@ -12,11 +10,12 @@ import InboxMail from "./InboxMail";
 import ArchivedMail from "./ArchivedMail";
 import SentMail from "./SentMail";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { EmailService } from "@/api-swagger";
+import { ClientService, EmailService } from "@/api-swagger";
 import { useToast } from "@/hooks/use-toast";
 import ReplyModal from "./ReplyModal";
 import MailDetail from "./MailDetail";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import SegmentedTabs from "@/components/ui/segmented-tabs";
 
 // Extend EmailDto with additional properties we need
 
@@ -38,6 +37,11 @@ const Mail = () => {
   const { data: counts } = useQuery({
     queryKey: ["emails", "counts"],
     queryFn: () => EmailService.emailControllerGetEmailCount(),
+  });
+  const { data: clientsEmails } = useQuery({
+    queryKey: ["clients"],
+    queryFn: () => ClientService.clientControllerFindAll({}),
+    select: (data) => data.data.map((client) => client.email),
   });
   // Archive mutation
   const archiveMutation = useMutation({
@@ -117,59 +121,52 @@ const Mail = () => {
       </div>
 
       {/* Segmented Tabs with counts */}
-      <Tabs
+      <SegmentedTabs
+        tabs={[
+          {
+            name: "Boîte de réception",
+
+            value: "inbox",
+            icon: Inbox,
+            badge: (
+              <Badge variant="secondary" className="ml-2 px-2">
+                {counts?.receivedCount}
+              </Badge>
+            ),
+            component: <InboxMail onRowClick={handleRowClick} />,
+          },
+          {
+            name: "Archivé",
+            value: "archived",
+            icon: Archive,
+            badge: (
+              <Badge variant="secondary" className="ml-2 px-2">
+                {counts?.archivedCount}
+              </Badge>
+            ),
+            component: <ArchivedMail onRowClick={handleRowClick} />,
+          },
+          {
+            name: "Envoyé",
+            value: "sent",
+            icon: Send,
+            badge: (
+              <Badge variant="secondary" className="ml-2 px-2">
+                {counts?.sentCount}
+              </Badge>
+            ),
+            component: <SentMail onRowClick={handleRowClick} />,
+          },
+        ]}
         value={tabKey}
         onValueChange={(v) => navigate(`/dashboard/mail/${v}`)}
-        className="mb-4"
-      >
-        <TabsList className="flex gap-2 rounded-lg bg-gray-100 p-1 w-full md:w-auto">
-          <TabsTrigger
-            value="inbox"
-            className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors"
-          >
-            Boîte de réception
-            <Badge variant="secondary" className="ml-2 px-2">
-              {counts?.receivedCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger
-            value="archived"
-            className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors"
-          >
-            Archivé
-            <Badge variant="secondary" className="ml-2 px-2">
-              {counts?.archivedCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger
-            value="sent"
-            className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow data-[state=active]:text-formality-primary rounded-lg font-semibold transition-colors"
-          >
-            Envoyé
-            <Badge variant="secondary" className="ml-2 px-2">
-              {counts?.sentCount}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="inbox" className="focus-visible:outline-none mt-4">
-          <InboxMail onRowClick={handleRowClick} />
-        </TabsContent>
-        <TabsContent
-          value="archived"
-          className="focus-visible:outline-none mt-4"
-        >
-          <ArchivedMail onRowClick={handleRowClick} />
-        </TabsContent>
-        <TabsContent value="sent" className="focus-visible:outline-none mt-4">
-          <SentMail onRowClick={handleRowClick} />
-        </TabsContent>
-      </Tabs>
+      />
 
       {/* New Message Modal */}
       <NewMessageModal
         isOpen={isNewMessageOpen}
         onClose={handleCloseNewMessageModal}
+        clientsEmails={clientsEmails}
       />
 
       {replyToEmail && (

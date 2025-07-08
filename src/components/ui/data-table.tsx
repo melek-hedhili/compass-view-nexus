@@ -53,6 +53,7 @@ export interface Column<T> {
   sortable?: boolean;
   sortKey?: string;
   align?: "left" | "center" | "right";
+  alignHeader?: "left" | "center" | "right";
 }
 
 interface DataTableProps<T extends Record<string, unknown>> {
@@ -69,7 +70,6 @@ interface DataTableProps<T extends Record<string, unknown>> {
   perPage?: number;
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
-  onSort?: (field: string, order: "asc" | "desc") => void;
 }
 
 // Skeleton (not changed)
@@ -135,10 +135,21 @@ function DataTableTable<T extends Record<string, unknown>>({
               className={cn(
                 column.className,
                 column.sortable && "cursor-pointer",
-                column.align && `text-${column.align}`
+                column.alignHeader && `text-${column.alignHeader}`,
+                "p-2"
               )}
             >
-              <div className="flex items-center gap-2">{column.header}</div>
+              <div
+                className={cn(
+                  "flex items-center gap-2",
+                  column.alignHeader === "right" && "justify-end",
+                  column.alignHeader === "center" && "justify-center",
+                  (!column.alignHeader || column.alignHeader === "left") &&
+                    "justify-start"
+                )}
+              >
+                {column.header}
+              </div>
             </TableHead>
           ))}
         </TableRow>
@@ -163,7 +174,8 @@ function DataTableTable<T extends Record<string, unknown>>({
                   key={colIndex}
                   className={cn(
                     column.className,
-                    column.align && `text-${column.align}`
+                    column.align && `text-${column.align}`,
+                    "p-2"
                   )}
                 >
                   {renderCellValue(column, row)}
@@ -430,7 +442,7 @@ export function DataTable<T extends Record<string, unknown>>({
             colSpan={columns.length + (showIndex ? 1 : 0)}
             className="h-24 text-center text-muted-foreground"
           >
-            No data available
+            Aucune donnée disponible
           </TableCell>
         </TableRow>
       );

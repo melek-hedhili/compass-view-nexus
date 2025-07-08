@@ -8,11 +8,11 @@ export type UpdateDataDto = {
     created_at?: string;
     updated_at?: string;
     fieldName?: string;
-    dependenceValue?: string;
+    dependenceValue?: Array<string>;
     dependsOnId?: string;
     treeId?: string;
     type?: UpdateDataDto.type;
-    legalForm?: UpdateDataDto.legalForm;
+    legalForm?: Array<'SARL' | 'SAS' | 'SCI' | 'EURL'>;
     listId?: string;
     documents?: Array<CreateDocumentScriptDto>;
     isModifiable?: boolean;
@@ -24,15 +24,9 @@ export namespace UpdateDataDto {
     export enum type {
         STRING = 'STRING',
         NUMBER = 'NUMBER',
-        BOOLEAN = 'BOOLEAN',
+        SINGLE_CHOICE = 'SINGLE_CHOICE',
         DATE = 'DATE',
         MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-    }
-    export enum legalForm {
-        SARL = 'SARL',
-        SAS = 'SAS',
-        SCI = 'SCI',
-        EURL = 'EURL',
     }
 }
 

@@ -26,6 +26,7 @@ import { QuoteCard } from "./QuoteCard";
 import { toast } from "sonner";
 import { ArchiveFilterButton } from "@/components/ui/ArchiveFilterButton";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { QuotesDetailsSheet } from "./QuotesDetailsSheet";
 
 const Quotes = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -33,6 +34,8 @@ const Quotes = () => {
   const [viewingArchived, setViewingArchived] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [dataToArchive, setDataToArchive] = useState<DataDto | null>(null);
+  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
   const methods = useForm<{
     search: string;
   }>({
@@ -54,7 +57,7 @@ const Quotes = () => {
               {
                 field: "type",
                 values: [
-                  CreateDataDto.type.BOOLEAN,
+                  CreateDataDto.type.SINGLE_CHOICE,
                   CreateDataDto.type.MULTIPLE_CHOICE,
                 ],
               },
@@ -153,6 +156,16 @@ const Quotes = () => {
     setEditingData(null);
   };
 
+  const handleViewQuote = (data: DataDto) => {
+    setSelectedQuoteId(data._id);
+    setIsDetailsSheetOpen(true);
+  };
+
+  const handleCloseDetailsSheet = () => {
+    setIsDetailsSheetOpen(false);
+    setSelectedQuoteId(null);
+  };
+
   return (
     <div className="w-full animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 mt-6">
@@ -176,7 +189,6 @@ const Quotes = () => {
           <Button
             className="bg-formality-primary hover:bg-formality-primary/90 text-white flex items-center gap-2"
             onClick={() => handleOpenDrawer(null)}
-            disabled={viewingArchived}
           >
             <Plus className="h-4 w-4" />
             <span>Nouvelle donnée</span>
@@ -193,6 +205,7 @@ const Quotes = () => {
             key={data._id}
             data={data}
             viewingArchived={viewingArchived}
+            onView={handleViewQuote}
             onEdit={handleOpenDrawer}
             onArchive={() => {
               setDataToArchive(data);
@@ -266,6 +279,12 @@ const Quotes = () => {
           dataToArchive?.isArchived ? "Désarchiver" : "Archiver"
         }
         cancelButtonText="Annuler"
+      />
+
+      <QuotesDetailsSheet
+        isOpen={isDetailsSheetOpen}
+        onClose={handleCloseDetailsSheet}
+        quoteId={selectedQuoteId}
       />
     </div>
   );
