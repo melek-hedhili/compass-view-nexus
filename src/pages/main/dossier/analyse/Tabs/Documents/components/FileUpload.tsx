@@ -7,8 +7,13 @@ import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { useController, useFormContext } from "react-hook-form";
 
+interface FileProps extends File {
+  preview: string;
+  id: string;
+}
+
 interface UploadingFile {
-  file: File;
+  file: FileProps;
   id: string;
   progress: number;
   url?: string;
@@ -19,7 +24,6 @@ interface FileUploadProps {
   maxFiles?: number;
   maxSizePerFile?: number; // in MB
   acceptedTypes?: string[];
-  onFilesUploaded?: (files: File[]) => void;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -27,7 +31,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   maxFiles = 2,
   maxSizePerFile = 4,
   acceptedTypes = ["image/*", "application/pdf"],
-  onFilesUploaded,
 }) => {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadingFile[]>([]);
@@ -45,8 +48,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
   // Simulate file upload with progress
   const simulateUpload = useCallback((file: File) => {
     const fileId = Math.random().toString(36).substr(2, 9);
+    const fileWithExtras: FileProps = Object.assign(file, {
+      preview: URL.createObjectURL(file),
+      id: fileId,
+    });
+    
     const uploadingFile: UploadingFile = {
-      file,
+      file: fileWithExtras,
       id: fileId,
       progress: 0,
     };
@@ -77,11 +85,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
       setUploadedFiles(prev => {
         const newFiles = [...prev, completedFile];
         onChange(newFiles.map(f => f.file));
-        onFilesUploaded?.(newFiles.map(f => f.file));
         return newFiles;
       });
     }, 2000 + Math.random() * 1000);
-  }, [onChange, onFilesUploaded]);
+  }, [onChange]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const totalFiles = uploadedFiles.length + uploadingFiles.length + acceptedFiles.length;

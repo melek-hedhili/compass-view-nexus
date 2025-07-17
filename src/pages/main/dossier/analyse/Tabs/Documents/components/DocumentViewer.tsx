@@ -24,11 +24,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   handleValidateDocument,
 }) => {
 
-  const handleFilesUploaded = (files: File[]) => {
-    console.log("Files uploaded:", files);
-    // Handle uploaded files here - you can process them or send to API
-  };
-
   return (
     <div className="space-y-6">
       {/* Document Actions */}
@@ -80,7 +75,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         maxFiles={2}
         maxSizePerFile={4}
         acceptedTypes={["image/*", "application/pdf"]}
-        onFilesUploaded={handleFilesUploaded}
       />
     </div>
   );
