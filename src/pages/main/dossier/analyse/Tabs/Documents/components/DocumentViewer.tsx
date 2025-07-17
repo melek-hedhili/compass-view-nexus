@@ -23,7 +23,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   handleLaunchOCR,
   handleValidateDocument,
 }) => {
-  const { control } = useFormContext();
 
   const handleFilesUploaded = (files: File[]) => {
     console.log("Files uploaded:", files);
@@ -78,7 +77,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       {/* File Upload Component */}
       <FileUpload
         name="uploadedFiles"
-        control={control}
         maxFiles={2}
         maxSizePerFile={4}
         acceptedTypes={["image/*", "application/pdf"]}

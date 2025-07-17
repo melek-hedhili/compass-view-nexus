@@ -1,11 +1,11 @@
 
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X } from "lucide-react";
+import { Upload, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { useController, Control } from "react-hook-form";
+import { useController, useFormContext } from "react-hook-form";
 
 interface UploadingFile {
   file: File;
@@ -16,7 +16,6 @@ interface UploadingFile {
 
 interface FileUploadProps {
   name: string;
-  control: Control<any>;
   maxFiles?: number;
   maxSizePerFile?: number; // in MB
   acceptedTypes?: string[];
@@ -25,15 +24,15 @@ interface FileUploadProps {
 
 const FileUpload: React.FC<FileUploadProps> = ({
   name,
-  control,
   maxFiles = 2,
   maxSizePerFile = 4,
-  acceptedTypes = ["image/*"],
+  acceptedTypes = ["image/*", "application/pdf"],
   onFilesUploaded,
 }) => {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadingFile[]>([]);
-
+  
+  const { control } = useFormContext();
   const {
     field: { onChange, value },
     fieldState: { error },
@@ -202,9 +201,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
                         alt={file.file.name}
                         className="w-full h-full object-cover"
                       />
+                    ) : file.url && file.file.type === 'application/pdf' ? (
+                      <div className="w-full h-full relative">
+                        <iframe
+                          src={file.url}
+                          className="w-full h-full border-0"
+                          title={file.file.name}
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 truncate">
+                          <FileText className="h-3 w-3 inline mr-1" />
+                          {file.file.name}
+                        </div>
+                      </div>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Upload className="h-8 w-8 text-muted-foreground" />
+                      <div className="w-full h-full flex flex-col items-center justify-center space-y-2">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                        <span className="text-xs text-center truncate px-2">{file.file.name}</span>
                       </div>
                     )}
                   </div>
