@@ -208,10 +208,10 @@ const Lists = () => {
         title={
           listToArchive?.type === "archive"
             ? "Archiver la liste"
-            : "Désarchiver la liste"
+            : "Restaurer la liste"
         }
         description={`Êtes-vous sûr de vouloir ${
-          listToArchive?.type === "archive" ? "archiver" : "désarchiver"
+          listToArchive?.type === "archive" ? "archiver" : "restaurer"
         } cette liste ?`}
       />
     </div>

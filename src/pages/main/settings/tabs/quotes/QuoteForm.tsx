@@ -20,21 +20,19 @@ import {
   type DataDto,
   type PaginatedDataDto,
   type TreeDto,
-  DataService,
   type UpdateDataDto,
   type ListDto,
   type DocumentDto,
 } from "@/api-swagger";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import type { GetSectionsResponseDto } from "@/api-swagger/models/GetSectionsResponseDto";
 import type { GetTitlesResponseDto } from "@/api-swagger/models/GetTitlesResponseDto";
 import { legalFormOptions } from "../documents/documents.utils";
 import { responseTypeOptions } from "./quotes.utils";
 import { ControlledMultiSelect } from "@/components/ui/controlled/controlled-multiselect/controlled-multiselect";
 import { ControlledTextarea } from "@/components/ui/controlled/controlled-textarea/controlled-textarea";
+import { useQuoteMutations } from "./hooks/useQuoteMutations";
 
 interface QuoteFormProps {
   isOpen: boolean;
@@ -105,7 +103,6 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
   lists,
   documents,
 }) => {
-  const queryClient = useQueryClient();
   const methods = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteFormSchema),
     defaultValues: {
@@ -123,37 +120,10 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
     },
   });
   console.log("watch", methods.watch());
-  const createDataMutation = useMutation({
-    mutationFn: (data: CreateDataDto) =>
-      DataService.dataControllerCreate({ requestBody: data }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["dataItems"] });
-      await queryClient.invalidateQueries({
-        queryKey: ["data"],
-      });
-      toast.success("Donnée créée avec succès");
-      onClose();
-      methods.reset();
-    },
-    onError: () => {
-      toast.error("Erreur lors de la création de la donnée");
-    },
-  });
 
-  const updateDataItems = useMutation({
-    mutationFn: (data: UpdateDataDto) =>
-      DataService.dataControllerUpdate({ id: data._id!, requestBody: data }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["data"] });
-      await queryClient.invalidateQueries({ queryKey: ["dataItems"] });
-
-      toast.success("Donnée mise à jour avec succès");
-      onClose();
-      methods.reset();
-    },
-    onError: () => {
-      toast.error("Erreur lors de la mise à jour de la donnée");
-    },
+  const { createDataMutation, updateDataItems } = useQuoteMutations({
+    onClose,
+    methods,
   });
 
   const addDocument = () => {
@@ -209,18 +179,7 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
 
         // Additional validation: check if the current value is valid for the new dependency type
         if (formData.dependenceValue && formData.dependenceValue.length > 0) {
-          if (dependsOnItem.type === CreateDataDto.type.SINGLE_CHOICE) {
-            // For BOOLEAN, value should be "true" or "false"
-            if (!["true", "false"].includes(formData.dependenceValue[0])) {
-              methods.setError("dependenceValue", {
-                type: "manual",
-                message: "La valeur doit être 'Vrai' ou 'Faux'",
-              });
-              return;
-            }
-          } else if (
-            dependsOnItem.type === CreateDataDto.type.MULTIPLE_CHOICE
-          ) {
+          if (dependsOnItem.type === CreateDataDto.type.MULTIPLE_CHOICE) {
             // For MULTIPLE_CHOICE, value should be in the list values
             const listValues =
               lists?.find((list) => list._id === dependsOnItem.list?._id)
@@ -262,9 +221,9 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
       (submission as CreateDataDto).dependenceValue = formData.dependenceValue;
     }
     if (editingData) {
-      updateDataItems.mutate({
+      updateDataItems.mutateAsync({
         ...(submission as UpdateDataDto),
-        _id: editingData._id!,
+        _id: editingData._id,
       });
     } else {
       createDataMutation.mutate(submission as CreateDataDto);
@@ -578,17 +537,18 @@ export const QuoteForm: React.FC<QuoteFormProps> = ({
                   )}
               </div>
             </div>
-
-            <div className="flex justify-end pt-6 border-t border-gray-100">
-              <Button
-                className="bg-formality-primary hover:bg-formality-primary/90 text-white min-w-[140px]"
-                type="submit"
-                disabled={
-                  createDataMutation.isPending || updateDataItems.isPending
-                }
-              >
-                {editingData ? "Mettre à jour" : "Enregistrer"}
-              </Button>
+            <div className="pt-10">
+              <div className="flex justify-end pt-6 border-t border-gray-100">
+                <Button
+                  className="bg-formality-primary hover:bg-formality-primary/90 text-white min-w-[140px]"
+                  type="submit"
+                  disabled={
+                    createDataMutation.isPending || updateDataItems.isPending
+                  }
+                >
+                  {editingData ? "Mettre à jour" : "Enregistrer"}
+                </Button>
+              </div>
             </div>
           </div>
         </Form>

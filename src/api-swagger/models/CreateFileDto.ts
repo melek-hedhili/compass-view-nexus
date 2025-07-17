@@ -3,9 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CreateFileDto = {
-    _id?: string;
-    created_at?: string;
-    updated_at?: string;
     clientId: string;
     emailId: string;
     fileName: string;

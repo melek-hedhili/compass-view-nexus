@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { ClientForm } from "@/components/dashboard/ClientForm";
+import { ClientForm } from "@/pages/main/settings/tabs/client/ClientForm";
 import { Button } from "@/components/ui/button";
 import { Search, Plus, Pencil, Archive, User } from "lucide-react";
 import { type ClientDto, ClientService } from "@/api-swagger";
 import { DataTable } from "@/components/ui/data-table";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ControlledInput } from "@/components/ui/controlled/controlled-input/controlled-input";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/tooltip";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { ClientDetailsSheet } from "./ClientDetailsSheet";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+
 import { ArchiveFilterButton } from "@/components/ui/ArchiveFilterButton";
+import { useClientMutations } from "./hooks/useClientMutations";
 
 const Client = () => {
   const [selectedClient, setSelectedClient] = useState<ClientDto | null>(null);
@@ -32,6 +32,7 @@ const Client = () => {
       search: "",
     },
   });
+  const { ArchiveUnArchiveClientMutation } = useClientMutations({});
   // Consolidated pagination state
   const [paginationParams, setPaginationParams] = useState({
     page: 1,
@@ -78,32 +79,6 @@ const Client = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [detailsClientId, setDetailsClientId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-
-  const queryClient = useQueryClient();
-  const ArchiveUnArchiveClientMutation = useMutation({
-    mutationFn: async ({
-      id,
-      isArchived,
-    }: {
-      id: string;
-      isArchived: boolean;
-    }) =>
-      ClientService.clientControllerUpdate({
-        id,
-        requestBody: { isArchived: !isArchived },
-      }),
-    onSuccess: (_, variables) => {
-      toast.success(
-        variables.isArchived
-          ? "Client désarchivé avec succès"
-          : "Client archivé avec succès"
-      );
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-    },
-    onError: () => {
-      toast.error("Erreur lors de l'archivage/désarchivage du client");
-    },
-  });
 
   const handlePageChange = (newPage: number) => {
     setPaginationParams((prev) => ({
@@ -221,7 +196,7 @@ const Client = () => {
               sortable: true,
               align: "left",
 
-              render: (value) => (value ? `€${value}` : "-"),
+              render: (value) => (value ? `${value}€` : "-"),
             },
             {
               key: "modificationPrice",
@@ -229,7 +204,7 @@ const Client = () => {
               sortable: true,
               align: "center",
               alignHeader: "center",
-              render: (value) => (value ? `€${value}` : "-"),
+              render: (value) => (value ? `${value}€` : "-"),
             },
             {
               key: "submissionPrice",
@@ -237,7 +212,7 @@ const Client = () => {
               sortable: true,
               align: "center",
               alignHeader: "center",
-              render: (value) => (value ? `€${value}` : "-"),
+              render: (value) => (value ? `${value}€` : "-"),
             },
             {
               header: "Actions",
@@ -285,12 +260,12 @@ const Client = () => {
         }}
         title={
           selectedClient?.isArchived
-            ? "Désarchiver le client"
+            ? "Restaurer le client"
             : "Archiver le client"
         }
         description={
           selectedClient?.isArchived
-            ? "Êtes-vous sûr de vouloir désarchiver ce client ?"
+            ? "Êtes-vous sûr de vouloir restaurer ce client ?"
             : "Êtes-vous sûr de vouloir archiver ce client ?"
         }
       />
@@ -313,6 +288,7 @@ const ClientActions = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
+            disabled={client.isArchived}
             variant="outline"
             size="icon"
             onClick={(e) => {
@@ -340,7 +316,7 @@ const ClientActions = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {client.isArchived ? "Désarchiver" : "Archiver"}
+          {client.isArchived ? "Restaurer" : "Archiver"}
         </TooltipContent>
       </Tooltip>
     </div>

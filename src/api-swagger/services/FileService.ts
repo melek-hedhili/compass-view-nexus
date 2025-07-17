@@ -3,7 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { CreateFileDto } from '../models/CreateFileDto';
+import type { DocumentDto } from '../models/DocumentDto';
 import type { FileDto } from '../models/FileDto';
+import type { GetFileStatusCountDto } from '../models/GetFileStatusCountDto';
 import type { PaginatedFileDto } from '../models/PaginatedFileDto';
 import type { UpdateFileDto } from '../models/UpdateFileDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -18,6 +20,33 @@ export class FileService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/file/legalforms',
+        });
+    }
+    /**
+     * @returns GetFileStatusCountDto
+     * @throws ApiError
+     */
+    public static fileControllerGetFileStatusCount(): CancelablePromise<GetFileStatusCountDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/file/status/count',
+        });
+    }
+    /**
+     * @returns DocumentDto
+     * @throws ApiError
+     */
+    public static fileControllerGetFileDocuments({
+        id,
+    }: {
+        id: string,
+    }): CancelablePromise<Array<DocumentDto>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/file/documents/{id}',
+            path: {
+                'id': id,
+            },
         });
     }
     /**

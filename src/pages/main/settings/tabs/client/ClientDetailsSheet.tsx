@@ -13,7 +13,7 @@ import { ClientService } from "@/api-swagger/services/ClientService";
 import type { ClientDto } from "@/api-swagger/models/ClientDto";
 import { User, Mail, CreditCard, Calendar, CheckCircle2 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { journalOptions } from "@/components/dashboard/ClientForm";
+import { journalOptions } from "@/pages/main/settings/tabs/client/ClientForm";
 
 interface ClientDetailsSheetProps {
   isOpen: boolean;

@@ -12,5 +12,6 @@ export type DocumentDto = {
     benefit: Array<'CREATION' | 'UPDATE' | 'CESSATION'>;
     type: Array<'LEGAL_ANNOUNCEMENT' | 'INTERNAL' | 'INVOICE' | 'GREFFE' | 'VALIDATION'>;
     isArchived: boolean;
+    documentUploaded?: boolean;
 };
 

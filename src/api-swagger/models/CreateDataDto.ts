@@ -4,9 +4,6 @@
 /* eslint-disable */
 import type { CreateDocumentScriptDto } from './CreateDocumentScriptDto';
 export type CreateDataDto = {
-    _id?: string;
-    created_at?: string;
-    updated_at?: string;
     fieldName: string;
     dependenceValue?: Array<string>;
     dependsOnId?: string;

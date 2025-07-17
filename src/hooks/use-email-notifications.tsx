@@ -48,12 +48,17 @@ export const useEmailNotifications = ({
       }
       //data base doesnt sync immediately so we need to wait for 1 second
       setTimeout(async () => {
-        await queryClient.invalidateQueries({
-          queryKey: ["emails", "counts"],
-        });
-        await queryClient.invalidateQueries({
-          queryKey: ["emails", "inbox"],
-        });
+        Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["emails", "counts"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["emails", "inbox"],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["emails", "dossier"],
+          }),
+        ]);
       }, 1000);
     },
     [queryClient, location.pathname, navigate]

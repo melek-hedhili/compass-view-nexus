@@ -1,15 +1,15 @@
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import Dossiers from "@/pages/main/dossier/Dossiers";
-import DossierLayout from "@/pages/main/dossier/DossierLayout";
-import InformationsSection from "@/pages/main/dossier/DossierDetail/Tabs/Informations/InformationsSection";
-import MailsSection from "@/pages/main/dossier/DossierDetail/Tabs/Mails/MailsSection";
-import DocumentsSection from "@/pages/main/dossier/DossierDetail/Tabs/Documents/DocumentsSection";
-import AnalyseSection from "@/pages/main/dossier/DossierDetail/Tabs/Analyse/AnalyseSection";
-import RapportSection from "@/pages/main/dossier/DossierDetail/Tabs/Rapport/RapportSection";
-import AnnonceSection from "@/pages/main/dossier/DossierDetail/Tabs/Annonce/AnnonceSection";
-import SaisieSection from "@/pages/main/dossier/DossierDetail/Tabs/Saisie/SaisieSection";
-import ControleSection from "@/pages/main/dossier/DossierDetail/Tabs/Controle/ControleSection";
+import FilesLayout from "@/pages/main/dossier/FilesLayout";
+import InformationsSection from "@/pages/main/dossier/analyse/Tabs/Informations/InformationsSection";
+import MailsSection from "@/pages/main/dossier/analyse/Tabs/Mails/MailsSection";
+import DocumentsSection from "@/pages/main/dossier/analyse/Tabs/Documents/DocumentsSection";
+import AnalyseSection from "@/pages/main/dossier/analyse/Tabs/Analyse/AnalyseSection";
+import RapportSection from "@/pages/main/dossier/analyse/Tabs/Rapport/RapportSection";
+import AnnonceSection from "@/pages/main/dossier/analyse/Tabs/Annonce/AnnonceSection";
+import SaisieSection from "@/pages/main/dossier/analyse/Tabs/Saisie/SaisieSection";
+import ControleSection from "@/pages/main/dossier/analyse/Tabs/Controle/ControleSection";
 import Mail from "@/pages/main/mail/Mail";
 import NotFound from "@/pages/NotFound";
 import Dashboard from "@/pages/main/settings/Dashboard";
@@ -51,7 +51,7 @@ export const MainRoutes = () => {
         <Route index element={<Navigate to="settings/clients" replace />} />
         <Route path="dossiers">
           <Route index element={<Dossiers />} />
-          <Route path=":dossierId" element={<DossierLayout />}>
+          <Route path=":dossierId" element={<FilesLayout />}>
             <Route index element={<Navigate to="informations" replace />} />
             <Route path="informations" element={<InformationsSection />} />
             <Route path="mails" element={<MailsSection />} />

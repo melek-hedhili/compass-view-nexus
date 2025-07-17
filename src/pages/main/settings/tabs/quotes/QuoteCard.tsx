@@ -165,7 +165,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             className="text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700 flex-1 min-w-[120px]"
             onClick={() => onRestore(data._id!)}
           >
-            <RotateCcw className="h-4 w-4" /> Désarchiver
+            <RotateCcw className="h-4 w-4" /> Restaurer
           </Button>
         ) : (
           <Button

@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, Plus, Search, Archive } from "lucide-react";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { DocumentService } from "@/api-swagger";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { DocumentForm } from "./DocumentForm";
-import { toast } from "sonner";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
@@ -25,9 +24,9 @@ import {
   typeOptions,
 } from "./documents.utils";
 import { ArchiveFilterButton } from "@/components/ui/ArchiveFilterButton";
+import { useDocumentMutations } from "./hooks/useDocumentMutations";
 
 const Documents = () => {
-  const queryClient = useQueryClient();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -39,6 +38,7 @@ const Documents = () => {
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
     null
   );
+  const { handleArchivingMutation } = useDocumentMutations({});
   const methods = useForm<{
     search: string;
   }>({
@@ -46,6 +46,7 @@ const Documents = () => {
       search: "",
     },
   });
+
   const searchValue = useSearchDebounce({
     control: methods.control,
     name: "search",
@@ -106,31 +107,7 @@ const Documents = () => {
         ]),
       }),
   });
-  const handleArchivingMutation = useMutation({
-    mutationFn: ({
-      docId,
-      type,
-    }: {
-      docId: string;
-      type: "archive" | "unarchive";
-    }) =>
-      DocumentService.documentControllerUpdate({
-        id: docId,
-        requestBody: { isArchived: type === "archive" },
-      }),
-    onSuccess: (_, { type }) => {
-      queryClient.invalidateQueries({ queryKey: ["documents"] });
-      toast.success(
-        type === "archive"
-          ? "Document archivé avec succès"
-          : "Document désarchivé avec succès"
-      );
-    },
-    onError: (error) => {
-      toast.error("Erreur lors de la suppression du document");
-      console.error("Delete error:", error);
-    },
-  });
+
   const handleArchivingDocument = (
     docId: string,
     type: "archive" | "unarchive"
@@ -285,6 +262,7 @@ const Documents = () => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
+                          disabled={row.isArchived}
                           variant="outline"
                           size="icon"
                           onClick={(e) => {
@@ -314,7 +292,7 @@ const Documents = () => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        {row.isArchived ? "Désarchiver" : "Archiver"}
+                        {row.isArchived ? "Restaurer" : "Archiver"}
                       </TooltipContent>
                     </Tooltip>
                   </div>

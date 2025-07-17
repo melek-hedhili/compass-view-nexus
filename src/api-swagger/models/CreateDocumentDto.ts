@@ -3,9 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CreateDocumentDto = {
-    _id?: string;
-    created_at?: string;
-    updated_at?: string;
     documentName: string;
     shortName: string;
     legalForm: Array<'SARL' | 'SAS' | 'SCI' | 'EURL'>;

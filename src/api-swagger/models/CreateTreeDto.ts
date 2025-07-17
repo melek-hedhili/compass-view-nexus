@@ -3,9 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CreateTreeDto = {
-    _id?: string;
-    created_at?: string;
-    updated_at?: string;
     parentId?: string;
     fieldName: string;
     index: number;

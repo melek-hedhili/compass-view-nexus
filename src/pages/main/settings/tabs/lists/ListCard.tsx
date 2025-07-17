@@ -103,6 +103,7 @@ export const ListCard: React.FC<ListCardProps> = ({
         <Button
           className="bg-formality-primary hover:bg-formality-primary/80 text-white flex-1 min-w-[120px]"
           onClick={() => onEdit(list)}
+          disabled={list.isArchived}
         >
           <Edit2 className="h-4 w-4" />
           Modifier
@@ -122,7 +123,7 @@ export const ListCard: React.FC<ListCardProps> = ({
           {list.isArchived ? (
             <>
               <RotateCcw className="h-4 w-4" />
-              Désarchiver
+              Restaurer
             </>
           ) : (
             <>

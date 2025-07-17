@@ -11,10 +11,10 @@ export const useListMutations = () => {
       ListService.listControllerUpdate({ id, requestBody: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lists"] });
-      toast.success("Liste mise à jour avec succès");
+      toast.success("Liste modifiée avec succès");
     },
     onError: (error) => {
-      toast.error("Erreur lors de la mise à jour de la liste");
+      toast.error("Erreur lors de la modification de la liste");
       console.error("Update error:", error);
     },
   });
@@ -29,10 +29,10 @@ export const useListMutations = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lists"] });
-      toast.success("Liste créée avec succès");
+      toast.success("Nouvelle liste enregistrée");
     },
     onError: (error) => {
-      toast.error("Erreur lors de la création de la liste");
+      toast.error("Erreur lors de l'enregistrement de la liste");
       console.error("Create error:", error);
     },
   });
@@ -48,7 +48,7 @@ export const useListMutations = () => {
       toast.success(
         type === "archive"
           ? "Liste archivée avec succès"
-          : "Liste désarchivée avec succès"
+          : "Liste restaurée avec succès"
       );
     },
     onError: (error) => {

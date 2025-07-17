@@ -1,10 +1,10 @@
-import React from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { NavTabs } from "../components/dashboard/NavTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/utils/utils";
 
 interface Project {
   id: string;
@@ -104,7 +104,9 @@ const Projects = () => (
                 {project.description}
               </p>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Date: {project.date}</span>
+                <span className="text-gray-500">
+                  Date: {formatDate(project.date)}
+                </span>
                 <span className="text-formality-primary font-medium">
                   {project.progress}%
                 </span>

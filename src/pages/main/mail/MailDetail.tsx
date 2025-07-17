@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { Archive, Reply } from "lucide-react";
 import { type EmailDto } from "@/api-swagger/models/EmailDto";
 import { type TabKey } from "./mail.types";
 import parse from "html-react-parser";
+import { formatDate } from "@/utils/utils";
 
 function MailDetail({
   mail,
@@ -23,20 +22,6 @@ function MailDetail({
   activeTab: TabKey;
 }) {
   if (!mail) return null;
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return "Date invalide";
-      }
-      return format(date, "dd MMMM yyyy HH:mm", {
-        locale: fr,
-      });
-    } catch {
-      return "Date invalide";
-    }
-  };
 
   return (
     <div className="flex flex-col h-full p-6">
@@ -91,7 +76,7 @@ function MailDetail({
                   ) : (
                     <Archive className="h-4 w-4" />
                   )}
-                  {isArchiving ? "Désarchivage..." : "Désarchiver"}
+                  {isArchiving ? "Désarchivage..." : "Restaurer"}
                 </Button>
               ) : (
                 <Button

@@ -12,7 +12,6 @@ import {
 } from "@/api-swagger";
 import {
   useInfiniteQuery,
-  useMutation,
   useQueries,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -23,10 +22,10 @@ import { useSearchDebounce } from "@/hooks/use-search-debounce";
 import { PaginatedListGrid } from "../lists/PaginatedListGrid";
 import SettingsNoDataFound from "@/components/layout/SettingsNoDataFound";
 import { QuoteCard } from "./QuoteCard";
-import { toast } from "sonner";
 import { ArchiveFilterButton } from "@/components/ui/ArchiveFilterButton";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { QuotesDetailsSheet } from "./QuotesDetailsSheet";
+import { useQuoteMutations } from "./hooks/useQuoteMutations";
 
 const Quotes = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -95,27 +94,8 @@ const Quotes = () => {
     ],
   });
   const queryClient = useQueryClient();
-  const archiveDataMutation = useMutation({
-    mutationFn: ({ id, type }: { id: string; type: "archive" | "unarchive" }) =>
-      DataService.dataControllerUpdate({
-        id,
-
-        requestBody: { isArchived: type === "archive" },
-      }),
-    onSuccess: async (_, { type }) => {
-      await queryClient.invalidateQueries({ queryKey: ["data"], exact: false });
-      await queryClient.invalidateQueries({ queryKey: ["dataItems"] });
-
-      toast.success(
-        type === "archive"
-          ? "Donnée archivée avec succès"
-          : "Donnée restaurée avec succès"
-      );
-      setIsSheetOpen(false);
-    },
-    onError: () => {
-      toast.error("Erreur lors de l'archivage de la donnée");
-    },
+  const { archiveDataMutation } = useQuoteMutations({
+    onClose: () => setIsSheetOpen(false),
   });
 
   const infiniteDataItemsQuery = useInfiniteQuery({
@@ -267,17 +247,15 @@ const Quotes = () => {
         }}
         title={
           dataToArchive?.isArchived
-            ? "Désarchiver la donnée"
+            ? "Restaurer la donnée"
             : "Archiver la donnée"
         }
         description={
           dataToArchive?.isArchived
-            ? "Voulez-vous vraiment désarchiver cette donnée ?"
+            ? "Voulez-vous vraiment restaurer cette donnée ?"
             : "Voulez-vous vraiment archiver cette donnée ?"
         }
-        confirmButtonText={
-          dataToArchive?.isArchived ? "Désarchiver" : "Archiver"
-        }
+        confirmButtonText={dataToArchive?.isArchived ? "Restaurer" : "Archiver"}
         cancelButtonText="Annuler"
       />
 

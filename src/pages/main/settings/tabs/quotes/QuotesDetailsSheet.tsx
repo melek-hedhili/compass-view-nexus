@@ -341,25 +341,28 @@ export const QuotesDetailsSheet: React.FC<QuotesDetailsSheetProps> = ({
                       key={index}
                       className="bg-gray-50 p-3 rounded-lg border"
                     >
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="mb-2">
                         <h4 className="font-medium text-sm">
                           {doc.document.documentName || "-"}
                         </h4>
-                        <Badge variant="outline" className="text-xs">
-                          {Array.isArray(doc.document?.type)
-                            ? doc.document?.type?.map((t, idx) => (
-                                <Badge
-                                  key={idx}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {typeOptions.find(
-                                    (option) => option.value === t
-                                  )?.label || t}
-                                </Badge>
-                              ))
-                            : "-"}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {Array.isArray(doc.document?.type) &&
+                          doc.document?.type.length > 0 ? (
+                            doc.document?.type.map((t, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs px-2 py-0.5"
+                              >
+                                {typeOptions.find(
+                                  (option) => option.value === t
+                                )?.label || t}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-1 text-xs text-gray-600">
                         <p>

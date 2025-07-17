@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Archive, Inbox, Plus, Send } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { type TabKey } from "./mail.types";
 import { type EmailDto } from "@/api-swagger/models/EmailDto";
 import NewMessageModal from "./NewMessageModal";
@@ -125,36 +124,26 @@ const Mail = () => {
         tabs={[
           {
             name: "Boîte de réception",
-
             value: "inbox",
             icon: Inbox,
-            badge: (
-              <Badge variant="secondary" className="ml-2 px-2">
-                {counts?.receivedCount}
-              </Badge>
-            ),
+            badgeCount: counts?.receivedCount,
+            badgeClassName: "bg-formality-primary text-white",
             component: <InboxMail onRowClick={handleRowClick} />,
           },
           {
             name: "Archivé",
             value: "archived",
             icon: Archive,
-            badge: (
-              <Badge variant="secondary" className="ml-2 px-2">
-                {counts?.archivedCount}
-              </Badge>
-            ),
+            badgeCount: counts?.archivedCount,
+            badgeClassName: "bg-gray-500 text-white",
             component: <ArchivedMail onRowClick={handleRowClick} />,
           },
           {
             name: "Envoyé",
             value: "sent",
             icon: Send,
-            badge: (
-              <Badge variant="secondary" className="ml-2 px-2">
-                {counts?.sentCount}
-              </Badge>
-            ),
+            badgeCount: counts?.sentCount,
+            badgeClassName: "bg-green-500 text-white",
             component: <SentMail onRowClick={handleRowClick} />,
           },
         ]}

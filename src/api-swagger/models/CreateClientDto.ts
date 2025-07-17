@@ -3,9 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CreateClientDto = {
-    _id?: string;
-    created_at?: string;
-    updated_at?: string;
     clientName: string;
     email: string;
     firstName?: string;

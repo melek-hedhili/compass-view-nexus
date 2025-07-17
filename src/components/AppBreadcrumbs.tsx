@@ -16,7 +16,14 @@ const breadcrumbMap: Record<string, string> = {
   clients: "Clients",
   quotes: "Données",
   controls: "Contrôles",
+  mails: "Mails",
+  analyse: "Analyse",
+  rapport: "Rapport",
+  annonce: "Annonce",
+  saisie: "Saisie",
+  controle: "Contrôle",
   documents: "Documents",
+  informations: "Informations",
   lists: "Listes",
   users: "Utilisateurs",
   arboresence: "Arborescences",
@@ -26,8 +33,12 @@ const breadcrumbMap: Record<string, string> = {
   settings: "Paramètres",
 };
 const nonClickablePaths = [
+  {
+    ...(!location.pathname.includes("dossier/") && {
+      dossier: "Dossier",
+    }),
+  },
   "mail",
-  "dossiers",
   "clients",
   "quotes",
   "controls",

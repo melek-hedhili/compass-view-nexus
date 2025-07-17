@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Paperclip } from "lucide-react";
 import { EmailService } from "@/api-swagger/services/EmailService";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { type EmailDto } from "@/api-swagger/models/EmailDto";
 import {
   Sheet,
@@ -20,6 +18,7 @@ import { ControlledInput } from "@/components/ui/controlled/controlled-input/con
 import { RichTextEditor } from "@/components/ui/controlled/controlled-rich-text-editor/rich-text-editor";
 import { Form } from "@/components/ui/form";
 import parse from "html-react-parser";
+import { formatDate } from "@/utils/utils";
 
 interface ReplyModalProps {
   isOpen: boolean;
@@ -38,11 +37,9 @@ function ReplyModal({ isOpen, onClose, originalEmail }: ReplyModalProps) {
         : `Re: ${originalEmail.subject}`,
       htmlBody: `<br/><br/>--- Message original ---<br/>De: ${
         originalEmail.from
-      }<br/>Date: ${format(new Date(originalEmail.date), "dd MMMM yyyy HH:mm", {
-        locale: fr,
-      })}<br/>Objet: ${originalEmail.subject}<br/><br/>$${
-        originalEmail.htmlBody || originalEmail.textBody || ""
-      }`,
+      }<br/>Date: ${formatDate(originalEmail.date)}<br/>Objet: ${
+        originalEmail.subject
+      }<br/><br/>$${originalEmail.htmlBody || originalEmail.textBody || ""}`,
     },
   });
   const { mutate, isPending } = useMutation({
