@@ -219,10 +219,10 @@ const DocumentsSection = () => {
     if (selectedDocument?._id) {
       // Get the current value of the select for this row
       const selectValue = methoods.getValues(
-        `documentType_${selectedDocument._id}`
+        `documentType_${selectedDocument._id}` as any
       );
       // Optionally update the form state (if you want to force a value)
-      methoods.setValue(`documentType_${selectedDocument._id}`, selectValue);
+      methoods.setValue(`documentType_${selectedDocument._id}` as any, selectValue);
       // Call the mutation
       await updateAttachmentMutation.mutateAsync({
         id: selectedDocument._id,
@@ -235,13 +235,13 @@ const DocumentsSection = () => {
   const onUploadAttachementFiles = async (files: File[], onProgress: (fileId: string, progress: number) => void) => {
     await uploadAttachementFiles.mutateAsync({ files, onProgress });
   };
-  const [selectedDocument, setSelectedDocument] = useState<DocumentDto | null>(
+  const [selectedDocument, setSelectedDocument] = useState<any>(
     null
   );
   const [documentToRead, setDocumentToRead] = useState(0);
 
   // Fonction pour gérer la sélection de document
-  const handleDocumentSelection = (doc: DocumentDto) => {
+  const handleDocumentSelection = (doc: any) => {
     setSelectedDocument(doc);
   };
 

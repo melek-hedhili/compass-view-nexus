@@ -113,9 +113,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const validFiles = acceptedFiles.filter(file => file.size <= maxSizePerFile * 1024 * 1024);
     
     if (validFiles.length > 0) {
-      handleRealUpload(validFiles);
+      // Add files to uploaded state immediately without uploading
+      const filesToAdd = validFiles.map(file => {
+        const fileId = Math.random().toString(36).substr(2, 9);
+        const fileWithExtras: FileProps = Object.assign(file, {
+          preview: URL.createObjectURL(file),
+          id: fileId,
+        });
+        
+        return {
+          file: fileWithExtras,
+          id: fileId,
+          progress: 0,
+          url: URL.createObjectURL(file),
+        };
+      });
+
+      setUploadedFiles(prev => {
+        const newFiles = [...prev, ...filesToAdd];
+        onChange(newFiles.map(f => f.file));
+        return newFiles;
+      });
     }
-  }, [uploadedFiles.length, uploadingFiles.length, maxFiles, maxSizePerFile, handleRealUpload]);
+  }, [uploadedFiles.length, uploadingFiles.length, maxFiles, maxSizePerFile, onChange]);
 
   const removeUploadingFile = useCallback((fileId: string) => {
     setUploadingFiles(prev => prev.filter(f => f.id !== fileId));
@@ -206,10 +226,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </div>
         ))}
 
-        {/* Uploaded Files */}
+        {/* Upload Button */}
+        {uploadedFiles.length > 0 && (
+          <div className="flex justify-end">
+            <Button 
+              onClick={() => {
+                if (onUpload && uploadedFiles.length > 0) {
+                  handleRealUpload(uploadedFiles.map(f => f.file));
+                  // Clear selected files after upload
+                  setUploadedFiles([]);
+                  onChange([]);
+                }
+              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Upload {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''}
+            </Button>
+          </div>
+        )}
+
+        {/* Selected Files Preview */}
         {uploadedFiles.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium">Uploaded files</h4>
+            <h4 className="text-sm font-medium">Selected files</h4>
             <div className="grid grid-cols-2 gap-3">
               {uploadedFiles.map((file) => (
                 <div key={file.id} className="relative group">

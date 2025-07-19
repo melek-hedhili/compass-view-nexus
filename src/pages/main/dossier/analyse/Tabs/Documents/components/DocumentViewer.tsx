@@ -10,6 +10,8 @@ interface DocumentFileProps {
   mimetype: string;
 }
 
+import type { AttachementDto } from "@/api-swagger";
+
 interface DocumentViewerProps {
   selectedDocument: AttachementDto | null;
   handleLaunchOCR: () => void;
@@ -53,7 +55,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
             size="sm"
             onClick={() => {
               if (selectedDocument) {
-                handleValidateDocument(selectedDocument.id);
+                handleValidateDocument(selectedDocument._id || "");
               }
             }}
           >
@@ -64,8 +66,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           {selectedDocument && (
             <div className="max-w-md">
               <img
-                src={selectedDocument.imageUrl || "/placeholder.svg"}
-                alt={selectedDocument.nom}
+                src={selectedDocument.originalFile?.url || "/placeholder.svg"}
+                alt={selectedDocument.originalFile?.fileName || "Document"}
                 className="border rounded-lg shadow-sm"
               />
             </div>
@@ -79,6 +81,19 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         maxFiles={2}
         maxSizePerFile={4}
         acceptedTypes={["image/*", "application/pdf"]}
+        onUpload={async (files, onProgress) => {
+          // This will be called when Upload button is clicked
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileId = Math.random().toString(36).substr(2, 9);
+            
+            // Simulate progress for demo - replace with real API call
+            for (let progress = 0; progress <= 100; progress += 10) {
+              onProgress(fileId, progress);
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
+        }}
       />
     </div>
   );
