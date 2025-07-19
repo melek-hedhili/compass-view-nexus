@@ -4,7 +4,7 @@ import { ImageIcon, FileText } from "lucide-react";
 import PendingFeature from "../../PendingFeature";
 
 interface MailsSectionProps {
-  dossierId?: string;
+  dossierId: string;
 }
 
 interface Email {

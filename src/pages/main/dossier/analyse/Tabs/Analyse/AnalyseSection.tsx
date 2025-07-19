@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import DonneesTab from "./tabs/donnees/DonneesTab";
 
 interface AnalyseSectionProps {
-  dossierId?: string;
+  dossierId: string;
 }
 
 export default function AnalyseSection({ dossierId }: AnalyseSectionProps) {

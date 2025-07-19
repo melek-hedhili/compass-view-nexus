@@ -81,17 +81,33 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         maxFiles={2}
         maxSizePerFile={4}
         acceptedTypes={["image/*", "application/pdf"]}
-        onUpload={async (files, onProgress) => {
-          // This will be called when Upload button is clicked
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const fileId = Math.random().toString(36).substr(2, 9);
+        onUpload={async (files, onProgress) => {          
+          try {
+            // Use the actual AttachementService with real progress tracking
+            const { AttachementService } = await import("@/api-swagger");
             
-            // Simulate progress for demo - replace with real API call
-            for (let progress = 0; progress <= 100; progress += 10) {
-              onProgress(fileId, progress);
-              await new Promise(resolve => setTimeout(resolve, 100));
-            }
+            // Call the real API with progress tracking
+            await AttachementService.attachementControllerUploadMultipleFiles({
+              formData: {
+                fileId: selectedDocument?._id || '',
+                files,
+              },
+              onUploadProgress: (progressEvent) => {
+                if (progressEvent.total) {
+                  const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                  // For each file, update progress (simplified approach)
+                  files.forEach((file, index) => {
+                    const fileId = file.name + index; // Use filename + index as ID
+                    onProgress(fileId, progress);
+                  });
+                }
+              }
+            });
+            
+            console.log('Upload completed successfully');
+          } catch (error) {
+            console.error('Upload failed:', error);
+            throw error;
           }
         }}
       />

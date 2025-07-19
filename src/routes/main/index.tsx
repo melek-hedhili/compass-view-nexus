@@ -54,7 +54,7 @@ export const MainRoutes = () => {
           <Route path=":dossierId" element={<FilesLayout />}>
             <Route index element={<Navigate to="informations" replace />} />
             <Route path="informations" element={<InformationsSection />} />
-            <Route path="mails" element={<MailsSection />} />
+            <Route path="mails" element={<MailsSection dossierId={""} />} />
             <Route path="documents" element={<DocumentsSection />} />
             <Route path="analyse" element={<AnalyseSection />} />
             <Route path="rapport" element={<RapportSection />} />

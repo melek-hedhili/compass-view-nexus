@@ -62,11 +62,11 @@ const Arboresence = () => {
   const handleEdit = (currentName: string, item: TreeDto) => {
     setEditingItem({
       fieldName: currentName,
-      _id: item._id,
+      id: item._id,
       index: item.index,
       type: item.type,
       parentId: item.parent?._id,
-    });
+    } as any);
     setEditValue(currentName);
   };
 
@@ -77,10 +77,9 @@ const Arboresence = () => {
       editValue !== editingItem.fieldName
     ) {
       updateNameMutation.mutate({
-        id: editingItem._id,
+        id: (editingItem as any)._id,
         data: {
           fieldName: editValue.trim(),
-          _id: editingItem._id,
           index: editingItem.index,
           type: editingItem.type,
           parentId: editingItem.parentId,

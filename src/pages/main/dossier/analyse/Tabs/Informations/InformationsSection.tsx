@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PendingFeature from "../../PendingFeature";
 
-export default function InformationsSection() {
+export default function InformationsSection({ dossierId }: { dossierId?: string }) {
   const [isUrgent, setIsUrgent] = useState(false);
 
   // Documents requis avec leur statut

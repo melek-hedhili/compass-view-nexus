@@ -51,9 +51,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleRealUpload = useCallback(async (files: File[]) => {
     if (!onUpload) return;
 
-    // Initialize uploading files
-    const filesToUpload = files.map(file => {
-      const fileId = Math.random().toString(36).substr(2, 9);
+    // Initialize uploading files with proper IDs
+    const filesToUpload = files.map((file, index) => {
+      const fileId = file.name + index; // Use filename + index as consistent ID
       const fileWithExtras: FileProps = Object.assign(file, {
         preview: URL.createObjectURL(file),
         id: fileId,
