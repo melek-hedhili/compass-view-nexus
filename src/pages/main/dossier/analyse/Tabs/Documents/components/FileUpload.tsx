@@ -24,6 +24,7 @@ interface FileUploadProps {
   maxFiles?: number;
   maxSizePerFile?: number; // in MB
   acceptedTypes?: string[];
+  onUpload?: (files: File[], onProgress: (fileId: string, progress: number) => void) => Promise<void>;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -31,6 +32,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   maxFiles = 2,
   maxSizePerFile = 4,
   acceptedTypes = ["image/*", "application/pdf"],
+  onUpload,
 }) => {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadingFile[]>([]);
@@ -45,50 +47,60 @@ const FileUpload: React.FC<FileUploadProps> = ({
     defaultValue: [],
   });
 
-  // Simulate file upload with progress
-  const simulateUpload = useCallback((file: File) => {
-    const fileId = Math.random().toString(36).substr(2, 9);
-    const fileWithExtras: FileProps = Object.assign(file, {
-      preview: URL.createObjectURL(file),
-      id: fileId,
+  // Handle real file upload with progress
+  const handleRealUpload = useCallback(async (files: File[]) => {
+    if (!onUpload) return;
+
+    // Initialize uploading files
+    const filesToUpload = files.map(file => {
+      const fileId = Math.random().toString(36).substr(2, 9);
+      const fileWithExtras: FileProps = Object.assign(file, {
+        preview: URL.createObjectURL(file),
+        id: fileId,
+      });
+      
+      return {
+        file: fileWithExtras,
+        id: fileId,
+        progress: 0,
+      };
     });
-    
-    const uploadingFile: UploadingFile = {
-      file: fileWithExtras,
-      id: fileId,
-      progress: 0,
-    };
 
-    setUploadingFiles(prev => [...prev, uploadingFile]);
+    setUploadingFiles(prev => [...prev, ...filesToUpload]);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
+    // Progress callback function
+    const onProgress = (fileId: string, progress: number) => {
       setUploadingFiles(prev => 
         prev.map(f => 
           f.id === fileId 
-            ? { ...f, progress: Math.min(f.progress + Math.random() * 20, 100) }
+            ? { ...f, progress: Math.min(progress, 100) }
             : f
         )
       );
-    }, 200);
+    };
 
-    // Complete upload after 2-3 seconds
-    setTimeout(() => {
-      clearInterval(interval);
-      const completedFile: UploadingFile = {
-        ...uploadingFile,
-        progress: 100,
-        url: URL.createObjectURL(file),
-      };
-
-      setUploadingFiles(prev => prev.filter(f => f.id !== fileId));
+    try {
+      // Call the upload function with progress callback
+      await onUpload(files, onProgress);
+      
+      // Move completed files to uploaded state
+      setUploadingFiles(prev => prev.filter(f => !filesToUpload.some(tf => tf.id === f.id)));
       setUploadedFiles(prev => {
-        const newFiles = [...prev, completedFile];
+        const completedFiles = filesToUpload.map(f => ({
+          ...f,
+          progress: 100,
+          url: URL.createObjectURL(f.file),
+        }));
+        const newFiles = [...prev, ...completedFiles];
         onChange(newFiles.map(f => f.file));
         return newFiles;
       });
-    }, 2000 + Math.random() * 1000);
-  }, [onChange]);
+    } catch (error) {
+      // Remove failed uploads
+      setUploadingFiles(prev => prev.filter(f => !filesToUpload.some(tf => tf.id === f.id)));
+      console.error('Upload failed:', error);
+    }
+  }, [onUpload, onChange]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const totalFiles = uploadedFiles.length + uploadingFiles.length + acceptedFiles.length;
@@ -98,12 +110,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
       return;
     }
 
-    acceptedFiles.forEach(file => {
-      if (file.size <= maxSizePerFile * 1024 * 1024) {
-        simulateUpload(file);
-      }
-    });
-  }, [uploadedFiles.length, uploadingFiles.length, maxFiles, maxSizePerFile, simulateUpload]);
+    const validFiles = acceptedFiles.filter(file => file.size <= maxSizePerFile * 1024 * 1024);
+    
+    if (validFiles.length > 0) {
+      handleRealUpload(validFiles);
+    }
+  }, [uploadedFiles.length, uploadingFiles.length, maxFiles, maxSizePerFile, handleRealUpload]);
 
   const removeUploadingFile = useCallback((fileId: string) => {
     setUploadingFiles(prev => prev.filter(f => f.id !== fileId));

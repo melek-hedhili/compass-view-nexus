@@ -119,14 +119,21 @@ const DocumentsSection = () => {
       }),
   });
   const uploadAttachementFiles = useMutation({
-    mutationFn: (files: File[]) =>
+    mutationFn: ({ files, onProgress }: { files: File[], onProgress?: (fileId: string, progress: number) => void }) =>
       AttachementService.attachementControllerUploadMultipleFiles({
         formData: {
           fileId: dossierId,
           files,
         },
         onUploadProgress: (progressEvent) => {
-          console.log("progressEvent", progressEvent);
+          if (progressEvent.total && onProgress) {
+            const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            // For multiple files, we'll use the first file's ID as a simplification
+            // In a real implementation, you might want to track individual file progress
+            files.forEach((_, index) => {
+              onProgress(`upload-${index}`, progress);
+            });
+          }
         },
       }),
 
@@ -225,8 +232,8 @@ const DocumentsSection = () => {
       });
     }
   };
-  const onUploadAttachementFiles = () => {
-    uploadAttachementFiles.mutateAsync(methoods.getValues("uploadDocuments"));
+  const onUploadAttachementFiles = async (files: File[], onProgress: (fileId: string, progress: number) => void) => {
+    await uploadAttachementFiles.mutateAsync({ files, onProgress });
   };
   const [selectedDocument, setSelectedDocument] = useState<DocumentDto | null>(
     null
@@ -393,7 +400,7 @@ const DocumentsSection = () => {
 
           {/* Zone de drag & drop */}
           <DragAndDropZone
-            onUploadAttachementFiles={onUploadAttachementFiles}
+            onUpload={onUploadAttachementFiles}
             loading={uploadAttachementFiles.isPending}
           />
 

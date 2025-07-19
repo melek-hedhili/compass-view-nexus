@@ -1,38 +1,20 @@
-import { Button } from "@/components/ui/button";
-import ControlledDropZone from "@/components/ui/controlled/controlled-drop-zone/ControlledDropZone";
-import React, { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import React from "react";
+import FileUpload from "./FileUpload";
 
-const DragAndDropZone: React.FC<{
-  onUploadAttachementFiles: () => void;
+interface DragAndDropZoneProps {
+  onUpload: (files: File[], onProgress: (fileId: string, progress: number) => void) => Promise<void>;
   loading: boolean;
-}> = ({ onUploadAttachementFiles, loading }) => {
-  const { watch } = useFormContext();
-  const files: File[] = watch("uploadDocuments") || [];
-  const [dropError, setDropError] = useState<string | null>(null);
+}
 
+const DragAndDropZone: React.FC<DragAndDropZoneProps> = ({ onUpload, loading }) => {
   return (
-    <>
-      <ControlledDropZone
-        name="uploadDocuments"
-        maxFiles={10}
-        maxSizePerFile={10}
-        acceptedTypes={["image/*", "application/pdf"]}
-        onError={setDropError}
-      />
-      {dropError && (
-        <div className="text-red-500 text-sm mt-2">{dropError}</div>
-      )}
-      {files.length > 0 && !dropError && (
-        <Button
-          onClick={() => onUploadAttachementFiles()}
-          loading={loading}
-          className="mt-2"
-        >
-          Ajouter des fichiers
-        </Button>
-      )}
-    </>
+    <FileUpload
+      name="uploadDocuments"
+      maxFiles={10}
+      maxSizePerFile={10}
+      acceptedTypes={["image/*", "application/pdf"]}
+      onUpload={onUpload}
+    />
   );
 };
 
