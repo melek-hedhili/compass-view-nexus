@@ -1,8 +1,8 @@
 import { useState } from "react";
 import ControleTab from "./tabs/ControleTab";
-import DonneesTab from "./tabs/DonneesTab";
 import RapportTab from "./tabs/RapportTab";
 import { Button } from "@/components/ui/button";
+import DonneesTab from "./tabs/donnees/DonneesTab";
 
 interface AnalyseSectionProps {
   dossierId?: string;
@@ -49,7 +49,7 @@ export default function AnalyseSection({ dossierId }: AnalyseSectionProps) {
         </Button>
       </div>
       {activeAnalyseTab === "controle" && <ControleTab dossierId={dossierId} />}
-      {activeAnalyseTab === "donnees" && <DonneesTab dossierId={dossierId} />}
+      {activeAnalyseTab === "donnees" && <DonneesTab />}
       {activeAnalyseTab === "rapport" && <RapportTab dossierId={dossierId} />}
     </div>
   );

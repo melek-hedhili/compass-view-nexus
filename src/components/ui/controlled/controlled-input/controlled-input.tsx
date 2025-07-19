@@ -22,6 +22,7 @@ type ControlledInputProps = {
   startAdornment?: React.ReactNode;
   removeAsterisk?: boolean;
   hideError?: boolean;
+  defaultValue?: string;
 };
 
 function ControlledInput({
@@ -43,6 +44,7 @@ function ControlledInput({
   startAdornment, // 👈 NEW
   removeAsterisk,
   hideError,
+  defaultValue,
 }: ControlledInputProps) {
   const { control } = useFormContext();
   const [showPassword, setShowPassword] = React.useState(false);
@@ -51,6 +53,7 @@ function ControlledInput({
     <Controller
       control={control}
       name={name}
+      defaultValue={defaultValue}
       rules={{
         ...(required && { required: `${label ?? name} est requis` }),
         ...(minLength && {
@@ -123,6 +126,7 @@ function ControlledInput({
                 min={min}
                 max={max}
                 autoFocus={autoFocus}
+                defaultValue={defaultValue}
               />
               {isPassword && (
                 <button

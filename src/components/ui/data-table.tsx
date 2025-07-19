@@ -70,6 +70,7 @@ interface DataTableProps<T extends Record<string, unknown>> {
   perPage?: number;
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
+  selectedRowId?: string;
 }
 
 // Skeleton (not changed)
@@ -111,6 +112,7 @@ function DataTableTable<T extends Record<string, unknown>>({
   startIndex,
   renderCellValue,
   renderNoData,
+  selectedRowId,
 }: {
   data: T[];
   columns: Column<T>[];
@@ -121,6 +123,7 @@ function DataTableTable<T extends Record<string, unknown>>({
   startIndex: number;
   renderCellValue: (column: Column<T>, row: T) => React.ReactNode;
   renderNoData: () => React.ReactNode;
+  selectedRowId?: string;
 }) {
   return (
     <Table>
@@ -161,7 +164,10 @@ function DataTableTable<T extends Record<string, unknown>>({
           data.map((row, index) => (
             <TableRow
               key={index}
-              className={onRowClick ? "cursor-pointer" : ""}
+              className={cn(
+                onRowClick ? "cursor-pointer" : "",
+                selectedRowId && row._id === selectedRowId ? "bg-blue-50" : ""
+              )}
               onClick={() => onRowClick?.(row)}
             >
               {showIndex && (
@@ -391,6 +397,7 @@ export function DataTable<T extends Record<string, unknown>>({
   perPage = 10,
   onPageChange,
   onPerPageChange,
+  selectedRowId,
 }: DataTableProps<T>) {
   // Memoized derived values
   const totalItems = count ?? data?.length ?? 0;
@@ -463,6 +470,7 @@ export function DataTable<T extends Record<string, unknown>>({
           startIndex={startIndex}
           renderCellValue={renderCellValue}
           renderNoData={renderNoData}
+          selectedRowId={selectedRowId}
         />
       </div>
       {totalItems > 0 && (

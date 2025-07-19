@@ -141,7 +141,6 @@ const Dossiers = (): ReactElement => {
     queryFn: () => FileService.fileControllerGetAllprovisions(),
   });
 
-  const shouldFetchFiles = activeTab !== "mail";
   const fileCountQuery = useQuery({
     queryKey: ["fileCount"],
     queryFn: () => FileService.fileControllerGetFileStatusCount(),
@@ -153,24 +152,18 @@ const Dossiers = (): ReactElement => {
       FileService.fileControllerFindAll({
         page: page.toString(),
         perPage: perPage.toString(),
-        filters: JSON.stringify(
-          activeTab && activeTab !== "tous"
-            ? [
-                {
-                  field: "status",
-                  values: [activeTab],
-                },
-              ]
-            : []
-        ),
+        ...(activeTab &&
+          activeTab !== "tous" && {
+            filters: JSON.stringify([
+              {
+                field: "status",
+                values: [activeTab],
+              },
+            ]),
+          }),
       }),
-
-    enabled: shouldFetchFiles,
+    enabled: activeTab !== "mail",
   });
-
-  const filesData = shouldFetchFiles ? filesQuery.data : undefined;
-  const isFilesLoading = shouldFetchFiles ? filesQuery.isLoading : false;
-  const filesError = shouldFetchFiles ? filesQuery.error : undefined;
 
   // DataTable columns definition (example, adjust as needed)
   const dossierColumns: Column<FileDto>[] = [
@@ -253,13 +246,19 @@ const Dossiers = (): ReactElement => {
     if (clientsData?.count && !selectedClientName) {
       setSelectedClientName(clientsData.data[0].clientName);
     }
-    if (filesData?.count && !selectedFileId) {
-      setSelectedFileId(filesData.data[0]._id);
+    if (filesQuery.data?.count && !selectedFileId) {
+      setSelectedFileId(filesQuery.data.data[0]._id);
     }
     if (emailsData?.data.length > 0) {
       setSelectedEmailId(emailsData.data[0]._id);
     }
-  }, [clientsData, selectedClientName, filesData, selectedFileId, emailsData]);
+  }, [
+    clientsData,
+    selectedClientName,
+    filesQuery.data,
+    selectedFileId,
+    emailsData,
+  ]);
 
   useEffect(() => {
     if (emailsData?.data?.length === 0) {
@@ -295,7 +294,7 @@ const Dossiers = (): ReactElement => {
     isClientsLoading ||
     isLegalFormsLoading ||
     isProvisionsLoading ||
-    isFilesLoading ||
+    filesQuery.isLoading ||
     (activeTab === "mail" && isEmailsLoading);
 
   // Error states
@@ -303,7 +302,7 @@ const Dossiers = (): ReactElement => {
     clientsError ||
     legalFormsError ||
     provisionsError ||
-    filesError ||
+    filesQuery.error ||
     (activeTab === "mail" && emailsError);
 
   const statusTabs = [
@@ -453,14 +452,14 @@ const Dossiers = (): ReactElement => {
                     clientsData={clientsData?.data}
                     provisionsData={provisionsData}
                     legalFormsData={legalFormsData}
-                    filesData={filesData?.data}
+                    filesData={filesQuery.data?.data}
                   />
                 ) : (
                   <DataTable
-                    data={filesData?.data || []}
+                    data={filesQuery.data?.data || []}
                     columns={dossierColumns}
-                    loading={isFilesLoading}
-                    count={filesData?.count || 0}
+                    loading={filesQuery.isLoading}
+                    count={filesQuery.data?.count || 0}
                     page={page}
                     perPage={perPage}
                     onPageChange={setPage}

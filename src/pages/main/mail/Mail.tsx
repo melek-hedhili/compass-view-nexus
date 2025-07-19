@@ -9,7 +9,7 @@ import InboxMail from "./InboxMail";
 import ArchivedMail from "./ArchivedMail";
 import SentMail from "./SentMail";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClientService, EmailService } from "@/api-swagger";
+import { AttachementService, ClientService, EmailService } from "@/api-swagger";
 import { useToast } from "@/hooks/use-toast";
 import ReplyModal from "./ReplyModal";
 import MailDetail from "./MailDetail";
@@ -41,6 +41,17 @@ const Mail = () => {
     queryKey: ["clients"],
     queryFn: () => ClientService.clientControllerFindAll({}),
     select: (data) => data.data.map((client) => client.email),
+  });
+
+  const { data: selectedMailFiles } = useQuery({
+    queryKey: ["emails", "files", selectedMail?._id],
+    enabled: !!selectedMail?._id,
+    queryFn: () =>
+      AttachementService.attachementControllerFindAll({
+        filters: JSON.stringify([
+          { field: "email", values: [selectedMail?._id] },
+        ]),
+      }),
   });
   // Archive mutation
   const archiveMutation = useMutation({
@@ -179,6 +190,7 @@ const Mail = () => {
           <div className="h-full">
             <MailDetail
               mail={selectedMail}
+              selectedMailFiles={selectedMailFiles?.data ?? []}
               onClose={() => setSelectedMail(null)}
               onReply={handleReply}
               onArchive={handleArchive}

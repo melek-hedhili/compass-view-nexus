@@ -15,6 +15,7 @@ export type AttachementDto = {
     file?: FileDto;
     email?: EmailDto;
     document?: DocumentDto;
-    isArchived: boolean;
+    updatedByAi: boolean;
+    readByOcr: boolean;
 };
 

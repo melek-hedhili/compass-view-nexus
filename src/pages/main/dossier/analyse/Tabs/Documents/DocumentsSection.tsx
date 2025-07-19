@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import OcrLaunchCard from "./components/OcrLaunchCard";
 import DocumentsTable from "./components/DocumentsTable";
 import DragAndDropZone from "./components/DragAndDropZone";
 import RequiredDocumentsTable from "./components/RequiredDocumentsTable";
 import DocumentViewer from "./components/DocumentViewer";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { AttachementService, DocumentDto, FileService } from "@/api-swagger";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  AttachementService,
+  DocumentDto,
+  FileService,
+  UpdateAttachementDto,
+} from "@/api-swagger";
 import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface Document {
   id: string;
@@ -28,15 +35,47 @@ interface RequiredDocument {
 }
 
 const DocumentsSection = () => {
+  const queryClient = useQueryClient();
   const { dossierId } = useParams();
   console.log("dossierId", dossierId);
-  const methoods = useForm<{
-    documentType: string;
-  }>({
-    defaultValues: {
-      documentType: "",
-    },
+
+  const [paginationParams, setPaginationParams] = useState({
+    page: 1,
+    perPage: 10,
   });
+
+  const attachmentsQuery = useQuery({
+    queryKey: [
+      "attachments",
+      dossierId,
+      paginationParams.page,
+      paginationParams.perPage,
+    ],
+    queryFn: () =>
+      AttachementService.attachementControllerFindFileAttachements({
+        id: dossierId,
+        page: paginationParams.page.toString(),
+        perPage: paginationParams.perPage.toString(),
+      }),
+  });
+
+  const attachmentsData = attachmentsQuery.data?.data ?? [];
+
+  const defaultValues = useMemo(
+    () => ({
+      uploadDocuments: [],
+      ...attachmentsData.reduce((acc, row) => {
+        acc[`documentType_${row._id}`] = row.document ? row.document._id : "";
+        return acc;
+      }, {}),
+    }),
+    [attachmentsData]
+  );
+
+  const methoods = useForm({
+    defaultValues,
+  });
+  console.log("methoods", methoods.watch());
   const [documents, setDocuments] = useState<Document[]>([
     {
       id: "1",
@@ -72,13 +111,6 @@ const DocumentsSection = () => {
     { id: "8", nom: "Dépôt de capital", checked: false },
   ]);
 
-  const attachmentsQuery = useQuery({
-    queryKey: ["attachments", dossierId],
-    queryFn: () =>
-      AttachementService.attachementControllerFindFileAttachements({
-        id: dossierId,
-      }),
-  });
   const fileDocuments = useQuery({
     queryKey: ["file-documents", dossierId],
     queryFn: () =>
@@ -86,6 +118,116 @@ const DocumentsSection = () => {
         id: dossierId,
       }),
   });
+  const uploadAttachementFiles = useMutation({
+    mutationFn: (files: File[]) =>
+      AttachementService.attachementControllerUploadMultipleFiles({
+        formData: {
+          fileId: dossierId,
+          files,
+        },
+        onUploadProgress: (progressEvent) => {
+          console.log("progressEvent", progressEvent);
+        },
+      }),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "attachments",
+          dossierId,
+          paginationParams.page,
+          paginationParams.perPage,
+        ],
+      });
+    },
+  });
+  const startOCRMutation = useMutation({
+    mutationFn: (id: string) =>
+      AttachementService.attachementControllerStartOcr({
+        id,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "attachments",
+          dossierId,
+          paginationParams.page,
+          paginationParams.perPage,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["file-documents", dossierId],
+      });
+      toast.success("OCR lancé avec succès");
+      methoods.reset();
+    },
+    onError: () => {
+      toast.error("Erreur lors du lancement de l'OCR");
+    },
+  });
+  const updateAttachmentMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateAttachementDto }) =>
+      AttachementService.attachementControllerUpdate({
+        id,
+        requestBody: data,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "attachments",
+          dossierId,
+          paginationParams.page,
+          paginationParams.perPage,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["file-documents", dossierId],
+      });
+    },
+  });
+  const deleteAttachmentMutation = useMutation({
+    mutationFn: (id: string) =>
+      AttachementService.attachementControllerRemove({
+        id,
+      }),
+    onSuccess: () => {
+      toast.success("Fichier supprimé avec succès");
+      queryClient.invalidateQueries({
+        queryKey: [
+          "attachments",
+          dossierId,
+          paginationParams.page,
+          paginationParams.perPage,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["file-documents", dossierId],
+      });
+    },
+  });
+  const handleDeleteAttachment = (id: string) => {
+    deleteAttachmentMutation.mutate(id);
+  };
+  const onUpdateAttachment = async () => {
+    if (selectedDocument?._id) {
+      // Get the current value of the select for this row
+      const selectValue = methoods.getValues(
+        `documentType_${selectedDocument._id}`
+      );
+      // Optionally update the form state (if you want to force a value)
+      methoods.setValue(`documentType_${selectedDocument._id}`, selectValue);
+      // Call the mutation
+      await updateAttachmentMutation.mutateAsync({
+        id: selectedDocument._id,
+        data: {
+          documentId: selectValue,
+        },
+      });
+    }
+  };
+  const onUploadAttachementFiles = () => {
+    uploadAttachementFiles.mutateAsync(methoods.getValues("uploadDocuments"));
+  };
   const [selectedDocument, setSelectedDocument] = useState<DocumentDto | null>(
     null
   );
@@ -128,17 +270,7 @@ const DocumentsSection = () => {
 
   // Fonction pour lancer l'OCR
   const handleLaunchOCR = () => {
-    setDocumentToRead((prevCount) => prevCount + 1);
-    setTimeout(() => {
-      setDocumentToRead(0);
-      // Simuler le traitement OCR sur le document sélectionné
-      if (selectedDocument) {
-        const updatedDocs = documents.map((doc) =>
-          doc.id === selectedDocument._id ? { ...doc, ocr: true } : doc
-        );
-        setDocuments(updatedDocs);
-      }
-    }, 2000);
+    startOCRMutation.mutateAsync(selectedDocument?._id);
   };
 
   // Fonction pour valider un document
@@ -161,6 +293,79 @@ const DocumentsSection = () => {
     }
   };
 
+  const isLoading = attachmentsQuery.isLoading || fileDocuments.isLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 animate-pulse">
+        {/* OCR Launch Card Skeleton */}
+        <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-8 w-28" />
+          </div>
+        </div>
+        {/* Drag and Drop Zone Skeleton */}
+        <div className="border rounded-lg p-6 bg-white flex flex-col items-center justify-center gap-2">
+          <Skeleton className="h-10 w-1/2" />
+          <Skeleton className="h-8 w-40 mt-2" />
+        </div>
+        {/* Documents Table Skeleton */}
+        <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="p-4 border-b bg-gray-50 flex gap-4">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+          <div className="p-0">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 border-b px-4 py-3"
+              >
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-10 w-40" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Required Documents Table Skeleton */}
+        <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="p-4 border-b bg-gray-50">
+            <Skeleton className="h-6 w-64" />
+          </div>
+          <div className="p-0">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-4 border-b px-4 py-3"
+              >
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Document Viewer Skeleton */}
+        <div className="border rounded-lg overflow-hidden bg-white">
+          <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+            <Skeleton className="h-8 w-24" />
+          </div>
+          <div className="p-4 flex justify-center">
+            <Skeleton className="h-96 w-2/3" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Form methods={methoods}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -169,6 +374,8 @@ const DocumentsSection = () => {
           <OcrLaunchCard
             documentToRead={documentToRead}
             handleLaunchOCR={handleLaunchOCR}
+            loading={startOCRMutation.isPending}
+            disabled={!selectedDocument}
           />
 
           {/* Liste des documents */}
@@ -178,10 +385,17 @@ const DocumentsSection = () => {
             selectedDocument={selectedDocument}
             handleDocumentSelection={handleDocumentSelection}
             handleDocumentTypeChange={handleDocumentTypeChange}
+            paginationParams={paginationParams}
+            setPaginationParams={setPaginationParams}
+            selectedRowId={selectedDocument?._id}
+            handleDeleteAttachment={handleDeleteAttachment}
           />
 
           {/* Zone de drag & drop */}
-          <DragAndDropZone />
+          <DragAndDropZone
+            onUploadAttachementFiles={onUploadAttachementFiles}
+            loading={uploadAttachementFiles.isPending}
+          />
 
           {/* Documents nécessaires pour le dossier */}
           <RequiredDocumentsTable
@@ -196,6 +410,8 @@ const DocumentsSection = () => {
             selectedDocument={selectedDocument}
             handleLaunchOCR={handleLaunchOCR}
             handleValidateDocument={handleValidateDocument}
+            onUpdateAttachment={onUpdateAttachment}
+            loading={updateAttachmentMutation.isPending}
           />
         </div>
       </div>

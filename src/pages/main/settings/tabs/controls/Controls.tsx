@@ -1,11 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, Search, Filter } from "lucide-react";
-import { ConfirmationModal } from "@/components/ui/confirmation-modal";
-import { ControlsGrid } from "./ControlsGrid";
-import { ControlForm } from "./ControlForm";
-import { ArchiveFilterButton } from "@/components/ui/ArchiveFilterButton";
+import PendingFeature from "@/pages/main/dossier/analyse/PendingFeature";
 
 interface Control {
   id: string;
@@ -120,7 +114,8 @@ const Controls = () => {
 
   return (
     <div className="w-full animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <PendingFeature />
+      {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div className="flex items-center mb-4 md:mb-0" />
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
           <div className="relative flex-grow">
@@ -187,7 +182,7 @@ const Controls = () => {
         onPressConfirm={handleConfirmDelete}
         title="Supprimer le contrôle"
         description="Êtes-vous sûr de vouloir supprimer ce contrôle ?"
-      />
+      /> */}
     </div>
   );
 };

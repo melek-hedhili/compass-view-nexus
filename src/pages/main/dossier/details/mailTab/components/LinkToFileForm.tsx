@@ -4,11 +4,12 @@ import { Form } from "@/components/ui/form";
 import { ControlledSelect } from "@/components/ui/controlled/controlled-select/controlled-select";
 import { ControlledCheckbox } from "@/components/ui/controlled/controlled-checkbox/controlled-checkbox";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EmailService } from "@/api-swagger/services/EmailService";
 import { toast } from "sonner";
 import { type ClientDto } from "@/api-swagger/models/ClientDto";
 import { type FileDto } from "@/api-swagger/models/FileDto";
+import { FileService } from "@/api-swagger/services/FileService";
 
 interface LinkToFileFormProps {
   clientsData: ClientDto[];
@@ -29,6 +30,7 @@ const LinkToFileForm: React.FC<LinkToFileFormProps> = ({
   selectedEmailId,
   onClose,
 }) => {
+  console.log("filesData", filesData);
   const queryClient = useQueryClient();
   const form = useForm<LinkToFileFormData>({
     defaultValues: {
@@ -36,6 +38,15 @@ const LinkToFileForm: React.FC<LinkToFileFormProps> = ({
       fileId: undefined,
       acceder: false,
     },
+  });
+
+  const clientAssociatedFiles = useQuery({
+    queryKey: ["clientAssociatedFiles", form.watch("clientId")],
+    enabled: !!form.watch("clientId"),
+    queryFn: () =>
+      FileService.fileControllerFindAllByClientId({
+        id: form.watch("clientId"),
+      }),
   });
 
   const mutation = useMutation({
@@ -85,11 +96,11 @@ const LinkToFileForm: React.FC<LinkToFileFormProps> = ({
             name="fileId"
             label="Nom du dossier"
             required
-            data={filesData || []}
+            data={clientAssociatedFiles.data || []}
             getOptionValue={(f) => f._id}
             getOptionLabel={(f) => f.fileName}
             placeholder="Nom du dossier"
-            disabled={mutation.isPending}
+            disabled={clientAssociatedFiles.isLoading || mutation.isPending}
           />
           <ControlledCheckbox
             name="acceder"

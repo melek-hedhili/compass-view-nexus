@@ -21,6 +21,7 @@ type ControlledSelectProps<T> = {
   onValueChange?: (value: string | number) => void;
   rules?: Record<string, any>;
   clear?: boolean;
+  defaultValue?: string;
 };
 
 function ControlledSelect<T>({
@@ -41,6 +42,7 @@ function ControlledSelect<T>({
   onValueChange: _onValueChange,
   rules,
   clear = false,
+  defaultValue,
 }: ControlledSelectProps<T>) {
   const { control } = useFormContext();
 
@@ -48,6 +50,7 @@ function ControlledSelect<T>({
     <Controller
       control={control}
       name={name}
+      defaultValue={defaultValue}
       rules={{
         ...(required && { required: `${label ?? name} est requis` }),
         ...rules,
@@ -56,8 +59,8 @@ function ControlledSelect<T>({
         const { value, onChange, ref } = field;
         const { error } = fieldState;
         // Find the selected option for adornment
-        const selectedOption = data.find(
-          (option) => getOptionValue(option) === value
+        const selectedOption = data?.find(
+          (option) => getOptionValue(option) === (value ?? defaultValue)
         );
         return (
           <div className={cn("flex flex-col gap-1", className)}>
@@ -76,7 +79,7 @@ function ControlledSelect<T>({
 
             <div className="relative">
               <SelectPrimitive.Root
-                value={value ?? ""}
+                value={value ?? defaultValue ?? ""}
                 onValueChange={onChange}
                 disabled={disabled}
               >
@@ -119,9 +122,9 @@ function ControlledSelect<T>({
                     <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center py-1">
                       <ChevronUp className="h-4 w-4" />
                     </SelectPrimitive.ScrollUpButton>
-                    {data.length > 0 ? (
+                    {data && data?.length > 0 ? (
                       <SelectPrimitive.Viewport className="p-1 h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]">
-                        {data.map((option) => {
+                        {data?.map((option) => {
                           const optionValue = getOptionValue(option);
                           const optionLabel = getOptionLabel(option);
                           return (
